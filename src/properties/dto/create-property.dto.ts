@@ -5,6 +5,12 @@ import {
     Min,
 } from 'class-validator';
 
+enum PropertyStatus {
+    ACTIVE = "ACTIVE",
+    INACTIVE = "INACTIVE",
+    ARCHIVED = "ARCHIVED"
+}
+
 export class CreatePropertyDto {
     @IsString()
     name: string;
@@ -23,6 +29,9 @@ export class CreatePropertyDto {
     @IsString()
     state?: string;
 
+    @IsString()
+    status: PropertyStatus;
+
     @IsOptional()
     @IsString()
     postalCode?: string;
@@ -33,6 +42,9 @@ export class CreatePropertyDto {
     @IsOptional()
     @IsString()
     description?: string;
+
+    @IsString()
+    currency: string;
 
     @IsNumber()
     @Min(0)
