@@ -5,22 +5,22 @@ import {
     Param,
     Patch,
     Post,
+    UseGuards,
 } from '@nestjs/common';
 
-import { CurrentUser } from '../common/decorators/current-user.decorator';
+import { CurrentUser } from '@/common/decorators/current-user.decorator';
 import { TenanciesService } from './tenancies.service';
 import { AssignTenantDto } from './dto/assign-tenant.dto';
 import { UnassignTenantDto } from './dto/unassign-tenant.dto';
-
-type AuthenticatedUser = {
-    id: string;
-    email?: string;
-};
+import * as authenticatedUserType from '../common/types/authenticated-user.type';
+import {JwtAuthGuard} from "@/common/guards/jwt-auth.guard";
 
 @Controller({
     path: 'tenancies',
     version: '1',
 })
+@UseGuards(JwtAuthGuard)
+
 export class TenanciesController {
     constructor(
         private readonly tenanciesService: TenanciesService,
@@ -33,7 +33,7 @@ export class TenanciesController {
      */
     @Post()
     assign(
-        @CurrentUser() user: AuthenticatedUser,
+        @CurrentUser() user: authenticatedUserType.AuthenticatedUser,
         @Body() dto: AssignTenantDto,
     ) {
         return this.tenanciesService.assign(user.id, dto);
@@ -45,7 +45,7 @@ export class TenanciesController {
      * GET /api/v1/tenancies
      */
     @Get()
-    findAll(@CurrentUser() user: AuthenticatedUser) {
+    findAll(@CurrentUser() user: authenticatedUserType.AuthenticatedUser) {
         return this.tenanciesService.findAll(user.id);
     }
 
@@ -56,7 +56,7 @@ export class TenanciesController {
      */
     @Get(':id')
     findOne(
-        @CurrentUser() user: AuthenticatedUser,
+        @CurrentUser() user: authenticatedUserType.AuthenticatedUser,
         @Param('id') tenancyId: string,
     ) {
         return this.tenanciesService.findOne(user.id, tenancyId);
@@ -69,7 +69,7 @@ export class TenanciesController {
      */
     @Patch(':id/unassign')
     unassign(
-        @CurrentUser() user: AuthenticatedUser,
+        @CurrentUser() user: authenticatedUserType.AuthenticatedUser,
         @Param('id') tenancyId: string,
         @Body() dto: UnassignTenantDto,
     ) {
