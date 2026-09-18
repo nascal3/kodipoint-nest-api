@@ -4,7 +4,7 @@ import {
     NotFoundException,
 } from '@nestjs/common';
 
-import { DatabaseService } from '../database/database.service';
+import { DatabaseService } from '@/database/database.service';
 import { AssignTenantDto } from './dto/assign-tenant.dto';
 
 @Injectable()
