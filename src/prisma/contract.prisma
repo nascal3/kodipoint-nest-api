@@ -1,5 +1,4 @@
 // use prisma-8
-// Contract for the tenant payment / invoice flow shown in the ERD.
 
 model User {
   id           Uuid   @id @default(uuid())

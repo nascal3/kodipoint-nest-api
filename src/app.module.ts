@@ -1,21 +1,32 @@
 import { Module } from '@nestjs/common';
-import { createObserveModule } from '@nestjs/observe';
-import { AppController } from './app.controller.js';
-import { AppService } from './app.service.js';
 
-export const { ObserveModule, ObserveInstrument } = createObserveModule();
+import { DatabaseModule } from './database/database.module';
+import { AuthModule } from './auth/auth.module';
+import { UsersModule } from './users/users.module';
+import { PropertiesModule } from './properties/properties.module';
+import { TenantsModule } from './tenants/tenants.module';
+import { TenanciesModule } from './tenancies/tenancies.module';
+import { InvoicesModule } from './invoices/invoices.module';
+import { PaymentsModule } from './payments/payments.module';
+import { ReceiptsModule } from './receipts/receipts.module';
+import { NotificationsModule } from './notifications/notifications.module';
+import { ReportsModule } from './reports/reports.module';
+import { JobsModule } from './jobs/jobs.module';
 
 @Module({
   imports: [
-    // Distributed tracing, auto-correlated logs, request/job metrics, error
-    // telemetry, alarms, and more — out of the box. Sign up at https://observe.nestjs.com
-    ObserveModule.forRoot({
-      appKey: 'YOUR_APP_KEY',
-      appSecret: 'YOUR_APP_SECRET',
-      serviceId: 'kodipoint-nest-api',
-    }),
+    DatabaseModule,
+    AuthModule,
+    UsersModule,
+    PropertiesModule,
+    TenantsModule,
+    TenanciesModule,
+    InvoicesModule,
+    PaymentsModule,
+    ReceiptsModule,
+    NotificationsModule,
+    ReportsModule,
+    JobsModule,
   ],
-  controllers: [AppController],
-  providers: [AppService],
 })
 export class AppModule {}
