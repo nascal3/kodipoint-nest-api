@@ -31,6 +31,52 @@
 $ npm install
 ```
 
+### Create/edit your Prisma(8) contract
+
+Create:
+```angular2html
+src/prisma/contract.prisma
+```
+
+For example:
+```angular2html
+model User {
+id        Int      @id @default(autoincrement())
+email     String   @unique
+name      String?
+createdAt DateTime @default(now())
+updatedAt DateTime @updatedAt
+}
+```
+
+### Emit the contract
+
+After creating/modifying the contract:
+```bash
+npx prisma contract emit
+```
+This generates the Prisma runtime artifacts.
+
+The Prisma 8 workflow is essentially:
+```angular2html
+contract.prisma
+↓
+contract emit
+↓
+generated Prisma client
+↓
+PostgreSQL
+```
+The contract must be emitted before database operations such as migration planning.
+
+### Initialize PostgreSQL
+
+If this is a new/empty database:
+
+```bash
+npx prisma db init
+````
+
 ## Compile and run the project
 
 ```bash

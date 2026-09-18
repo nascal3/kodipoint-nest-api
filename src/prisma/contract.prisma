@@ -1,21 +1,229 @@
 // use prisma-8
+// Contract for the tenant payment / invoice flow shown in the ERD.
 
 model User {
-  id        Int      @id @default(autoincrement())
-  email     String   @unique
-  username  String?
-  name      String?
-  posts     Post[]
-  createdAt TimestamptzString @default(now())
-  updatedAt temporal.updatedAtString()
+  id           Uuid   @id @default(uuid())
+  email        String @unique
+  passwordHash String @map("password_hash")
+  firstName    String @map("first_name")
+  lastName     String @map("last_name")
+  phone        String
+
+  createdAt temporal.createdAt() @map("created_at")
+  updatedAt temporal.updatedAt() @map("updated_at")
+
+  // everything below is owned/managed by this user (manager_id FK)
+  properties      Property[]
+  propertyCharges PropertyCharge[]
+  tenants         Tenant[]
+  tenancies       Tenancy[]
+  invoices        Invoice[]
+  payments        Payment[]
+  receipts        Receipt[]
+
+  @@map("users")
 }
 
-model Post {
-  id        Int      @id @default(autoincrement())
-  title     String
-  content   String?
-  author    User     @relation(fields: [authorId], references: [id])
-  authorId  Int
-  createdAt TimestamptzString @default(now())
-  updatedAt temporal.updatedAtString()
+model Property {
+  id           Uuid    @id @default(uuid())
+  managerId    Uuid    @map("manager_id")
+  name         String
+  addressLine1 String  @map("address_line_1")
+  addressLine2 String? @map("address_line_2")
+  city         String
+  state        String?
+  postalCode   String? @map("postal_code")
+  country      String
+  description  String?
+  monthlyRent  Decimal @map("monthly_rent")
+  status       String
+
+  createdAt temporal.createdAt() @map("created_at")
+  updatedAt temporal.updatedAt() @map("updated_at")
+
+  manager User @relation(fields: [managerId], references: [id])
+
+  propertyCharges PropertyCharge[]
+  tenancies       Tenancy[]
+  invoices        Invoice[]
+  payments        Payment[]
+
+  @@index([managerId])
+  @@map("properties")
+}
+
+model PropertyCharge {
+  id               Uuid    @id @default(uuid())
+  managerId        Uuid    @map("manager_id")
+  propertyId       Uuid    @map("property_id")
+  name             String
+  description      String?
+  amount           Decimal
+  billingFrequency String  @map("billing_frequency")
+  isActive         Boolean @map("is_active")
+
+  createdAt temporal.createdAt() @map("created_at")
+  updatedAt temporal.updatedAt() @map("updated_at")
+
+  manager  User     @relation(fields: [managerId], references: [id])
+  property Property @relation(fields: [propertyId], references: [id])
+
+  invoiceItems InvoiceItem[]
+
+  @@index([managerId])
+  @@index([propertyId])
+  @@map("property_charges")
+}
+
+model Tenant {
+  id                    Uuid    @id @default(uuid())
+  managerId             Uuid    @map("manager_id")
+  firstName             String  @map("first_name")
+  lastName              String  @map("last_name")
+  email                 String?
+  phone                 String?
+  address               String?
+  emergencyContactName  String? @map("emergency_contact_name")
+  emergencyContactPhone String? @map("emergency_contact_phone")
+  status                String
+
+  createdAt temporal.createdAt() @map("created_at")
+  updatedAt temporal.updatedAt() @map("updated_at")
+
+  manager User @relation(fields: [managerId], references: [id])
+
+  tenancies Tenancy[]
+  invoices  Invoice[]
+  payments  Payment[]
+
+  @@index([managerId])
+  @@map("tenants")
+}
+
+model Tenancy {
+  id           Uuid      @id @default(uuid())
+  managerId    Uuid      @map("manager_id")
+  propertyId   Uuid      @map("property_id")
+  tenantId     Uuid      @map("tenant_id")
+  startDate    Date      @map("start_date")
+  endDate      Date?     @map("end_date")
+  monthlyRent  Decimal   @map("monthly_rent")
+  status       String
+  assignedAt   DateTime  @map("assigned_at")
+  unassignedAt DateTime? @map("unassigned_at")
+
+  createdAt temporal.createdAt() @map("created_at")
+  updatedAt temporal.updatedAt() @map("updated_at")
+
+  manager  User     @relation(fields: [managerId], references: [id])
+  property Property @relation(fields: [propertyId], references: [id])
+  tenant   Tenant   @relation(fields: [tenantId], references: [id])
+
+  invoices Invoice[]
+
+  @@index([managerId])
+  @@index([propertyId])
+  @@index([tenantId])
+  @@map("tenancies")
+}
+
+model Invoice {
+  id            Uuid    @id @default(uuid())
+  managerId     Uuid    @map("manager_id")
+  propertyId    Uuid    @map("property_id")
+  tenancyId     Uuid    @map("tenancy_id")
+  tenantId      Uuid    @map("tenant_id")
+  invoiceNumber String  @unique @map("invoice_number")
+  issueDate     Date    @map("issue_date")
+  dueDate       Date    @map("due_date")
+  subtotal      Decimal
+  totalAmount   Decimal @map("total_amount")
+  amountPaid    Decimal @map("amount_paid")
+  balanceDue    Decimal @map("balance_due")
+  status        String
+  notes         String?
+
+  createdAt temporal.createdAt() @map("created_at")
+  updatedAt temporal.updatedAt() @map("updated_at")
+
+  manager  User     @relation(fields: [managerId], references: [id])
+  property Property @relation(fields: [propertyId], references: [id])
+  tenancy  Tenancy  @relation(fields: [tenancyId], references: [id])
+  tenant   Tenant   @relation(fields: [tenantId], references: [id])
+
+  invoiceItems InvoiceItem[]
+  payments     Payment[]
+
+  @@index([managerId])
+  @@index([propertyId])
+  @@index([tenancyId])
+  @@index([tenantId])
+  @@map("invoices")
+}
+
+model InvoiceItem {
+  id               Uuid    @id @default(uuid())
+  invoiceId        Uuid    @map("invoice_id")
+  propertyChargeId Uuid?   @map("property_charge_id") // null for plain rent lines
+  description      String
+  quantity         Decimal
+  unitAmount       Decimal @map("unit_amount")
+  totalAmount      Decimal @map("total_amount")
+
+  createdAt temporal.createdAt() @map("created_at")
+  updatedAt temporal.updatedAt() @map("updated_at")
+
+  invoice        Invoice         @relation(fields: [invoiceId], references: [id])
+  propertyCharge PropertyCharge? @relation(fields: [propertyChargeId], references: [id])
+
+  @@index([invoiceId])
+  @@index([propertyChargeId])
+  @@map("invoice_items")
+}
+
+model Payment {
+  id              Uuid    @id @default(uuid())
+  managerId       Uuid    @map("manager_id")
+  propertyId      Uuid    @map("property_id")
+  invoiceId       Uuid    @map("invoice_id")
+  tenantId        Uuid    @map("tenant_id")
+  paymentDate     Date    @map("payment_date")
+  amount          Decimal
+  paymentMethod   String  @map("payment_method")
+  referenceNumber String? @map("reference_number")
+  notes           String?
+  status          String
+
+  createdAt temporal.createdAt() @map("created_at")
+  updatedAt temporal.updatedAt() @map("updated_at")
+
+  manager  User     @relation(fields: [managerId], references: [id])
+  property Property @relation(fields: [propertyId], references: [id])
+  invoice  Invoice  @relation(fields: [invoiceId], references: [id])
+  tenant   Tenant   @relation(fields: [tenantId], references: [id])
+
+  receipt Receipt?
+
+  @@index([managerId])
+  @@index([propertyId])
+  @@index([invoiceId])
+  @@index([tenantId])
+  @@map("payments")
+}
+
+model Receipt {
+  id            Uuid     @id @default(uuid())
+  managerId     Uuid     @map("manager_id")
+  paymentId     Uuid     @unique @map("payment_id")
+  receiptNumber String   @unique @map("receipt_number")
+  issuedAt      DateTime @map("issued_at")
+  notes         String?
+
+  createdAt temporal.createdAt() @map("created_at")
+
+  manager User    @relation(fields: [managerId], references: [id])
+  payment Payment @relation(fields: [paymentId], references: [id])
+
+  @@index([managerId])
+  @@map("receipts")
 }
