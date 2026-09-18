@@ -6,6 +6,7 @@ import {
     Patch,
     Post,
     Query,
+    UseGuards,
 } from '@nestjs/common';
 
 import { CurrentUser } from '@/common/decorators/current-user.decorator';
@@ -14,16 +15,15 @@ import { ListInvoicesDto } from './dto/list-invoices.dto';
 import { SendInvoiceDto } from './dto/send-invoice.dto';
 import { UpdateInvoiceDto } from './dto/update-invoice.dto';
 import { InvoicesService } from './invoices.service';
-
-type AuthenticatedUser = {
-    id: string;
-    email?: string;
-};
+import * as authenticatedUserType from '@/common/types/authenticated-user.type';
+import {JwtAuthGuard} from "@/common/guards/jwt-auth.guard";
 
 @Controller({
     path: 'invoices',
     version: '1',
 })
+@UseGuards(JwtAuthGuard)
+
 export class InvoicesController {
     constructor(
         private readonly invoicesService: InvoicesService,
@@ -36,7 +36,7 @@ export class InvoicesController {
      */
     @Post()
     create(
-        @CurrentUser() user: AuthenticatedUser,
+        @CurrentUser() user: authenticatedUserType.AuthenticatedUser,
         @Body() dto: CreateInvoiceDto,
     ) {
         return this.invoicesService.create(user.id, dto);
@@ -49,7 +49,7 @@ export class InvoicesController {
      */
     @Get()
     findAll(
-        @CurrentUser() user: AuthenticatedUser,
+        @CurrentUser() user: authenticatedUserType.AuthenticatedUser,
         @Query() query: ListInvoicesDto,
     ) {
         return this.invoicesService.findAll(
@@ -65,7 +65,7 @@ export class InvoicesController {
      */
     @Get(':id')
     findOne(
-        @CurrentUser() user: AuthenticatedUser,
+        @CurrentUser() user: authenticatedUserType.AuthenticatedUser,
         @Param('id') invoiceId: string,
     ) {
         return this.invoicesService.findOne(
@@ -81,7 +81,7 @@ export class InvoicesController {
      */
     @Patch(':id')
     update(
-        @CurrentUser() user: AuthenticatedUser,
+        @CurrentUser() user: authenticatedUserType.AuthenticatedUser,
         @Param('id') invoiceId: string,
         @Body() dto: UpdateInvoiceDto,
     ) {
@@ -99,7 +99,7 @@ export class InvoicesController {
      */
     @Post(':id/cancel')
     cancel(
-        @CurrentUser() user: AuthenticatedUser,
+        @CurrentUser() user: authenticatedUserType.AuthenticatedUser,
         @Param('id') invoiceId: string,
     ) {
         return this.invoicesService.cancel(
@@ -115,7 +115,7 @@ export class InvoicesController {
      */
     @Post(':id/send')
     send(
-        @CurrentUser() user: AuthenticatedUser,
+        @CurrentUser() user: authenticatedUserType.AuthenticatedUser,
         @Param('id') invoiceId: string,
         @Body() dto: SendInvoiceDto,
     ) {

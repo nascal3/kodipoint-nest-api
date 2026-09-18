@@ -6,22 +6,22 @@ import {
     Param,
     Patch,
     Post,
+    UseGuards,
 } from '@nestjs/common';
 
-import { CurrentUser } from '../common/decorators/current-user.decorator';
+import { CurrentUser } from '@/common/decorators/current-user.decorator';
 import { TenantsService } from './tenants.service';
 import { CreateTenantDto } from './dto/create-tenant.dto';
 import { UpdateTenantDto } from './dto/update-tenant.dto';
-
-type AuthenticatedUser = {
-    id: string;
-    email?: string;
-};
+import * as authenticatedUserType from '@/common/types/authenticated-user.type';
+import {JwtAuthGuard} from "@/common/guards/jwt-auth.guard";
 
 @Controller({
     path: 'tenants',
     version: '1',
 })
+@UseGuards(JwtAuthGuard)
+
 export class TenantsController {
     constructor(
         private readonly tenantsService: TenantsService,
@@ -34,7 +34,7 @@ export class TenantsController {
      */
     @Post()
     create(
-        @CurrentUser() user: AuthenticatedUser,
+        @CurrentUser() user: authenticatedUserType.AuthenticatedUser,
         @Body() dto: CreateTenantDto,
     ) {
         return this.tenantsService.create(user.id, dto);
@@ -46,7 +46,7 @@ export class TenantsController {
      * GET /api/v1/tenants
      */
     @Get()
-    findAll(@CurrentUser() user: AuthenticatedUser) {
+    findAll(@CurrentUser() user: authenticatedUserType.AuthenticatedUser) {
         return this.tenantsService.findAll(user.id);
     }
 
@@ -57,7 +57,7 @@ export class TenantsController {
      */
     @Get(':id')
     findOne(
-        @CurrentUser() user: AuthenticatedUser,
+        @CurrentUser() user: authenticatedUserType.AuthenticatedUser,
         @Param('id') tenantId: string,
     ) {
         return this.tenantsService.findOne(user.id, tenantId);
@@ -70,7 +70,7 @@ export class TenantsController {
      */
     @Patch(':id')
     update(
-        @CurrentUser() user: AuthenticatedUser,
+        @CurrentUser() user: authenticatedUserType.AuthenticatedUser,
         @Param('id') tenantId: string,
         @Body() dto: UpdateTenantDto,
     ) {
@@ -88,7 +88,7 @@ export class TenantsController {
      */
     @Delete(':id')
     archive(
-        @CurrentUser() user: AuthenticatedUser,
+        @CurrentUser() user: authenticatedUserType.AuthenticatedUser,
         @Param('id') tenantId: string,
     ) {
         return this.tenantsService.archive(user.id, tenantId);
