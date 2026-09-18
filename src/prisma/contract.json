@@ -68,6 +68,13 @@
                   "kind": "scalar"
                 }
               },
+              "currency": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
               "dueDate": {
                 "nullable": false,
                 "type": {
@@ -267,6 +274,9 @@
                 "createdAt": {
                   "column": "created_at"
                 },
+                "currency": {
+                  "column": "currency"
+                },
                 "dueDate": {
                   "column": "due_date"
                 },
@@ -461,6 +471,13 @@
                   "kind": "scalar"
                 }
               },
+              "currency": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
               "id": {
                 "nullable": false,
                 "type": {
@@ -629,6 +646,9 @@
                 "createdAt": {
                   "column": "created_at"
                 },
+                "currency": {
+                  "column": "currency"
+                },
                 "id": {
                   "column": "id"
                 },
@@ -701,6 +721,13 @@
                 "nullable": false,
                 "type": {
                   "codecId": "pg/timestamptz-temporal@1",
+                  "kind": "scalar"
+                }
+              },
+              "currency": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
                   "kind": "scalar"
                 }
               },
@@ -862,6 +889,9 @@
                 },
                 "createdAt": {
                   "column": "created_at"
+                },
+                "currency": {
+                  "column": "currency"
                 },
                 "description": {
                   "column": "description"
@@ -1894,6 +1924,15 @@
                   "nativeType": "timestamptz",
                   "nullable": false
                 },
+                "currency": {
+                  "codecId": "pg/text@1",
+                  "default": {
+                    "kind": "literal",
+                    "value": "KES"
+                  },
+                  "nativeType": "text",
+                  "nullable": false
+                },
                 "due_date": {
                   "codecId": "pg/date-temporal@1",
                   "nativeType": "date",
@@ -2037,10 +2076,29 @@
                 },
                 {
                   "columns": [
+                    "manager_id",
+                    "status",
+                    "due_date"
+                  ],
+                  "name": "invoices_manager_id_status_due_date_idx_7386f40d",
+                  "prefix": "invoices_manager_id_status_due_date_idx",
+                  "unique": false
+                },
+                {
+                  "columns": [
                     "property_id"
                   ],
                   "name": "invoices_property_id_idx_9fa9619b",
                   "prefix": "invoices_property_id_idx",
+                  "unique": false
+                },
+                {
+                  "columns": [
+                    "property_id",
+                    "issue_date"
+                  ],
+                  "name": "invoices_property_id_issue_date_idx_4db8c3b4",
+                  "prefix": "invoices_property_id_issue_date_idx",
                   "unique": false
                 },
                 {
@@ -2057,6 +2115,15 @@
                   ],
                   "name": "invoices_tenant_id_idx_41c0d441",
                   "prefix": "invoices_tenant_id_idx",
+                  "unique": false
+                },
+                {
+                  "columns": [
+                    "tenant_id",
+                    "issue_date"
+                  ],
+                  "name": "invoices_tenant_id_issue_date_idx_ec82b3a8",
+                  "prefix": "invoices_tenant_id_issue_date_idx",
                   "unique": false
                 }
               ],
@@ -2087,6 +2154,15 @@
                     "kind": "function"
                   },
                   "nativeType": "timestamptz",
+                  "nullable": false
+                },
+                "currency": {
+                  "codecId": "pg/text@1",
+                  "default": {
+                    "kind": "literal",
+                    "value": "KES"
+                  },
+                  "nativeType": "text",
                   "nullable": false
                 },
                 "id": {
@@ -2230,6 +2306,15 @@
                 },
                 {
                   "columns": [
+                    "manager_id",
+                    "payment_date"
+                  ],
+                  "name": "payments_manager_id_payment_date_idx_89af631f",
+                  "prefix": "payments_manager_id_payment_date_idx",
+                  "unique": false
+                },
+                {
+                  "columns": [
                     "property_id"
                   ],
                   "name": "payments_property_id_idx_9fa9619b",
@@ -2238,10 +2323,37 @@
                 },
                 {
                   "columns": [
+                    "property_id",
+                    "payment_date"
+                  ],
+                  "name": "payments_property_id_payment_date_idx_d4e12f32",
+                  "prefix": "payments_property_id_payment_date_idx",
+                  "unique": false
+                },
+                {
+                  "columns": [
+                    "status",
+                    "payment_date"
+                  ],
+                  "name": "payments_status_payment_date_idx_f8f5e2fb",
+                  "prefix": "payments_status_payment_date_idx",
+                  "unique": false
+                },
+                {
+                  "columns": [
                     "tenant_id"
                   ],
                   "name": "payments_tenant_id_idx_41c0d441",
                   "prefix": "payments_tenant_id_idx",
+                  "unique": false
+                },
+                {
+                  "columns": [
+                    "tenant_id",
+                    "payment_date"
+                  ],
+                  "name": "payments_tenant_id_payment_date_idx_6e70efe7",
+                  "prefix": "payments_tenant_id_payment_date_idx",
                   "unique": false
                 }
               ],
@@ -2281,6 +2393,15 @@
                     "kind": "function"
                   },
                   "nativeType": "timestamptz",
+                  "nullable": false
+                },
+                "currency": {
+                  "codecId": "pg/text@1",
+                  "default": {
+                    "kind": "literal",
+                    "value": "KES"
+                  },
+                  "nativeType": "text",
                   "nullable": false
                 },
                 "description": {
@@ -2720,10 +2841,28 @@
                 },
                 {
                   "columns": [
+                    "property_id",
+                    "status"
+                  ],
+                  "name": "tenancies_property_id_status_idx_7a5ca777",
+                  "prefix": "tenancies_property_id_status_idx",
+                  "unique": false
+                },
+                {
+                  "columns": [
                     "tenant_id"
                   ],
                   "name": "tenancies_tenant_id_idx_41c0d441",
                   "prefix": "tenancies_tenant_id_idx",
+                  "unique": false
+                },
+                {
+                  "columns": [
+                    "tenant_id",
+                    "status"
+                  ],
+                  "name": "tenancies_tenant_id_status_idx_788669e7",
+                  "prefix": "tenancies_tenant_id_status_idx",
                   "unique": false
                 }
               ],
@@ -2904,7 +3043,7 @@
         "kind": "postgres-schema"
       }
     },
-    "storageHash": "bd3a966f1ab4f2b85f5483c502804daf2f2bd10abbfe96219b65b4f8ca4f260a"
+    "storageHash": "d516ff8980294285e6d8bdaa5343390061d94c6f126222ff62ffc627766220a5"
   },
   "execution": {
     "executionHash": "cb9aba89a45c8ea36635f47e2e96f63e8b788c2176db9f1cb04b80005e5ea786",
