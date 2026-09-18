@@ -41,11 +41,17 @@ src/prisma/contract.prisma
 For example:
 ```angular2html
 model User {
-id        Int      @id @default(autoincrement())
-email     String   @unique
-name      String?
-createdAt DateTime @default(now())
-updatedAt DateTime @updatedAt
+    id           Uuid   @id @default(uuid())
+    email        String @unique
+    passwordHash String @map("password_hash")
+    firstName    String @map("first_name")
+    lastName     String @map("last_name")
+    phone        String
+
+    createdAt temporal.createdAt() @map("created_at")
+    updatedAt temporal.updatedAt() @map("updated_at")
+
+    @@map("users")
 }
 ```
 
@@ -53,13 +59,20 @@ updatedAt DateTime @updatedAt
 
 After creating/modifying the contract:
 ```bash
-npx prisma contract emit
+npm run prisma:emit
 ```
-### Initialize database
-This generates the Prisma runtime artifacts.
+### Initialize PostgreSQL database
+This generates the Prisma runtime artifacts. If this is a new/empty database:
 
 ```bash
-npx prisma db init
+npm run prisma:db-init
+```
+
+### Update database
+This generates the Prisma runtime artifacts when updating an exiting database.
+
+```bash
+npm run prisma:db-update
 ```
 
 The Prisma 8 workflow is essentially:
@@ -71,14 +84,6 @@ contract emit
 generated Prisma client
 ```
 The contract must be emitted before database operations such as migration planning.
-
-### Initialize PostgreSQL
-
-If this is a new/empty database:
-
-```bash
-npx prisma db init
-````
 
 ## Compile and run the project
 

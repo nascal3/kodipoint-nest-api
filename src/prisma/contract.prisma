@@ -34,6 +34,7 @@ model Property {
   postalCode   String? @map("postal_code")
   country      String
   description  String?
+  currency     String  @default("KES")
   monthlyRent  Decimal @map("monthly_rent")
   status       String
 
@@ -121,8 +122,8 @@ model Tenancy {
   invoices Invoice[]
 
   @@index([managerId])
-  @@index([propertyId])
-  @@index([tenantId])
+  @@index([propertyId, status])
+  @@index([tenantId, status])
   @@map("tenancies")
 }
 
@@ -135,6 +136,7 @@ model Invoice {
   invoiceNumber String  @unique @map("invoice_number")
   issueDate     Date    @map("issue_date")
   dueDate       Date    @map("due_date")
+  currency      String  @default("KES")
   subtotal      Decimal
   totalAmount   Decimal @map("total_amount")
   amountPaid    Decimal @map("amount_paid")
@@ -153,10 +155,10 @@ model Invoice {
   invoiceItems InvoiceItem[]
   payments     Payment[]
 
-  @@index([managerId])
-  @@index([propertyId])
+  @@index([managerId, status, dueDate])
+  @@index([propertyId, issueDate])
+  @@index([tenantId, issueDate])
   @@index([tenancyId])
-  @@index([tenantId])
   @@map("invoices")
 }
 
@@ -187,6 +189,7 @@ model Payment {
   invoiceId       Uuid    @map("invoice_id")
   tenantId        Uuid    @map("tenant_id")
   paymentDate     Date    @map("payment_date")
+  currency        String  @default("KES")
   amount          Decimal
   paymentMethod   String  @map("payment_method")
   referenceNumber String? @map("reference_number")
@@ -203,10 +206,10 @@ model Payment {
 
   receipt Receipt?
 
-  @@index([managerId])
-  @@index([propertyId])
-  @@index([invoiceId])
-  @@index([tenantId])
+  @@index([managerId, paymentDate])
+  @@index([propertyId, paymentDate])
+  @@index([tenantId, paymentDate])
+  @@index([status, paymentDate])
   @@map("payments")
 }
 

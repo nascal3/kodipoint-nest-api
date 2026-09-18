@@ -22,6 +22,7 @@ export class PropertiesService {
             postalCode: dto.postalCode,
             country: dto.country,
             description: dto.description,
+            currency: dto.currency,
             monthlyRent: dto.monthlyRent.toString(),
             status: 'ACTIVE',
         });
