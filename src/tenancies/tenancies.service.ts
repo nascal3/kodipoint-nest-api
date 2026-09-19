@@ -5,7 +5,7 @@ import {
 } from '@nestjs/common';
 
 import { DatabaseService } from '@/database/database.service';
-import { AssignTenantDto } from './dto/assign-tenant.dto';
+import {AssignTenantDto, TenancyStatus} from './dto/assign-tenant.dto';
 
 @Injectable()
 export class TenanciesService {
@@ -63,7 +63,7 @@ export class TenanciesService {
                 managerId,
                 propertyId: dto.propertyId,
                 tenantId: dto.tenantId,
-                status: 'ACTIVE',
+                status: TenancyStatus.ACTIVE,
             })
             .first();
 
@@ -79,7 +79,7 @@ export class TenanciesService {
             tenantId: dto.tenantId,
             startDate: dto.startDate,
             monthlyRent: dto.monthlyRent?.toString() ?? property.monthlyRent,
-            status: 'ACTIVE',
+            status: TenancyStatus.ACTIVE,
             assignedAt: new Date(),
         });
     }
@@ -93,7 +93,7 @@ export class TenanciesService {
             .where({
                 id: tenancyId,
                 managerId,
-                status: 'ACTIVE',
+                status: TenancyStatus.ACTIVE,
             })
             .first();
 
@@ -107,7 +107,7 @@ export class TenanciesService {
                 managerId,
             })
             .update({
-                status: 'ENDED',
+                status: TenancyStatus.ENDED,
                 endDate,
                 unassignedAt: new Date(),
             });

@@ -7,7 +7,8 @@ import {
 
 import { DatabaseService } from '@/database/database.service';
 import { CreateInvoiceDto } from './dto/create-invoice.dto';
-import { ListInvoicesDto } from './dto/list-invoices.dto';
+import { ListInvoicesDto, InvoiceStatus } from './dto/list-invoices.dto';
+import { TenancyStatus } from '@/tenancies/dto/assign-tenant.dto';
 import { UpdateInvoiceDto } from './dto/update-invoice.dto';
 import { SendInvoiceDto, InvoiceDeliveryChannel } from './dto/send-invoice.dto';
 import Decimal from "decimal.js";
@@ -36,7 +37,7 @@ export class InvoicesService {
                 .where({
                     id: dto.tenancyId,
                     managerId,
-                    status: 'ACTIVE',
+                    status: TenancyStatus.ACTIVE,
                 })
                 .first();
 
@@ -123,7 +124,7 @@ export class InvoicesService {
                     totalAmount: totalAmount.toString(),
                     amountPaid: '0',
                     balanceDue: totalAmount.toString(),
-                    status: 'ISSUED',
+                    status: InvoiceStatus.ISSUED,
                     notes: dto.notes,
                 });
 
@@ -228,7 +229,7 @@ export class InvoicesService {
             invoiceId,
         );
 
-        if (invoice.status !== 'DRAFT') {
+        if (invoice.status !== InvoiceStatus.DRAFT) {
             throw new ConflictException(
                 'Only draft invoices can be edited',
             );
@@ -267,13 +268,13 @@ export class InvoicesService {
             invoiceId,
         );
 
-        if (invoice.status === 'PAID') {
+        if (invoice.status === InvoiceStatus.PAID) {
             throw new ConflictException(
                 'A paid invoice cannot be cancelled',
             );
         }
 
-        if (invoice.status === 'CANCELLED') {
+        if (invoice.status === InvoiceStatus.CANCELLED) {
             return invoice;
         }
 
@@ -289,15 +290,13 @@ export class InvoicesService {
                 managerId,
             })
             .update({
-                status: 'CANCELLED',
+                status: InvoiceStatus.CANCELLED,
             });
     }
 
-    async markOverdueInvoices(
-        managerId?: string,
-    ) {
+    async markOverdueInvoices(managerId?: string) {
         const where: Record<string, unknown> = {
-            status: 'ISSUED',
+            status: InvoiceStatus.ISSUED,
             dueDate: {
                 lt: new Date(),
             },
@@ -319,7 +318,7 @@ export class InvoicesService {
                     managerId: invoice.managerId,
                 })
                 .update({
-                    status: 'OVERDUE',
+                    status: InvoiceStatus.OVERDUE,
                 });
         }
 

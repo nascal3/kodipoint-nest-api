@@ -1,3 +1,4 @@
+import { ApiProperty } from '@nestjs/swagger';
 import {
     ArrayNotEmpty,
     IsArray,
@@ -10,6 +11,10 @@ export enum InvoiceDeliveryChannel {
 }
 
 export class SendInvoiceDto {
+    @ApiProperty({
+        example: ['EMAIL', 'SMS'],
+        description: 'Delivery channels',
+    })
     @IsArray()
     @ArrayNotEmpty()
     @IsEnum(InvoiceDeliveryChannel, {
