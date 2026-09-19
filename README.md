@@ -98,6 +98,10 @@ $ npm run start:dev
 $ npm run start:prod
 ```
 
+## Swagger documentation
+To view the swagger documentation, navigate to http://localhost:3000/docs (locally).
+Your will first have the project running locally.
+
 ## Run tests
 
 ```bash
