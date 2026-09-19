@@ -3,6 +3,19 @@
   "collection": "@nestjs/schematics",
   "sourceRoot": "src",
   "compilerOptions": {
+    "builder": {
+      "type": "swc",
+      "options": {
+        "swcrc": true
+      }
+    },
+    "assets": [
+      {
+        "include": "prisma/**/*.json",
+        "watchAssets": true
+      }
+    ],
+    "typeCheck": true,
     "deleteOutDir": true
   }
 }

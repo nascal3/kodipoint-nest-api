@@ -66,10 +66,7 @@ export class AuthService {
      * This method is used by the login flow and can also be
      * called by a local Passport strategy.
      */
-    async validateUser(
-        email: string,
-        password: string,
-    ) {
+    async validateUser(email: string, password: string,) {
         const normalizedEmail = email
             .trim()
             .toLowerCase();

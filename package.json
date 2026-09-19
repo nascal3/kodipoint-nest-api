@@ -5,7 +5,6 @@
   "author": "",
   "private": true,
   "license": "UNLICENSED",
-  "type": "module",
   "scripts": {
     "build": "nest build",
     "deploy": "nest deploy",
@@ -26,6 +25,7 @@
     "postinstall": "prisma skills sync || exit 0"
   },
   "dependencies": {
+    "@js-temporal/polyfill": "^0.5.1",
     "@nestjs/bullmq": "^12.0.0",
     "@nestjs/common": "^12.0.1",
     "@nestjs/config": "^12.0.0",
@@ -57,6 +57,8 @@
     "@nestjs/schematics": "^12.0.0",
     "@nestjs/testing": "^12.0.1",
     "@prisma/cli-engine": "^0.4.0",
+    "@swc/cli": "^0.8.1",
+    "@swc/core": "^1.16.2",
     "@types/express": "^5.0.0",
     "@types/node": "^24.0.0",
     "@types/passport-jwt": "^4.0.1",
@@ -78,6 +80,7 @@
     "msgpackr-extract@3.0.4": true,
     "workerd@1.20260704.1": true,
     "@scarf/scarf@1.4.0": true,
-    "argon2@0.45.1": true
+    "argon2@0.45.1": true,
+    "@swc/core@1.16.2": true
   }
 }

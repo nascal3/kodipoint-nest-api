@@ -1,3 +1,7 @@
+import { Temporal } from '@js-temporal/polyfill';
+
+(globalThis as typeof globalThis & { Temporal: typeof Temporal }).Temporal = Temporal;
+
 import 'dotenv/config';
 import postgres from '@prisma/orm-postgres/runtime';
 import type { Contract } from './contract';
@@ -16,5 +20,4 @@ export const db = postgres<Contract>({
 
 export type PrismaDb = typeof db;
 
-export type PrismaTx =
-    Parameters<Parameters<typeof db.transaction>[0]>[0];
+export type PrismaTx = Parameters<Parameters<typeof db.transaction>[0]>[0];

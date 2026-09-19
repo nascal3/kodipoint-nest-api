@@ -1,4 +1,4 @@
-import { ValidationPipe } from '@nestjs/common';
+import { ValidationPipe, VersioningType } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import {
   DocumentBuilder,
@@ -12,6 +12,11 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
   app.setGlobalPrefix('api');
+
+    app.enableVersioning({
+        type: VersioningType.URI,
+        defaultVersion: '1',
+    });
 
   app.useGlobalPipes(
       new ValidationPipe({
@@ -31,10 +36,18 @@ async function bootstrap() {
     const swaggerConfig = new DocumentBuilder()
       .setTitle('Property Management API')
       .setDescription(
-          'Real-estate property, tenant, invoice, payment and receipt API',
+          'API for managing properties, tenants, tenancies, invoices, payments and receipts.',
       )
       .setVersion('1.0')
-      .addBearerAuth()
+      .addBearerAuth(
+          {
+              type: 'http',
+              scheme: 'bearer',
+              bearerFormat: 'JWT',
+              description: 'Enter your JWT access token',
+          },
+          'access-token',
+      )
       .build();
 
   const swaggerDocument = SwaggerModule.createDocument(
@@ -42,7 +55,11 @@ async function bootstrap() {
       swaggerConfig,
   );
 
-  SwaggerModule.setup('docs', app, swaggerDocument);
+  SwaggerModule.setup('docs', app, swaggerDocument, {
+      swaggerOptions: {
+          persistAuthorization: true,
+      }
+  });
 
   await app.listen(process.env.PORT ?? 3000);
 }
