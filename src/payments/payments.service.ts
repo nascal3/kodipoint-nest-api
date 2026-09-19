@@ -16,10 +16,7 @@ export class PaymentsService {
         private readonly prisma: DatabaseService,
     ) {}
 
-    async create(
-        managerId: string,
-        dto: CreatePaymentDto,
-    ) {
+    async create(managerId: string, dto: CreatePaymentDto,) {
         const paymentAmount = money(dto.amount);
         const paymentDate = new Date(dto.paymentDate);
 
@@ -65,10 +62,9 @@ export class PaymentsService {
                     paymentDate,
                     amount: paymentAmount.toFixed(2),
                     paymentMethod: dto.paymentMethod,
-                    referenceNumber:
-                    dto.referenceNumber,
+                    referenceNumber: dto.referenceNumber,
                     notes: dto.notes,
-                    status: PaymentStatus.COMPLETED,
+                    status: PaymentStatus.SUCCESSFUL,
                 });
 
             const allocation =
@@ -142,13 +138,13 @@ export class PaymentsService {
                     .where({
                         id: paymentId,
                         managerId,
-                        status: PaymentStatus.COMPLETED,
+                        status: PaymentStatus.SUCCESSFUL,
                     })
                     .first();
 
             if (!payment) {
                 throw new NotFoundException(
-                    'Completed payment not found',
+                    'Successful payment not found',
                 );
             }
 
@@ -492,11 +488,7 @@ export class PaymentsService {
         );
     }
 
-    private invoiceStatus(
-        amountPaid: Decimal,
-        balanceDue: Decimal,
-        currentStatus: string,
-    ) {
+    private invoiceStatus(amountPaid: Decimal, balanceDue: Decimal, currentStatus: string) {
         if (currentStatus === InvoiceStatus.CANCELLED) {
             return InvoiceStatus.CANCELLED;
         }

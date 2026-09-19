@@ -10,14 +10,9 @@ import { money } from '@/common/utils/money.util';
 
 @Injectable()
 export class PaymentAllocationsService {
-    constructor(
-        private readonly prisma: DatabaseService,
-    ) {}
+    constructor(private readonly prisma: DatabaseService,) {}
 
-    async findByPayment(
-        managerId: string,
-        paymentId: string,
-    ) {
+    async findByPayment(managerId: string, paymentId: string,) {
         const payment =
             await this.prisma.db.orm.public.Payment
                 .where({
@@ -41,10 +36,7 @@ export class PaymentAllocationsService {
             .all();
     }
 
-    async findByInvoice(
-        managerId: string,
-        invoiceId: string,
-    ) {
+    async findByInvoice(managerId: string, invoiceId: string,) {
         const invoice =
             await this.prisma.db.orm.public.Invoice
                 .where({
@@ -67,11 +59,7 @@ export class PaymentAllocationsService {
             .all();
     }
 
-    async getPaymentAllocatedAmount(
-        tx: any,
-        managerId: string,
-        paymentId: string,
-    ): Promise<Decimal> {
+    async getPaymentAllocatedAmount(tx: any, managerId: string, paymentId: string,): Promise<Decimal> {
         const allocations =
             await tx.orm.public.PaymentAllocation
                 .where({
@@ -87,11 +75,7 @@ export class PaymentAllocationsService {
         );
     }
 
-    async getInvoiceAllocatedAmount(
-        tx: any,
-        managerId: string,
-        invoiceId: string,
-    ): Promise<Decimal> {
+    async getInvoiceAllocatedAmount(tx: any, managerId: string, invoiceId: string,): Promise<Decimal> {
         const allocations =
             await tx.orm.public.PaymentAllocation
                 .where({
@@ -107,11 +91,7 @@ export class PaymentAllocationsService {
         );
     }
 
-    async getInvoiceTransferredAmount(
-        tx: any,
-        managerId: string,
-        invoiceId: string,
-    ): Promise<Decimal> {
+    async getInvoiceTransferredAmount(tx: any, managerId: string, invoiceId: string,): Promise<Decimal> {
         const transfers =
             await tx.orm.public.InvoiceBalanceTransfer
                 .where({
@@ -127,11 +107,7 @@ export class PaymentAllocationsService {
         );
     }
 
-    async getInvoiceOutstandingAmount(
-        tx: any,
-        managerId: string,
-        invoiceId: string,
-    ): Promise<Decimal> {
+    async getInvoiceOutstandingAmount(tx: any, managerId: string, invoiceId: string,): Promise<Decimal> {
         const invoice =
             await tx.orm.public.Invoice
                 .where({

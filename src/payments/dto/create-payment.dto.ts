@@ -13,7 +13,7 @@ import {
 
 export enum PaymentStatus {
     PENDING = 'PENDING',
-    COMPLETED = 'COMPLETED',
+    SUCCESSFUL = 'SUCCESSFUL',
     REVERSED = 'REVERSED',
     FAILED = 'FAILED',
 }
