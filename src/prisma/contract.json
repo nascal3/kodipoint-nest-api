@@ -4,12 +4,20 @@
   "target": "postgres",
   "profileHash": "3916f444a8a17ad749191acf9e08dad97d1a327b88c2f1d45d12f240296aa8b2",
   "roots": {
+    "invoice_balance_transfers": {
+      "model": "InvoiceBalanceTransfer",
+      "namespace": "public"
+    },
     "invoice_items": {
       "model": "InvoiceItem",
       "namespace": "public"
     },
     "invoices": {
       "model": "Invoice",
+      "namespace": "public"
+    },
+    "payment_allocations": {
+      "model": "PaymentAllocation",
       "namespace": "public"
     },
     "payments": {
@@ -65,13 +73,6 @@
                 "nullable": false,
                 "type": {
                   "codecId": "pg/timestamptz-temporal@1",
-                  "kind": "scalar"
-                }
-              },
-              "currency": {
-                "nullable": false,
-                "type": {
-                  "codecId": "pg/text@1",
                   "kind": "scalar"
                 }
               },
@@ -168,6 +169,21 @@
               }
             },
             "relations": {
+              "incomingBalanceTransfers": {
+                "cardinality": "1:N",
+                "on": {
+                  "localFields": [
+                    "id"
+                  ],
+                  "targetFields": [
+                    "targetInvoiceId"
+                  ]
+                },
+                "to": {
+                  "model": "InvoiceBalanceTransfer",
+                  "namespace": "public"
+                }
+              },
               "invoiceItems": {
                 "cardinality": "1:N",
                 "on": {
@@ -196,6 +212,36 @@
                 },
                 "to": {
                   "model": "User",
+                  "namespace": "public"
+                }
+              },
+              "outgoingBalanceTransfers": {
+                "cardinality": "1:N",
+                "on": {
+                  "localFields": [
+                    "id"
+                  ],
+                  "targetFields": [
+                    "sourceInvoiceId"
+                  ]
+                },
+                "to": {
+                  "model": "InvoiceBalanceTransfer",
+                  "namespace": "public"
+                }
+              },
+              "paymentAllocations": {
+                "cardinality": "1:N",
+                "on": {
+                  "localFields": [
+                    "id"
+                  ],
+                  "targetFields": [
+                    "invoiceId"
+                  ]
+                },
+                "to": {
+                  "model": "PaymentAllocation",
                   "namespace": "public"
                 }
               },
@@ -274,9 +320,6 @@
                 "createdAt": {
                   "column": "created_at"
                 },
-                "currency": {
-                  "column": "currency"
-                },
                 "dueDate": {
                   "column": "due_date"
                 },
@@ -319,6 +362,146 @@
               },
               "namespaceId": "public",
               "table": "invoices"
+            }
+          },
+          "InvoiceBalanceTransfer": {
+            "fields": {
+              "amount": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/numeric@1",
+                  "kind": "scalar"
+                }
+              },
+              "createdAt": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/timestamptz-temporal@1",
+                  "kind": "scalar"
+                }
+              },
+              "id": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/uuid@1",
+                  "kind": "scalar"
+                }
+              },
+              "managerId": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/uuid@1",
+                  "kind": "scalar"
+                }
+              },
+              "notes": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "sourceInvoiceId": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/uuid@1",
+                  "kind": "scalar"
+                }
+              },
+              "targetInvoiceId": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/uuid@1",
+                  "kind": "scalar"
+                }
+              },
+              "transferredAt": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/timestamptz-temporal@1",
+                  "kind": "scalar"
+                }
+              }
+            },
+            "relations": {
+              "manager": {
+                "cardinality": "N:1",
+                "nullable": false,
+                "on": {
+                  "localFields": [
+                    "managerId"
+                  ],
+                  "targetFields": [
+                    "id"
+                  ]
+                },
+                "to": {
+                  "model": "User",
+                  "namespace": "public"
+                }
+              },
+              "sourceInvoice": {
+                "cardinality": "N:1",
+                "nullable": false,
+                "on": {
+                  "localFields": [
+                    "sourceInvoiceId"
+                  ],
+                  "targetFields": [
+                    "id"
+                  ]
+                },
+                "to": {
+                  "model": "Invoice",
+                  "namespace": "public"
+                }
+              },
+              "targetInvoice": {
+                "cardinality": "N:1",
+                "nullable": false,
+                "on": {
+                  "localFields": [
+                    "targetInvoiceId"
+                  ],
+                  "targetFields": [
+                    "id"
+                  ]
+                },
+                "to": {
+                  "model": "Invoice",
+                  "namespace": "public"
+                }
+              }
+            },
+            "storage": {
+              "fields": {
+                "amount": {
+                  "column": "amount"
+                },
+                "createdAt": {
+                  "column": "created_at"
+                },
+                "id": {
+                  "column": "id"
+                },
+                "managerId": {
+                  "column": "manager_id"
+                },
+                "notes": {
+                  "column": "notes"
+                },
+                "sourceInvoiceId": {
+                  "column": "source_invoice_id"
+                },
+                "targetInvoiceId": {
+                  "column": "target_invoice_id"
+                },
+                "transferredAt": {
+                  "column": "transferred_at"
+                }
+              },
+              "namespaceId": "public",
+              "table": "invoice_balance_transfers"
             }
           },
           "InvoiceItem": {
@@ -471,13 +654,6 @@
                   "kind": "scalar"
                 }
               },
-              "currency": {
-                "nullable": false,
-                "type": {
-                  "codecId": "pg/text@1",
-                  "kind": "scalar"
-                }
-              },
               "id": {
                 "nullable": false,
                 "type": {
@@ -557,6 +733,21 @@
               }
             },
             "relations": {
+              "allocations": {
+                "cardinality": "1:N",
+                "on": {
+                  "localFields": [
+                    "id"
+                  ],
+                  "targetFields": [
+                    "paymentId"
+                  ]
+                },
+                "to": {
+                  "model": "PaymentAllocation",
+                  "namespace": "public"
+                }
+              },
               "invoice": {
                 "cardinality": "N:1",
                 "nullable": false,
@@ -646,9 +837,6 @@
                 "createdAt": {
                   "column": "created_at"
                 },
-                "currency": {
-                  "column": "currency"
-                },
                 "id": {
                   "column": "id"
                 },
@@ -685,6 +873,146 @@
               },
               "namespaceId": "public",
               "table": "payments"
+            }
+          },
+          "PaymentAllocation": {
+            "fields": {
+              "allocatedAt": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/timestamptz-temporal@1",
+                  "kind": "scalar"
+                }
+              },
+              "amount": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/numeric@1",
+                  "kind": "scalar"
+                }
+              },
+              "createdAt": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/timestamptz-temporal@1",
+                  "kind": "scalar"
+                }
+              },
+              "id": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/uuid@1",
+                  "kind": "scalar"
+                }
+              },
+              "invoiceId": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/uuid@1",
+                  "kind": "scalar"
+                }
+              },
+              "managerId": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/uuid@1",
+                  "kind": "scalar"
+                }
+              },
+              "notes": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "paymentId": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/uuid@1",
+                  "kind": "scalar"
+                }
+              }
+            },
+            "relations": {
+              "invoice": {
+                "cardinality": "N:1",
+                "nullable": false,
+                "on": {
+                  "localFields": [
+                    "invoiceId"
+                  ],
+                  "targetFields": [
+                    "id"
+                  ]
+                },
+                "to": {
+                  "model": "Invoice",
+                  "namespace": "public"
+                }
+              },
+              "manager": {
+                "cardinality": "N:1",
+                "nullable": false,
+                "on": {
+                  "localFields": [
+                    "managerId"
+                  ],
+                  "targetFields": [
+                    "id"
+                  ]
+                },
+                "to": {
+                  "model": "User",
+                  "namespace": "public"
+                }
+              },
+              "payment": {
+                "cardinality": "N:1",
+                "nullable": false,
+                "on": {
+                  "localFields": [
+                    "paymentId"
+                  ],
+                  "targetFields": [
+                    "id"
+                  ]
+                },
+                "to": {
+                  "model": "Payment",
+                  "namespace": "public"
+                }
+              }
+            },
+            "storage": {
+              "fields": {
+                "allocatedAt": {
+                  "column": "allocated_at"
+                },
+                "amount": {
+                  "column": "amount"
+                },
+                "createdAt": {
+                  "column": "created_at"
+                },
+                "id": {
+                  "column": "id"
+                },
+                "invoiceId": {
+                  "column": "invoice_id"
+                },
+                "managerId": {
+                  "column": "manager_id"
+                },
+                "notes": {
+                  "column": "notes"
+                },
+                "paymentId": {
+                  "column": "payment_id"
+                }
+              },
+              "namespaceId": "public",
+              "table": "payment_allocations"
             }
           },
           "Property": {
@@ -1646,6 +1974,21 @@
               }
             },
             "relations": {
+              "invoiceBalanceTransfers": {
+                "cardinality": "1:N",
+                "on": {
+                  "localFields": [
+                    "id"
+                  ],
+                  "targetFields": [
+                    "managerId"
+                  ]
+                },
+                "to": {
+                  "model": "InvoiceBalanceTransfer",
+                  "namespace": "public"
+                }
+              },
               "invoices": {
                 "cardinality": "1:N",
                 "on": {
@@ -1658,6 +2001,21 @@
                 },
                 "to": {
                   "model": "Invoice",
+                  "namespace": "public"
+                }
+              },
+              "paymentAllocations": {
+                "cardinality": "1:N",
+                "on": {
+                  "localFields": [
+                    "id"
+                  ],
+                  "targetFields": [
+                    "managerId"
+                  ]
+                },
+                "to": {
+                  "model": "PaymentAllocation",
                   "namespace": "public"
                 }
               },
@@ -1792,6 +2150,144 @@
       "public": {
         "entries": {
           "table": {
+            "invoice_balance_transfers": {
+              "columns": {
+                "amount": {
+                  "codecId": "pg/numeric@1",
+                  "nativeType": "numeric",
+                  "nullable": false
+                },
+                "created_at": {
+                  "codecId": "pg/timestamptz-temporal@1",
+                  "default": {
+                    "expression": "now()",
+                    "kind": "function"
+                  },
+                  "nativeType": "timestamptz",
+                  "nullable": false
+                },
+                "id": {
+                  "codecId": "pg/uuid@1",
+                  "nativeType": "uuid",
+                  "nullable": false
+                },
+                "manager_id": {
+                  "codecId": "pg/uuid@1",
+                  "nativeType": "uuid",
+                  "nullable": false
+                },
+                "notes": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": true
+                },
+                "source_invoice_id": {
+                  "codecId": "pg/uuid@1",
+                  "nativeType": "uuid",
+                  "nullable": false
+                },
+                "target_invoice_id": {
+                  "codecId": "pg/uuid@1",
+                  "nativeType": "uuid",
+                  "nullable": false
+                },
+                "transferred_at": {
+                  "codecId": "pg/timestamptz-temporal@1",
+                  "nativeType": "timestamptz",
+                  "nullable": false
+                }
+              },
+              "foreignKeys": [
+                {
+                  "source": {
+                    "columns": [
+                      "manager_id"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "invoice_balance_transfers"
+                  },
+                  "target": {
+                    "columns": [
+                      "id"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "users"
+                  }
+                },
+                {
+                  "source": {
+                    "columns": [
+                      "source_invoice_id"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "invoice_balance_transfers"
+                  },
+                  "target": {
+                    "columns": [
+                      "id"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "invoices"
+                  }
+                },
+                {
+                  "source": {
+                    "columns": [
+                      "target_invoice_id"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "invoice_balance_transfers"
+                  },
+                  "target": {
+                    "columns": [
+                      "id"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "invoices"
+                  }
+                }
+              ],
+              "indexes": [
+                {
+                  "columns": [
+                    "manager_id",
+                    "source_invoice_id"
+                  ],
+                  "name": "inv_bal_tx_mgr_src_idx",
+                  "unique": false
+                },
+                {
+                  "columns": [
+                    "manager_id"
+                  ],
+                  "name": "invoice_balance_transfers_manager_id_idx_c3dee277",
+                  "prefix": "invoice_balance_transfers_manager_id_idx",
+                  "unique": false
+                },
+                {
+                  "columns": [
+                    "source_invoice_id"
+                  ],
+                  "name": "invoice_balance_transfers_source_invoice_id_idx_73ae08f2",
+                  "prefix": "invoice_balance_transfers_source_invoice_id_idx",
+                  "unique": false
+                },
+                {
+                  "columns": [
+                    "target_invoice_id"
+                  ],
+                  "name": "invoice_balance_transfers_target_invoice_id_idx_f14fb2b5",
+                  "prefix": "invoice_balance_transfers_target_invoice_id_idx",
+                  "unique": false
+                }
+              ],
+              "primaryKey": {
+                "columns": [
+                  "id"
+                ]
+              },
+              "uniques": []
+            },
             "invoice_items": {
               "columns": {
                 "created_at": {
@@ -1922,15 +2418,6 @@
                     "kind": "function"
                   },
                   "nativeType": "timestamptz",
-                  "nullable": false
-                },
-                "currency": {
-                  "codecId": "pg/text@1",
-                  "default": {
-                    "kind": "literal",
-                    "value": "KES"
-                  },
-                  "nativeType": "text",
                   "nullable": false
                 },
                 "due_date": {
@@ -2077,11 +2564,12 @@
                 {
                   "columns": [
                     "manager_id",
-                    "status",
-                    "due_date"
+                    "tenant_id",
+                    "tenancy_id",
+                    "status"
                   ],
-                  "name": "invoices_manager_id_status_due_date_idx_7386f40d",
-                  "prefix": "invoices_manager_id_status_due_date_idx",
+                  "name": "invoices_manager_id_tenant_id_tenancy_id_status_idx_94eb0ddf",
+                  "prefix": "invoices_manager_id_tenant_id_tenancy_id_status_idx",
                   "unique": false
                 },
                 {
@@ -2090,15 +2578,6 @@
                   ],
                   "name": "invoices_property_id_idx_9fa9619b",
                   "prefix": "invoices_property_id_idx",
-                  "unique": false
-                },
-                {
-                  "columns": [
-                    "property_id",
-                    "issue_date"
-                  ],
-                  "name": "invoices_property_id_issue_date_idx_4db8c3b4",
-                  "prefix": "invoices_property_id_issue_date_idx",
                   "unique": false
                 },
                 {
@@ -2116,15 +2595,6 @@
                   "name": "invoices_tenant_id_idx_41c0d441",
                   "prefix": "invoices_tenant_id_idx",
                   "unique": false
-                },
-                {
-                  "columns": [
-                    "tenant_id",
-                    "issue_date"
-                  ],
-                  "name": "invoices_tenant_id_issue_date_idx_ec82b3a8",
-                  "prefix": "invoices_tenant_id_issue_date_idx",
-                  "unique": false
                 }
               ],
               "primaryKey": {
@@ -2140,8 +2610,13 @@
                 }
               ]
             },
-            "payments": {
+            "payment_allocations": {
               "columns": {
+                "allocated_at": {
+                  "codecId": "pg/timestamptz-temporal@1",
+                  "nativeType": "timestamptz",
+                  "nullable": false
+                },
                 "amount": {
                   "codecId": "pg/numeric@1",
                   "nativeType": "numeric",
@@ -2156,13 +2631,138 @@
                   "nativeType": "timestamptz",
                   "nullable": false
                 },
-                "currency": {
+                "id": {
+                  "codecId": "pg/uuid@1",
+                  "nativeType": "uuid",
+                  "nullable": false
+                },
+                "invoice_id": {
+                  "codecId": "pg/uuid@1",
+                  "nativeType": "uuid",
+                  "nullable": false
+                },
+                "manager_id": {
+                  "codecId": "pg/uuid@1",
+                  "nativeType": "uuid",
+                  "nullable": false
+                },
+                "notes": {
                   "codecId": "pg/text@1",
-                  "default": {
-                    "kind": "literal",
-                    "value": "KES"
-                  },
                   "nativeType": "text",
+                  "nullable": true
+                },
+                "payment_id": {
+                  "codecId": "pg/uuid@1",
+                  "nativeType": "uuid",
+                  "nullable": false
+                }
+              },
+              "foreignKeys": [
+                {
+                  "source": {
+                    "columns": [
+                      "manager_id"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "payment_allocations"
+                  },
+                  "target": {
+                    "columns": [
+                      "id"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "users"
+                  }
+                },
+                {
+                  "source": {
+                    "columns": [
+                      "payment_id"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "payment_allocations"
+                  },
+                  "target": {
+                    "columns": [
+                      "id"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "payments"
+                  }
+                },
+                {
+                  "source": {
+                    "columns": [
+                      "invoice_id"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "payment_allocations"
+                  },
+                  "target": {
+                    "columns": [
+                      "id"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "invoices"
+                  }
+                }
+              ],
+              "indexes": [
+                {
+                  "columns": [
+                    "invoice_id"
+                  ],
+                  "name": "payment_allocations_invoice_id_idx_a3b7555d",
+                  "prefix": "payment_allocations_invoice_id_idx",
+                  "unique": false
+                },
+                {
+                  "columns": [
+                    "manager_id"
+                  ],
+                  "name": "payment_allocations_manager_id_idx_c3dee277",
+                  "prefix": "payment_allocations_manager_id_idx",
+                  "unique": false
+                },
+                {
+                  "columns": [
+                    "manager_id",
+                    "invoice_id"
+                  ],
+                  "name": "payment_allocations_manager_id_invoice_id_idx_633704ab",
+                  "prefix": "payment_allocations_manager_id_invoice_id_idx",
+                  "unique": false
+                },
+                {
+                  "columns": [
+                    "payment_id"
+                  ],
+                  "name": "payment_allocations_payment_id_idx_7931cf41",
+                  "prefix": "payment_allocations_payment_id_idx",
+                  "unique": false
+                }
+              ],
+              "primaryKey": {
+                "columns": [
+                  "id"
+                ]
+              },
+              "uniques": []
+            },
+            "payments": {
+              "columns": {
+                "amount": {
+                  "codecId": "pg/numeric@1",
+                  "nativeType": "numeric",
+                  "nullable": false
+                },
+                "created_at": {
+                  "codecId": "pg/timestamptz-temporal@1",
+                  "default": {
+                    "expression": "now()",
+                    "kind": "function"
+                  },
+                  "nativeType": "timestamptz",
                   "nullable": false
                 },
                 "id": {
@@ -2307,10 +2907,11 @@
                 {
                   "columns": [
                     "manager_id",
+                    "tenant_id",
                     "payment_date"
                   ],
-                  "name": "payments_manager_id_payment_date_idx_89af631f",
-                  "prefix": "payments_manager_id_payment_date_idx",
+                  "name": "payments_manager_id_tenant_id_payment_date_idx_d119c9fe",
+                  "prefix": "payments_manager_id_tenant_id_payment_date_idx",
                   "unique": false
                 },
                 {
@@ -2323,37 +2924,10 @@
                 },
                 {
                   "columns": [
-                    "property_id",
-                    "payment_date"
-                  ],
-                  "name": "payments_property_id_payment_date_idx_d4e12f32",
-                  "prefix": "payments_property_id_payment_date_idx",
-                  "unique": false
-                },
-                {
-                  "columns": [
-                    "status",
-                    "payment_date"
-                  ],
-                  "name": "payments_status_payment_date_idx_f8f5e2fb",
-                  "prefix": "payments_status_payment_date_idx",
-                  "unique": false
-                },
-                {
-                  "columns": [
                     "tenant_id"
                   ],
                   "name": "payments_tenant_id_idx_41c0d441",
                   "prefix": "payments_tenant_id_idx",
-                  "unique": false
-                },
-                {
-                  "columns": [
-                    "tenant_id",
-                    "payment_date"
-                  ],
-                  "name": "payments_tenant_id_payment_date_idx_6e70efe7",
-                  "prefix": "payments_tenant_id_payment_date_idx",
                   "unique": false
                 }
               ],
@@ -3043,10 +3617,10 @@
         "kind": "postgres-schema"
       }
     },
-    "storageHash": "d516ff8980294285e6d8bdaa5343390061d94c6f126222ff62ffc627766220a5"
+    "storageHash": "2486034107f46f30b8cc5df2ee8359e80869a92bca345879254775c25a2cbb28"
   },
   "execution": {
-    "executionHash": "cb9aba89a45c8ea36635f47e2e96f63e8b788c2176db9f1cb04b80005e5ea786",
+    "executionHash": "ea83471ee1d2ab00090a502c2e4299e0835928021b3aa4ab51d0296dcf804cd4",
     "mutations": {
       "defaults": [
         {
@@ -3057,6 +3631,17 @@
           "ref": {
             "column": "id",
             "namespace": "public",
+            "table": "invoice_balance_transfers"
+          }
+        },
+        {
+          "onCreate": {
+            "id": "uuidv4",
+            "kind": "generator"
+          },
+          "ref": {
+            "column": "id",
+            "namespace": "public",
             "table": "invoice_items"
           }
         },
@@ -3099,6 +3684,17 @@
             "column": "updated_at",
             "namespace": "public",
             "table": "invoices"
+          }
+        },
+        {
+          "onCreate": {
+            "id": "uuidv4",
+            "kind": "generator"
+          },
+          "ref": {
+            "column": "id",
+            "namespace": "public",
+            "table": "payment_allocations"
           }
         },
         {

@@ -34,9 +34,9 @@ import type {
 } from '@prisma/orm-postgres/contract/types';
 
 export type StorageHash =
-  StorageHashBase<'d516ff8980294285e6d8bdaa5343390061d94c6f126222ff62ffc627766220a5'>;
+  StorageHashBase<'2486034107f46f30b8cc5df2ee8359e80869a92bca345879254775c25a2cbb28'>;
 export type ExecutionHash =
-  ExecutionHashBase<'cb9aba89a45c8ea36635f47e2e96f63e8b788c2176db9f1cb04b80005e5ea786'>;
+  ExecutionHashBase<'ea83471ee1d2ab00090a502c2e4299e0835928021b3aa4ab51d0296dcf804cd4'>;
 export type ProfileHash =
   ProfileHashBase<'3916f444a8a17ad749191acf9e08dad97d1a327b88c2f1d45d12f240296aa8b2'>;
 
@@ -251,7 +251,6 @@ export type FieldOutputTypes = {
       readonly invoiceNumber: CodecTypes['pg/text@1']['output'];
       readonly issueDate: CodecTypes['pg/date-temporal@1']['output'];
       readonly dueDate: CodecTypes['pg/date-temporal@1']['output'];
-      readonly currency: CodecTypes['pg/text@1']['output'];
       readonly subtotal: CodecTypes['pg/numeric@1']['output'];
       readonly totalAmount: CodecTypes['pg/numeric@1']['output'];
       readonly amountPaid: CodecTypes['pg/numeric@1']['output'];
@@ -260,6 +259,16 @@ export type FieldOutputTypes = {
       readonly notes: CodecTypes['pg/text@1']['output'] | null;
       readonly createdAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
       readonly updatedAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
+    };
+    readonly InvoiceBalanceTransfer: {
+      readonly id: CodecTypes['pg/uuid@1']['output'];
+      readonly managerId: CodecTypes['pg/uuid@1']['output'];
+      readonly sourceInvoiceId: CodecTypes['pg/uuid@1']['output'];
+      readonly targetInvoiceId: CodecTypes['pg/uuid@1']['output'];
+      readonly amount: CodecTypes['pg/numeric@1']['output'];
+      readonly transferredAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
+      readonly notes: CodecTypes['pg/text@1']['output'] | null;
+      readonly createdAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
     };
     readonly InvoiceItem: {
       readonly id: CodecTypes['pg/uuid@1']['output'];
@@ -279,7 +288,6 @@ export type FieldOutputTypes = {
       readonly invoiceId: CodecTypes['pg/uuid@1']['output'];
       readonly tenantId: CodecTypes['pg/uuid@1']['output'];
       readonly paymentDate: CodecTypes['pg/date-temporal@1']['output'];
-      readonly currency: CodecTypes['pg/text@1']['output'];
       readonly amount: CodecTypes['pg/numeric@1']['output'];
       readonly paymentMethod: CodecTypes['pg/text@1']['output'];
       readonly referenceNumber: CodecTypes['pg/text@1']['output'] | null;
@@ -287,6 +295,16 @@ export type FieldOutputTypes = {
       readonly status: CodecTypes['pg/text@1']['output'];
       readonly createdAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
       readonly updatedAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
+    };
+    readonly PaymentAllocation: {
+      readonly id: CodecTypes['pg/uuid@1']['output'];
+      readonly managerId: CodecTypes['pg/uuid@1']['output'];
+      readonly paymentId: CodecTypes['pg/uuid@1']['output'];
+      readonly invoiceId: CodecTypes['pg/uuid@1']['output'];
+      readonly amount: CodecTypes['pg/numeric@1']['output'];
+      readonly allocatedAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
+      readonly notes: CodecTypes['pg/text@1']['output'] | null;
+      readonly createdAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
     };
     readonly Property: {
       readonly id: CodecTypes['pg/uuid@1']['output'];
@@ -377,7 +395,6 @@ export type FieldInputTypes = {
       readonly invoiceNumber: CodecTypes['pg/text@1']['input'];
       readonly issueDate: CodecTypes['pg/date-temporal@1']['input'];
       readonly dueDate: CodecTypes['pg/date-temporal@1']['input'];
-      readonly currency: CodecTypes['pg/text@1']['input'];
       readonly subtotal: CodecTypes['pg/numeric@1']['input'];
       readonly totalAmount: CodecTypes['pg/numeric@1']['input'];
       readonly amountPaid: CodecTypes['pg/numeric@1']['input'];
@@ -386,6 +403,16 @@ export type FieldInputTypes = {
       readonly notes: CodecTypes['pg/text@1']['input'] | null;
       readonly createdAt: CodecTypes['pg/timestamptz-temporal@1']['input'];
       readonly updatedAt: CodecTypes['pg/timestamptz-temporal@1']['input'];
+    };
+    readonly InvoiceBalanceTransfer: {
+      readonly id: CodecTypes['pg/uuid@1']['input'];
+      readonly managerId: CodecTypes['pg/uuid@1']['input'];
+      readonly sourceInvoiceId: CodecTypes['pg/uuid@1']['input'];
+      readonly targetInvoiceId: CodecTypes['pg/uuid@1']['input'];
+      readonly amount: CodecTypes['pg/numeric@1']['input'];
+      readonly transferredAt: CodecTypes['pg/timestamptz-temporal@1']['input'];
+      readonly notes: CodecTypes['pg/text@1']['input'] | null;
+      readonly createdAt: CodecTypes['pg/timestamptz-temporal@1']['input'];
     };
     readonly InvoiceItem: {
       readonly id: CodecTypes['pg/uuid@1']['input'];
@@ -405,7 +432,6 @@ export type FieldInputTypes = {
       readonly invoiceId: CodecTypes['pg/uuid@1']['input'];
       readonly tenantId: CodecTypes['pg/uuid@1']['input'];
       readonly paymentDate: CodecTypes['pg/date-temporal@1']['input'];
-      readonly currency: CodecTypes['pg/text@1']['input'];
       readonly amount: CodecTypes['pg/numeric@1']['input'];
       readonly paymentMethod: CodecTypes['pg/text@1']['input'];
       readonly referenceNumber: CodecTypes['pg/text@1']['input'] | null;
@@ -413,6 +439,16 @@ export type FieldInputTypes = {
       readonly status: CodecTypes['pg/text@1']['input'];
       readonly createdAt: CodecTypes['pg/timestamptz-temporal@1']['input'];
       readonly updatedAt: CodecTypes['pg/timestamptz-temporal@1']['input'];
+    };
+    readonly PaymentAllocation: {
+      readonly id: CodecTypes['pg/uuid@1']['input'];
+      readonly managerId: CodecTypes['pg/uuid@1']['input'];
+      readonly paymentId: CodecTypes['pg/uuid@1']['input'];
+      readonly invoiceId: CodecTypes['pg/uuid@1']['input'];
+      readonly amount: CodecTypes['pg/numeric@1']['input'];
+      readonly allocatedAt: CodecTypes['pg/timestamptz-temporal@1']['input'];
+      readonly notes: CodecTypes['pg/text@1']['input'] | null;
+      readonly createdAt: CodecTypes['pg/timestamptz-temporal@1']['input'];
     };
     readonly Property: {
       readonly id: CodecTypes['pg/uuid@1']['input'];
@@ -494,6 +530,16 @@ export type FieldInputTypes = {
 };
 export type StorageColumnTypes = {
   readonly public: {
+    readonly invoice_balance_transfers: {
+      readonly amount: CodecTypes['pg/numeric@1']['output'];
+      readonly created_at: CodecTypes['pg/timestamptz-temporal@1']['output'];
+      readonly id: CodecTypes['pg/uuid@1']['output'];
+      readonly manager_id: CodecTypes['pg/uuid@1']['output'];
+      readonly notes: CodecTypes['pg/text@1']['output'] | null;
+      readonly source_invoice_id: CodecTypes['pg/uuid@1']['output'];
+      readonly target_invoice_id: CodecTypes['pg/uuid@1']['output'];
+      readonly transferred_at: CodecTypes['pg/timestamptz-temporal@1']['output'];
+    };
     readonly invoice_items: {
       readonly created_at: CodecTypes['pg/timestamptz-temporal@1']['output'];
       readonly description: CodecTypes['pg/text@1']['output'];
@@ -509,7 +555,6 @@ export type StorageColumnTypes = {
       readonly amount_paid: CodecTypes['pg/numeric@1']['output'];
       readonly balance_due: CodecTypes['pg/numeric@1']['output'];
       readonly created_at: CodecTypes['pg/timestamptz-temporal@1']['output'];
-      readonly currency: CodecTypes['pg/text@1']['output'];
       readonly due_date: CodecTypes['pg/date-temporal@1']['output'];
       readonly id: CodecTypes['pg/uuid@1']['output'];
       readonly invoice_number: CodecTypes['pg/text@1']['output'];
@@ -524,10 +569,19 @@ export type StorageColumnTypes = {
       readonly total_amount: CodecTypes['pg/numeric@1']['output'];
       readonly updated_at: CodecTypes['pg/timestamptz-temporal@1']['output'];
     };
+    readonly payment_allocations: {
+      readonly allocated_at: CodecTypes['pg/timestamptz-temporal@1']['output'];
+      readonly amount: CodecTypes['pg/numeric@1']['output'];
+      readonly created_at: CodecTypes['pg/timestamptz-temporal@1']['output'];
+      readonly id: CodecTypes['pg/uuid@1']['output'];
+      readonly invoice_id: CodecTypes['pg/uuid@1']['output'];
+      readonly manager_id: CodecTypes['pg/uuid@1']['output'];
+      readonly notes: CodecTypes['pg/text@1']['output'] | null;
+      readonly payment_id: CodecTypes['pg/uuid@1']['output'];
+    };
     readonly payments: {
       readonly amount: CodecTypes['pg/numeric@1']['output'];
       readonly created_at: CodecTypes['pg/timestamptz-temporal@1']['output'];
-      readonly currency: CodecTypes['pg/text@1']['output'];
       readonly id: CodecTypes['pg/uuid@1']['output'];
       readonly invoice_id: CodecTypes['pg/uuid@1']['output'];
       readonly manager_id: CodecTypes['pg/uuid@1']['output'];
@@ -620,6 +674,16 @@ export type StorageColumnTypes = {
 };
 export type StorageColumnInputTypes = {
   readonly public: {
+    readonly invoice_balance_transfers: {
+      readonly amount: CodecTypes['pg/numeric@1']['input'];
+      readonly created_at: CodecTypes['pg/timestamptz-temporal@1']['input'];
+      readonly id: CodecTypes['pg/uuid@1']['input'];
+      readonly manager_id: CodecTypes['pg/uuid@1']['input'];
+      readonly notes: CodecTypes['pg/text@1']['input'] | null;
+      readonly source_invoice_id: CodecTypes['pg/uuid@1']['input'];
+      readonly target_invoice_id: CodecTypes['pg/uuid@1']['input'];
+      readonly transferred_at: CodecTypes['pg/timestamptz-temporal@1']['input'];
+    };
     readonly invoice_items: {
       readonly created_at: CodecTypes['pg/timestamptz-temporal@1']['input'];
       readonly description: CodecTypes['pg/text@1']['input'];
@@ -635,7 +699,6 @@ export type StorageColumnInputTypes = {
       readonly amount_paid: CodecTypes['pg/numeric@1']['input'];
       readonly balance_due: CodecTypes['pg/numeric@1']['input'];
       readonly created_at: CodecTypes['pg/timestamptz-temporal@1']['input'];
-      readonly currency: CodecTypes['pg/text@1']['input'];
       readonly due_date: CodecTypes['pg/date-temporal@1']['input'];
       readonly id: CodecTypes['pg/uuid@1']['input'];
       readonly invoice_number: CodecTypes['pg/text@1']['input'];
@@ -650,10 +713,19 @@ export type StorageColumnInputTypes = {
       readonly total_amount: CodecTypes['pg/numeric@1']['input'];
       readonly updated_at: CodecTypes['pg/timestamptz-temporal@1']['input'];
     };
+    readonly payment_allocations: {
+      readonly allocated_at: CodecTypes['pg/timestamptz-temporal@1']['input'];
+      readonly amount: CodecTypes['pg/numeric@1']['input'];
+      readonly created_at: CodecTypes['pg/timestamptz-temporal@1']['input'];
+      readonly id: CodecTypes['pg/uuid@1']['input'];
+      readonly invoice_id: CodecTypes['pg/uuid@1']['input'];
+      readonly manager_id: CodecTypes['pg/uuid@1']['input'];
+      readonly notes: CodecTypes['pg/text@1']['input'] | null;
+      readonly payment_id: CodecTypes['pg/uuid@1']['input'];
+    };
     readonly payments: {
       readonly amount: CodecTypes['pg/numeric@1']['input'];
       readonly created_at: CodecTypes['pg/timestamptz-temporal@1']['input'];
-      readonly currency: CodecTypes['pg/text@1']['input'];
       readonly id: CodecTypes['pg/uuid@1']['input'];
       readonly invoice_id: CodecTypes['pg/uuid@1']['input'];
       readonly manager_id: CodecTypes['pg/uuid@1']['input'];
@@ -755,7 +827,9 @@ export namespace Models {
     phone: CodecTypes['pg/text@1']['output'];
     createdAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
     updatedAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
+    invoiceBalanceTransfers: public_InvoiceBalanceTransfer[];
     invoices: public_Invoice[];
+    paymentAllocations: public_PaymentAllocation[];
     payments: public_Payment[];
     properties: public_Property[];
     propertyCharges: public_PropertyCharge[];
@@ -763,7 +837,9 @@ export namespace Models {
     tenancies: public_Tenancy[];
     tenants: public_Tenant[];
     readonly [RelationKeys]?:
+      | 'invoiceBalanceTransfers'
       | 'invoices'
+      | 'paymentAllocations'
       | 'payments'
       | 'properties'
       | 'propertyCharges'
@@ -857,7 +933,6 @@ export namespace Models {
     invoiceNumber: CodecTypes['pg/text@1']['output'];
     issueDate: CodecTypes['pg/date-temporal@1']['output'];
     dueDate: CodecTypes['pg/date-temporal@1']['output'];
-    currency: CodecTypes['pg/text@1']['output'];
     subtotal: CodecTypes['pg/numeric@1']['output'];
     totalAmount: CodecTypes['pg/numeric@1']['output'];
     amountPaid: CodecTypes['pg/numeric@1']['output'];
@@ -866,14 +941,25 @@ export namespace Models {
     notes: CodecTypes['pg/text@1']['output'] | null;
     createdAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
     updatedAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
+    incomingBalanceTransfers: public_InvoiceBalanceTransfer[];
     invoiceItems: public_InvoiceItem[];
     manager: public_User;
+    outgoingBalanceTransfers: public_InvoiceBalanceTransfer[];
+    paymentAllocations: public_PaymentAllocation[];
     payments: public_Payment[];
     property: public_Property;
     tenancy: public_Tenancy;
     tenant: public_Tenant;
     readonly [RelationKeys]?:
-      'invoiceItems' | 'manager' | 'payments' | 'property' | 'tenancy' | 'tenant';
+      | 'incomingBalanceTransfers'
+      | 'invoiceItems'
+      | 'manager'
+      | 'outgoingBalanceTransfers'
+      | 'paymentAllocations'
+      | 'payments'
+      | 'property'
+      | 'tenancy'
+      | 'tenant';
   };
   export type public_InvoiceItem = {
     id: CodecTypes['pg/uuid@1']['output'];
@@ -896,7 +982,6 @@ export namespace Models {
     invoiceId: CodecTypes['pg/uuid@1']['output'];
     tenantId: CodecTypes['pg/uuid@1']['output'];
     paymentDate: CodecTypes['pg/date-temporal@1']['output'];
-    currency: CodecTypes['pg/text@1']['output'];
     amount: CodecTypes['pg/numeric@1']['output'];
     paymentMethod: CodecTypes['pg/text@1']['output'];
     referenceNumber: CodecTypes['pg/text@1']['output'] | null;
@@ -904,12 +989,14 @@ export namespace Models {
     status: CodecTypes['pg/text@1']['output'];
     createdAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
     updatedAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
+    allocations: public_PaymentAllocation[];
     invoice: public_Invoice;
     manager: public_User;
     property: public_Property;
     receipt: public_Receipt | null;
     tenant: public_Tenant;
-    readonly [RelationKeys]?: 'invoice' | 'manager' | 'property' | 'receipt' | 'tenant';
+    readonly [RelationKeys]?:
+      'allocations' | 'invoice' | 'manager' | 'property' | 'receipt' | 'tenant';
   };
   export type public_Receipt = {
     id: CodecTypes['pg/uuid@1']['output'];
@@ -922,6 +1009,34 @@ export namespace Models {
     manager: public_User;
     payment: public_Payment;
     readonly [RelationKeys]?: 'manager' | 'payment';
+  };
+  export type public_InvoiceBalanceTransfer = {
+    id: CodecTypes['pg/uuid@1']['output'];
+    managerId: CodecTypes['pg/uuid@1']['output'];
+    sourceInvoiceId: CodecTypes['pg/uuid@1']['output'];
+    targetInvoiceId: CodecTypes['pg/uuid@1']['output'];
+    amount: CodecTypes['pg/numeric@1']['output'];
+    transferredAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
+    notes: CodecTypes['pg/text@1']['output'] | null;
+    createdAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
+    manager: public_User;
+    sourceInvoice: public_Invoice;
+    targetInvoice: public_Invoice;
+    readonly [RelationKeys]?: 'manager' | 'sourceInvoice' | 'targetInvoice';
+  };
+  export type public_PaymentAllocation = {
+    id: CodecTypes['pg/uuid@1']['output'];
+    managerId: CodecTypes['pg/uuid@1']['output'];
+    paymentId: CodecTypes['pg/uuid@1']['output'];
+    invoiceId: CodecTypes['pg/uuid@1']['output'];
+    amount: CodecTypes['pg/numeric@1']['output'];
+    allocatedAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
+    notes: CodecTypes['pg/text@1']['output'] | null;
+    createdAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
+    invoice: public_Invoice;
+    manager: public_User;
+    payment: public_Payment;
+    readonly [RelationKeys]?: 'invoice' | 'manager' | 'payment';
   };
 }
 
@@ -936,6 +1051,8 @@ export declare const models: {
     InvoiceItem: Models.public_InvoiceItem;
     Payment: Models.public_Payment;
     Receipt: Models.public_Receipt;
+    InvoiceBalanceTransfer: Models.public_InvoiceBalanceTransfer;
+    PaymentAllocation: Models.public_PaymentAllocation;
   };
 };
 
@@ -957,6 +1074,116 @@ type ContractBase = Omit<
         readonly kind: 'postgres-schema';
         readonly entries: {
           readonly table: {
+            readonly invoice_balance_transfers: {
+              columns: {
+                readonly id: {
+                  readonly nativeType: 'uuid';
+                  readonly codecId: 'pg/uuid@1';
+                  readonly nullable: false;
+                };
+                readonly manager_id: {
+                  readonly nativeType: 'uuid';
+                  readonly codecId: 'pg/uuid@1';
+                  readonly nullable: false;
+                };
+                readonly source_invoice_id: {
+                  readonly nativeType: 'uuid';
+                  readonly codecId: 'pg/uuid@1';
+                  readonly nullable: false;
+                };
+                readonly target_invoice_id: {
+                  readonly nativeType: 'uuid';
+                  readonly codecId: 'pg/uuid@1';
+                  readonly nullable: false;
+                };
+                readonly amount: {
+                  readonly nativeType: 'numeric';
+                  readonly codecId: 'pg/numeric@1';
+                  readonly nullable: false;
+                };
+                readonly transferred_at: {
+                  readonly nativeType: 'timestamptz';
+                  readonly codecId: 'pg/timestamptz-temporal@1';
+                  readonly nullable: false;
+                };
+                readonly notes: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: true;
+                };
+                readonly created_at: {
+                  readonly nativeType: 'timestamptz';
+                  readonly codecId: 'pg/timestamptz-temporal@1';
+                  readonly nullable: false;
+                  readonly default: { readonly kind: 'function'; readonly expression: 'now()' };
+                };
+              };
+              primaryKey: { readonly columns: readonly ['id'] };
+              uniques: readonly [];
+              indexes: readonly [
+                {
+                  readonly name: 'invoice_balance_transfers_manager_id_idx_c3dee277';
+                  readonly prefix: 'invoice_balance_transfers_manager_id_idx';
+                  readonly columns: readonly ['manager_id'];
+                  readonly unique: false;
+                },
+                {
+                  readonly name: 'invoice_balance_transfers_source_invoice_id_idx_73ae08f2';
+                  readonly prefix: 'invoice_balance_transfers_source_invoice_id_idx';
+                  readonly columns: readonly ['source_invoice_id'];
+                  readonly unique: false;
+                },
+                {
+                  readonly name: 'invoice_balance_transfers_target_invoice_id_idx_f14fb2b5';
+                  readonly prefix: 'invoice_balance_transfers_target_invoice_id_idx';
+                  readonly columns: readonly ['target_invoice_id'];
+                  readonly unique: false;
+                },
+                {
+                  readonly name: 'inv_bal_tx_mgr_src_idx';
+                  readonly columns: readonly ['manager_id', 'source_invoice_id'];
+                  readonly unique: false;
+                },
+              ];
+              foreignKeys: readonly [
+                {
+                  readonly source: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'invoice_balance_transfers';
+                    readonly columns: readonly ['manager_id'];
+                  };
+                  readonly target: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'users';
+                    readonly columns: readonly ['id'];
+                  };
+                },
+                {
+                  readonly source: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'invoice_balance_transfers';
+                    readonly columns: readonly ['source_invoice_id'];
+                  };
+                  readonly target: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'invoices';
+                    readonly columns: readonly ['id'];
+                  };
+                },
+                {
+                  readonly source: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'invoice_balance_transfers';
+                    readonly columns: readonly ['target_invoice_id'];
+                  };
+                  readonly target: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'invoices';
+                    readonly columns: readonly ['id'];
+                  };
+                },
+              ];
+            };
             readonly invoice_items: {
               columns: {
                 readonly id: {
@@ -1091,15 +1318,6 @@ type ContractBase = Omit<
                   readonly codecId: 'pg/date-temporal@1';
                   readonly nullable: false;
                 };
-                readonly currency: {
-                  readonly nativeType: 'text';
-                  readonly codecId: 'pg/text@1';
-                  readonly nullable: false;
-                  readonly default: {
-                    readonly kind: 'literal';
-                    readonly value: DefaultLiteralValue<'pg/text@1', 'KES'>;
-                  };
-                };
                 readonly subtotal: {
                   readonly nativeType: 'numeric';
                   readonly codecId: 'pg/numeric@1';
@@ -1146,30 +1364,6 @@ type ContractBase = Omit<
               uniques: readonly [{ readonly columns: readonly ['invoice_number'] }];
               indexes: readonly [
                 {
-                  readonly name: 'invoices_manager_id_status_due_date_idx_7386f40d';
-                  readonly prefix: 'invoices_manager_id_status_due_date_idx';
-                  readonly columns: readonly ['manager_id', 'status', 'due_date'];
-                  readonly unique: false;
-                },
-                {
-                  readonly name: 'invoices_property_id_issue_date_idx_4db8c3b4';
-                  readonly prefix: 'invoices_property_id_issue_date_idx';
-                  readonly columns: readonly ['property_id', 'issue_date'];
-                  readonly unique: false;
-                },
-                {
-                  readonly name: 'invoices_tenant_id_issue_date_idx_ec82b3a8';
-                  readonly prefix: 'invoices_tenant_id_issue_date_idx';
-                  readonly columns: readonly ['tenant_id', 'issue_date'];
-                  readonly unique: false;
-                },
-                {
-                  readonly name: 'invoices_tenancy_id_idx_c0f9e2da';
-                  readonly prefix: 'invoices_tenancy_id_idx';
-                  readonly columns: readonly ['tenancy_id'];
-                  readonly unique: false;
-                },
-                {
                   readonly name: 'invoices_manager_id_idx_c3dee277';
                   readonly prefix: 'invoices_manager_id_idx';
                   readonly columns: readonly ['manager_id'];
@@ -1182,9 +1376,21 @@ type ContractBase = Omit<
                   readonly unique: false;
                 },
                 {
+                  readonly name: 'invoices_tenancy_id_idx_c0f9e2da';
+                  readonly prefix: 'invoices_tenancy_id_idx';
+                  readonly columns: readonly ['tenancy_id'];
+                  readonly unique: false;
+                },
+                {
                   readonly name: 'invoices_tenant_id_idx_41c0d441';
                   readonly prefix: 'invoices_tenant_id_idx';
                   readonly columns: readonly ['tenant_id'];
+                  readonly unique: false;
+                },
+                {
+                  readonly name: 'invoices_manager_id_tenant_id_tenancy_id_status_idx_94eb0ddf';
+                  readonly prefix: 'invoices_manager_id_tenant_id_tenancy_id_status_idx';
+                  readonly columns: readonly ['manager_id', 'tenant_id', 'tenancy_id', 'status'];
                   readonly unique: false;
                 },
               ];
@@ -1239,6 +1445,117 @@ type ContractBase = Omit<
                 },
               ];
             };
+            readonly payment_allocations: {
+              columns: {
+                readonly id: {
+                  readonly nativeType: 'uuid';
+                  readonly codecId: 'pg/uuid@1';
+                  readonly nullable: false;
+                };
+                readonly manager_id: {
+                  readonly nativeType: 'uuid';
+                  readonly codecId: 'pg/uuid@1';
+                  readonly nullable: false;
+                };
+                readonly payment_id: {
+                  readonly nativeType: 'uuid';
+                  readonly codecId: 'pg/uuid@1';
+                  readonly nullable: false;
+                };
+                readonly invoice_id: {
+                  readonly nativeType: 'uuid';
+                  readonly codecId: 'pg/uuid@1';
+                  readonly nullable: false;
+                };
+                readonly amount: {
+                  readonly nativeType: 'numeric';
+                  readonly codecId: 'pg/numeric@1';
+                  readonly nullable: false;
+                };
+                readonly allocated_at: {
+                  readonly nativeType: 'timestamptz';
+                  readonly codecId: 'pg/timestamptz-temporal@1';
+                  readonly nullable: false;
+                };
+                readonly notes: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: true;
+                };
+                readonly created_at: {
+                  readonly nativeType: 'timestamptz';
+                  readonly codecId: 'pg/timestamptz-temporal@1';
+                  readonly nullable: false;
+                  readonly default: { readonly kind: 'function'; readonly expression: 'now()' };
+                };
+              };
+              primaryKey: { readonly columns: readonly ['id'] };
+              uniques: readonly [];
+              indexes: readonly [
+                {
+                  readonly name: 'payment_allocations_manager_id_idx_c3dee277';
+                  readonly prefix: 'payment_allocations_manager_id_idx';
+                  readonly columns: readonly ['manager_id'];
+                  readonly unique: false;
+                },
+                {
+                  readonly name: 'payment_allocations_payment_id_idx_7931cf41';
+                  readonly prefix: 'payment_allocations_payment_id_idx';
+                  readonly columns: readonly ['payment_id'];
+                  readonly unique: false;
+                },
+                {
+                  readonly name: 'payment_allocations_invoice_id_idx_a3b7555d';
+                  readonly prefix: 'payment_allocations_invoice_id_idx';
+                  readonly columns: readonly ['invoice_id'];
+                  readonly unique: false;
+                },
+                {
+                  readonly name: 'payment_allocations_manager_id_invoice_id_idx_633704ab';
+                  readonly prefix: 'payment_allocations_manager_id_invoice_id_idx';
+                  readonly columns: readonly ['manager_id', 'invoice_id'];
+                  readonly unique: false;
+                },
+              ];
+              foreignKeys: readonly [
+                {
+                  readonly source: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'payment_allocations';
+                    readonly columns: readonly ['manager_id'];
+                  };
+                  readonly target: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'users';
+                    readonly columns: readonly ['id'];
+                  };
+                },
+                {
+                  readonly source: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'payment_allocations';
+                    readonly columns: readonly ['payment_id'];
+                  };
+                  readonly target: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'payments';
+                    readonly columns: readonly ['id'];
+                  };
+                },
+                {
+                  readonly source: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'payment_allocations';
+                    readonly columns: readonly ['invoice_id'];
+                  };
+                  readonly target: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'invoices';
+                    readonly columns: readonly ['id'];
+                  };
+                },
+              ];
+            };
             readonly payments: {
               columns: {
                 readonly id: {
@@ -1270,15 +1587,6 @@ type ContractBase = Omit<
                   readonly nativeType: 'date';
                   readonly codecId: 'pg/date-temporal@1';
                   readonly nullable: false;
-                };
-                readonly currency: {
-                  readonly nativeType: 'text';
-                  readonly codecId: 'pg/text@1';
-                  readonly nullable: false;
-                  readonly default: {
-                    readonly kind: 'literal';
-                    readonly value: DefaultLiteralValue<'pg/text@1', 'KES'>;
-                  };
                 };
                 readonly amount: {
                   readonly nativeType: 'numeric';
@@ -1321,30 +1629,6 @@ type ContractBase = Omit<
               uniques: readonly [];
               indexes: readonly [
                 {
-                  readonly name: 'payments_manager_id_payment_date_idx_89af631f';
-                  readonly prefix: 'payments_manager_id_payment_date_idx';
-                  readonly columns: readonly ['manager_id', 'payment_date'];
-                  readonly unique: false;
-                },
-                {
-                  readonly name: 'payments_property_id_payment_date_idx_d4e12f32';
-                  readonly prefix: 'payments_property_id_payment_date_idx';
-                  readonly columns: readonly ['property_id', 'payment_date'];
-                  readonly unique: false;
-                },
-                {
-                  readonly name: 'payments_tenant_id_payment_date_idx_6e70efe7';
-                  readonly prefix: 'payments_tenant_id_payment_date_idx';
-                  readonly columns: readonly ['tenant_id', 'payment_date'];
-                  readonly unique: false;
-                },
-                {
-                  readonly name: 'payments_status_payment_date_idx_f8f5e2fb';
-                  readonly prefix: 'payments_status_payment_date_idx';
-                  readonly columns: readonly ['status', 'payment_date'];
-                  readonly unique: false;
-                },
-                {
                   readonly name: 'payments_manager_id_idx_c3dee277';
                   readonly prefix: 'payments_manager_id_idx';
                   readonly columns: readonly ['manager_id'];
@@ -1366,6 +1650,12 @@ type ContractBase = Omit<
                   readonly name: 'payments_tenant_id_idx_41c0d441';
                   readonly prefix: 'payments_tenant_id_idx';
                   readonly columns: readonly ['tenant_id'];
+                  readonly unique: false;
+                },
+                {
+                  readonly name: 'payments_manager_id_tenant_id_payment_date_idx_d119c9fe';
+                  readonly prefix: 'payments_manager_id_tenant_id_payment_date_idx';
+                  readonly columns: readonly ['manager_id', 'tenant_id', 'payment_date'];
                   readonly unique: false;
                 },
               ];
@@ -2005,6 +2295,14 @@ type ContractBase = Omit<
     };
     readonly payments: { readonly namespace: 'public' & NamespaceId; readonly model: 'Payment' };
     readonly receipts: { readonly namespace: 'public' & NamespaceId; readonly model: 'Receipt' };
+    readonly invoice_balance_transfers: {
+      readonly namespace: 'public' & NamespaceId;
+      readonly model: 'InvoiceBalanceTransfer';
+    };
+    readonly payment_allocations: {
+      readonly namespace: 'public' & NamespaceId;
+      readonly model: 'PaymentAllocation';
+    };
   };
   readonly domain: {
     readonly namespaces: {
@@ -2043,10 +2341,6 @@ type ContractBase = Omit<
               readonly dueDate: {
                 readonly nullable: false;
                 readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/date-temporal@1' };
-              };
-              readonly currency: {
-                readonly nullable: false;
-                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
               };
               readonly subtotal: {
                 readonly nullable: false;
@@ -2088,6 +2382,17 @@ type ContractBase = Omit<
               };
             };
             readonly relations: {
+              readonly incomingBalanceTransfers: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'InvoiceBalanceTransfer';
+                };
+                readonly cardinality: '1:N';
+                readonly on: {
+                  readonly localFields: readonly ['id'];
+                  readonly targetFields: readonly ['targetInvoiceId'];
+                };
+              };
               readonly invoiceItems: {
                 readonly to: {
                   readonly namespace: 'public' & NamespaceId;
@@ -2106,6 +2411,28 @@ type ContractBase = Omit<
                 readonly on: {
                   readonly localFields: readonly ['managerId'];
                   readonly targetFields: readonly ['id'];
+                };
+              };
+              readonly outgoingBalanceTransfers: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'InvoiceBalanceTransfer';
+                };
+                readonly cardinality: '1:N';
+                readonly on: {
+                  readonly localFields: readonly ['id'];
+                  readonly targetFields: readonly ['sourceInvoiceId'];
+                };
+              };
+              readonly paymentAllocations: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'PaymentAllocation';
+                };
+                readonly cardinality: '1:N';
+                readonly on: {
+                  readonly localFields: readonly ['id'];
+                  readonly targetFields: readonly ['invoiceId'];
                 };
               };
               readonly payments: {
@@ -2168,7 +2495,6 @@ type ContractBase = Omit<
                 readonly invoiceNumber: { readonly column: 'invoice_number' };
                 readonly issueDate: { readonly column: 'issue_date' };
                 readonly dueDate: { readonly column: 'due_date' };
-                readonly currency: { readonly column: 'currency' };
                 readonly subtotal: { readonly column: 'subtotal' };
                 readonly totalAmount: { readonly column: 'total_amount' };
                 readonly amountPaid: { readonly column: 'amount_paid' };
@@ -2177,6 +2503,97 @@ type ContractBase = Omit<
                 readonly notes: { readonly column: 'notes' };
                 readonly createdAt: { readonly column: 'created_at' };
                 readonly updatedAt: { readonly column: 'updated_at' };
+              };
+            };
+          };
+          readonly InvoiceBalanceTransfer: {
+            readonly fields: {
+              readonly id: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/uuid@1' };
+              };
+              readonly managerId: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/uuid@1' };
+              };
+              readonly sourceInvoiceId: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/uuid@1' };
+              };
+              readonly targetInvoiceId: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/uuid@1' };
+              };
+              readonly amount: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/numeric@1' };
+              };
+              readonly transferredAt: {
+                readonly nullable: false;
+                readonly type: {
+                  readonly kind: 'scalar';
+                  readonly codecId: 'pg/timestamptz-temporal@1';
+                };
+              };
+              readonly notes: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly createdAt: {
+                readonly nullable: false;
+                readonly type: {
+                  readonly kind: 'scalar';
+                  readonly codecId: 'pg/timestamptz-temporal@1';
+                };
+              };
+            };
+            readonly relations: {
+              readonly manager: {
+                readonly to: { readonly namespace: 'public' & NamespaceId; readonly model: 'User' };
+                readonly cardinality: 'N:1';
+                readonly nullable: false;
+                readonly on: {
+                  readonly localFields: readonly ['managerId'];
+                  readonly targetFields: readonly ['id'];
+                };
+              };
+              readonly sourceInvoice: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'Invoice';
+                };
+                readonly cardinality: 'N:1';
+                readonly nullable: false;
+                readonly on: {
+                  readonly localFields: readonly ['sourceInvoiceId'];
+                  readonly targetFields: readonly ['id'];
+                };
+              };
+              readonly targetInvoice: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'Invoice';
+                };
+                readonly cardinality: 'N:1';
+                readonly nullable: false;
+                readonly on: {
+                  readonly localFields: readonly ['targetInvoiceId'];
+                  readonly targetFields: readonly ['id'];
+                };
+              };
+            };
+            readonly storage: {
+              readonly table: 'invoice_balance_transfers';
+              readonly namespaceId: 'public';
+              readonly fields: {
+                readonly id: { readonly column: 'id' };
+                readonly managerId: { readonly column: 'manager_id' };
+                readonly sourceInvoiceId: { readonly column: 'source_invoice_id' };
+                readonly targetInvoiceId: { readonly column: 'target_invoice_id' };
+                readonly amount: { readonly column: 'amount' };
+                readonly transferredAt: { readonly column: 'transferred_at' };
+                readonly notes: { readonly column: 'notes' };
+                readonly createdAt: { readonly column: 'created_at' };
               };
             };
           };
@@ -2293,10 +2710,6 @@ type ContractBase = Omit<
                 readonly nullable: false;
                 readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/date-temporal@1' };
               };
-              readonly currency: {
-                readonly nullable: false;
-                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
-              };
               readonly amount: {
                 readonly nullable: false;
                 readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/numeric@1' };
@@ -2333,6 +2746,17 @@ type ContractBase = Omit<
               };
             };
             readonly relations: {
+              readonly allocations: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'PaymentAllocation';
+                };
+                readonly cardinality: '1:N';
+                readonly on: {
+                  readonly localFields: readonly ['id'];
+                  readonly targetFields: readonly ['paymentId'];
+                };
+              };
               readonly invoice: {
                 readonly to: {
                   readonly namespace: 'public' & NamespaceId;
@@ -2401,7 +2825,6 @@ type ContractBase = Omit<
                 readonly invoiceId: { readonly column: 'invoice_id' };
                 readonly tenantId: { readonly column: 'tenant_id' };
                 readonly paymentDate: { readonly column: 'payment_date' };
-                readonly currency: { readonly column: 'currency' };
                 readonly amount: { readonly column: 'amount' };
                 readonly paymentMethod: { readonly column: 'payment_method' };
                 readonly referenceNumber: { readonly column: 'reference_number' };
@@ -2409,6 +2832,97 @@ type ContractBase = Omit<
                 readonly status: { readonly column: 'status' };
                 readonly createdAt: { readonly column: 'created_at' };
                 readonly updatedAt: { readonly column: 'updated_at' };
+              };
+            };
+          };
+          readonly PaymentAllocation: {
+            readonly fields: {
+              readonly id: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/uuid@1' };
+              };
+              readonly managerId: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/uuid@1' };
+              };
+              readonly paymentId: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/uuid@1' };
+              };
+              readonly invoiceId: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/uuid@1' };
+              };
+              readonly amount: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/numeric@1' };
+              };
+              readonly allocatedAt: {
+                readonly nullable: false;
+                readonly type: {
+                  readonly kind: 'scalar';
+                  readonly codecId: 'pg/timestamptz-temporal@1';
+                };
+              };
+              readonly notes: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly createdAt: {
+                readonly nullable: false;
+                readonly type: {
+                  readonly kind: 'scalar';
+                  readonly codecId: 'pg/timestamptz-temporal@1';
+                };
+              };
+            };
+            readonly relations: {
+              readonly invoice: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'Invoice';
+                };
+                readonly cardinality: 'N:1';
+                readonly nullable: false;
+                readonly on: {
+                  readonly localFields: readonly ['invoiceId'];
+                  readonly targetFields: readonly ['id'];
+                };
+              };
+              readonly manager: {
+                readonly to: { readonly namespace: 'public' & NamespaceId; readonly model: 'User' };
+                readonly cardinality: 'N:1';
+                readonly nullable: false;
+                readonly on: {
+                  readonly localFields: readonly ['managerId'];
+                  readonly targetFields: readonly ['id'];
+                };
+              };
+              readonly payment: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'Payment';
+                };
+                readonly cardinality: 'N:1';
+                readonly nullable: false;
+                readonly on: {
+                  readonly localFields: readonly ['paymentId'];
+                  readonly targetFields: readonly ['id'];
+                };
+              };
+            };
+            readonly storage: {
+              readonly table: 'payment_allocations';
+              readonly namespaceId: 'public';
+              readonly fields: {
+                readonly id: { readonly column: 'id' };
+                readonly managerId: { readonly column: 'manager_id' };
+                readonly paymentId: { readonly column: 'payment_id' };
+                readonly invoiceId: { readonly column: 'invoice_id' };
+                readonly amount: { readonly column: 'amount' };
+                readonly allocatedAt: { readonly column: 'allocated_at' };
+                readonly notes: { readonly column: 'notes' };
+                readonly createdAt: { readonly column: 'created_at' };
               };
             };
           };
@@ -3022,10 +3536,32 @@ type ContractBase = Omit<
               };
             };
             readonly relations: {
+              readonly invoiceBalanceTransfers: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'InvoiceBalanceTransfer';
+                };
+                readonly cardinality: '1:N';
+                readonly on: {
+                  readonly localFields: readonly ['id'];
+                  readonly targetFields: readonly ['managerId'];
+                };
+              };
               readonly invoices: {
                 readonly to: {
                   readonly namespace: 'public' & NamespaceId;
                   readonly model: 'Invoice';
+                };
+                readonly cardinality: '1:N';
+                readonly on: {
+                  readonly localFields: readonly ['id'];
+                  readonly targetFields: readonly ['managerId'];
+                };
+              };
+              readonly paymentAllocations: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'PaymentAllocation';
                 };
                 readonly cardinality: '1:N';
                 readonly on: {
@@ -3145,6 +3681,14 @@ type ContractBase = Omit<
         {
           readonly ref: {
             readonly namespace: 'public';
+            readonly table: 'invoice_balance_transfers';
+            readonly column: 'id';
+          };
+          readonly onCreate: { readonly kind: 'generator'; readonly id: 'uuidv4' };
+        },
+        {
+          readonly ref: {
+            readonly namespace: 'public';
             readonly table: 'invoice_items';
             readonly column: 'id';
           };
@@ -3175,6 +3719,14 @@ type ContractBase = Omit<
           };
           readonly onCreate: { readonly kind: 'generator'; readonly id: 'instantNow' };
           readonly onUpdate: { readonly kind: 'generator'; readonly id: 'instantNow' };
+        },
+        {
+          readonly ref: {
+            readonly namespace: 'public';
+            readonly table: 'payment_allocations';
+            readonly column: 'id';
+          };
+          readonly onCreate: { readonly kind: 'generator'; readonly id: 'uuidv4' };
         },
         {
           readonly ref: {
