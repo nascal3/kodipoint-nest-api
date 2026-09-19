@@ -11,7 +11,6 @@ model User {
   createdAt temporal.createdAt() @map("created_at")
   updatedAt temporal.updatedAt() @map("updated_at")
 
-  // everything below is owned/managed by this user (manager_id FK)
   properties      Property[]
   propertyCharges PropertyCharge[]
   tenants         Tenant[]
@@ -19,6 +18,9 @@ model User {
   invoices        Invoice[]
   payments        Payment[]
   receipts        Receipt[]
+
+  invoiceBalanceTransfers InvoiceBalanceTransfer[]
+  paymentAllocations      PaymentAllocation[]
 
   @@map("users")
 }
@@ -136,7 +138,6 @@ model Invoice {
   invoiceNumber String  @unique @map("invoice_number")
   issueDate     Date    @map("issue_date")
   dueDate       Date    @map("due_date")
-  currency      String  @default("KES")
   subtotal      Decimal
   totalAmount   Decimal @map("total_amount")
   amountPaid    Decimal @map("amount_paid")
@@ -155,10 +156,16 @@ model Invoice {
   invoiceItems InvoiceItem[]
   payments     Payment[]
 
-  @@index([managerId, status, dueDate])
-  @@index([propertyId, issueDate])
-  @@index([tenantId, issueDate])
+  outgoingBalanceTransfers InvoiceBalanceTransfer[] @relation("SourceInvoice")
+  incomingBalanceTransfers InvoiceBalanceTransfer[] @relation("TargetInvoice")
+
+  paymentAllocations PaymentAllocation[]
+
+  @@index([managerId])
+  @@index([propertyId])
   @@index([tenancyId])
+  @@index([tenantId])
+  @@index([managerId, tenantId, tenancyId, status])
   @@map("invoices")
 }
 
@@ -189,7 +196,6 @@ model Payment {
   invoiceId       Uuid    @map("invoice_id")
   tenantId        Uuid    @map("tenant_id")
   paymentDate     Date    @map("payment_date")
-  currency        String  @default("KES")
   amount          Decimal
   paymentMethod   String  @map("payment_method")
   referenceNumber String? @map("reference_number")
@@ -206,10 +212,13 @@ model Payment {
 
   receipt Receipt?
 
-  @@index([managerId, paymentDate])
-  @@index([propertyId, paymentDate])
-  @@index([tenantId, paymentDate])
-  @@index([status, paymentDate])
+  allocations PaymentAllocation[]
+
+  @@index([managerId])
+  @@index([propertyId])
+  @@index([invoiceId])
+  @@index([tenantId])
+  @@index([managerId, tenantId, paymentDate])
   @@map("payments")
 }
 
@@ -228,4 +237,48 @@ model Receipt {
 
   @@index([managerId])
   @@map("receipts")
+}
+
+model InvoiceBalanceTransfer {
+  id              Uuid     @id @default(uuid())
+  managerId       Uuid     @map("manager_id")
+  sourceInvoiceId Uuid     @map("source_invoice_id")
+  targetInvoiceId Uuid     @map("target_invoice_id")
+  amount          Decimal
+  transferredAt   DateTime @map("transferred_at")
+  notes           String?
+
+  createdAt temporal.createdAt() @map("created_at")
+
+  manager       User    @relation(fields: [managerId], references: [id])
+  sourceInvoice Invoice @relation("SourceInvoice", fields: [sourceInvoiceId], references: [id])
+  targetInvoice Invoice @relation("TargetInvoice", fields: [targetInvoiceId], references: [id])
+
+  @@index([managerId])
+  @@index([sourceInvoiceId])
+  @@index([targetInvoiceId])
+  @@index([managerId, sourceInvoiceId], map: "inv_bal_tx_mgr_src_idx")
+  @@map("invoice_balance_transfers")
+}
+
+model PaymentAllocation {
+  id          Uuid     @id @default(uuid())
+  managerId   Uuid     @map("manager_id")
+  paymentId   Uuid     @map("payment_id")
+  invoiceId   Uuid     @map("invoice_id")
+  amount      Decimal
+  allocatedAt DateTime @map("allocated_at")
+  notes       String?
+
+  createdAt temporal.createdAt() @map("created_at")
+
+  manager User    @relation(fields: [managerId], references: [id])
+  payment Payment @relation(fields: [paymentId], references: [id])
+  invoice Invoice @relation(fields: [invoiceId], references: [id])
+
+  @@index([managerId])
+  @@index([paymentId])
+  @@index([invoiceId])
+  @@index([managerId, invoiceId])
+  @@map("payment_allocations")
 }
