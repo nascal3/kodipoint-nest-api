@@ -6,6 +6,7 @@ model User {
   passwordHash String @map("password_hash")
   firstName    String @map("first_name")
   lastName     String @map("last_name")
+  address      String
   phone        String
 
   createdAt temporal.createdAt() @map("created_at")
@@ -106,6 +107,7 @@ model Tenancy {
   id           Uuid      @id @default(uuid())
   managerId    Uuid      @map("manager_id")
   propertyId   Uuid      @map("property_id")
+  propertyUnit String    @map("property_unit")
   tenantId     Uuid      @map("tenant_id")
   startDate    Date      @map("start_date")
   endDate      Date?     @map("end_date")

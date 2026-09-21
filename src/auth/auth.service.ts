@@ -51,6 +51,7 @@ export class AuthService {
                 passwordHash,
                 firstName: dto.firstName.trim(),
                 lastName: dto.lastName.trim(),
+                address: dto.address.trim(),
                 phone: dto.phone.trim(),
             });
 

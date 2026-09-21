@@ -10,6 +10,7 @@ import { InvoicesModule } from './invoices/invoices.module';
 import { PaymentAllocationsModule } from './payment-allocations/payment-allocations.module';
 import { PaymentsModule } from './payments/payments.module';
 import { ReceiptsModule } from './receipts/receipts.module';
+import { DocumentsModule } from './documents/documents.module';
 // import { NotificationsModule } from './notifications/notifications.module';
 // import { ReportsModule } from './reports/reports.module';
 // import { JobsModule } from './jobs/jobs.module';
@@ -26,6 +27,7 @@ import { ReceiptsModule } from './receipts/receipts.module';
     PaymentAllocationsModule,
     PaymentsModule,
     ReceiptsModule,
+    DocumentsModule,
     // NotificationsModule,
     // ReportsModule,
     // JobsModule,

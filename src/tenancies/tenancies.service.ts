@@ -76,6 +76,7 @@ export class TenanciesService {
         return this.prisma.db.orm.public.Tenancy.create({
             managerId,
             propertyId: dto.propertyId,
+            propertyUnit: dto.propertyUnit,
             tenantId: dto.tenantId,
             startDate: dto.startDate,
             monthlyRent: dto.monthlyRent?.toString() ?? property.monthlyRent,
