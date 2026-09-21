@@ -33,7 +33,7 @@ export class ReceiptsController {
     @Post('payment/:paymentId')
     @ApiOperation({
         summary:
-            'Create a receipt for a completed payment',
+            'Create a receipt for a successful payment',
     })
     @ApiParam({
         name: 'paymentId',
