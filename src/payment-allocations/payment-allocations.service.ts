@@ -7,6 +7,7 @@ import Decimal from 'decimal.js';
 
 import { DatabaseService } from '@/database/database.service';
 import { money } from '@/common/utils/money.util';
+import {PaymentStatus} from "@/payments/dto/create-payment.dto";
 
 @Injectable()
 export class PaymentAllocationsService {
@@ -154,18 +155,16 @@ export class PaymentAllocationsService {
             );
         }
 
-        const payment =
-            await tx.orm.public.Payment
-                .where({
+        const payment = await tx.orm.public.Payment.where({
                     id: paymentId,
                     managerId,
-                    status: 'COMPLETED',
+                    status: PaymentStatus.SUCCESSFUL,
                 })
                 .first();
 
         if (!payment) {
             throw new NotFoundException(
-                'Completed payment not found',
+                'Successful payment not found',
             );
         }
 
@@ -199,11 +198,7 @@ export class PaymentAllocationsService {
         }
 
         const allocatedPaymentAmount =
-            await this.getPaymentAllocatedAmount(
-                tx,
-                managerId,
-                paymentId,
-            );
+            await this.getPaymentAllocatedAmount(tx, managerId, paymentId,);
 
         const paymentAmount = money(payment.amount);
         const paymentRemaining =
@@ -219,12 +214,7 @@ export class PaymentAllocationsService {
             );
         }
 
-        const invoiceOutstanding =
-            await this.getInvoiceOutstandingAmount(
-                tx,
-                managerId,
-                invoiceId,
-            );
+        const invoiceOutstanding = await this.getInvoiceOutstandingAmount(tx, managerId, invoiceId,);
 
         if (
             requestedAmount.greaterThan(
