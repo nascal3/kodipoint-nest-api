@@ -1577,6 +1577,13 @@
                   "kind": "scalar"
                 }
               },
+              "propertyUnit": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
               "startDate": {
                 "nullable": false,
                 "type": {
@@ -1700,6 +1707,9 @@
                 },
                 "propertyId": {
                   "column": "property_id"
+                },
+                "propertyUnit": {
+                  "column": "property_unit"
                 },
                 "startDate": {
                   "column": "start_date"
@@ -1916,6 +1926,13 @@
           },
           "User": {
             "fields": {
+              "address": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
               "createdAt": {
                 "nullable": false,
                 "type": {
@@ -2112,6 +2129,9 @@
             },
             "storage": {
               "fields": {
+                "address": {
+                  "column": "address"
+                },
                 "createdAt": {
                   "column": "created_at"
                 },
@@ -3320,6 +3340,11 @@
                   "nativeType": "uuid",
                   "nullable": false
                 },
+                "property_unit": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
                 "start_date": {
                   "codecId": "pg/date-temporal@1",
                   "nativeType": "date",
@@ -3551,6 +3576,11 @@
             },
             "users": {
               "columns": {
+                "address": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
                 "created_at": {
                   "codecId": "pg/timestamptz-temporal@1",
                   "default": {
@@ -3617,7 +3647,7 @@
         "kind": "postgres-schema"
       }
     },
-    "storageHash": "2486034107f46f30b8cc5df2ee8359e80869a92bca345879254775c25a2cbb28"
+    "storageHash": "7ffcb759111b597f8e94b2fddf76ec1f783c4c8df952ea2b4019f832c67807bf"
   },
   "execution": {
     "executionHash": "ea83471ee1d2ab00090a502c2e4299e0835928021b3aa4ab51d0296dcf804cd4",

@@ -86,6 +86,10 @@ export class UsersService {
             updateData.lastName = dto.lastName.trim();
         }
 
+        if (dto.address !== undefined) {
+            updateData.address = dto.address.trim();
+        }
+
         if (dto.phone !== undefined) {
             updateData.phone = dto.phone.trim();
         }

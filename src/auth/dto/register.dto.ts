@@ -40,6 +40,13 @@ export class RegisterDto {
     lastName: string;
 
     @ApiProperty({
+        description: 'The address of the user/ manager',
+        example: 'P.O Box 12345 00400 Kiambu'
+    })
+    @IsString()
+    address: string;
+
+    @ApiProperty({
         example: '+254700000000',
         description: 'Manager phone number',
     })

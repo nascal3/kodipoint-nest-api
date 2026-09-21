@@ -19,127 +19,6 @@ export class InvoicesService {
         private readonly prisma: DatabaseService,
     ) {}
 
-    // async create(managerId: string, dto: CreateInvoiceDto,) {
-    //     const issueDate = new Date(dto.issueDate);
-    //     const dueDate = new Date(dto.dueDate);
-    //
-    //     if (dueDate < issueDate) {
-    //         throw new BadRequestException(
-    //             'Due date cannot be earlier than issue date',
-    //         );
-    //     }
-    //
-    //     return this.prisma.db.transaction(async (tx) => {
-    //         const tenancy = await tx.orm.public.Tenancy
-    //             .where({
-    //                 id: dto.tenancyId,
-    //                 managerId,
-    //                 status: TenancyStatus.ACTIVE,
-    //             })
-    //             .first();
-    //
-    //         if (!tenancy) {
-    //             throw new NotFoundException(
-    //                 'Active tenancy not found',
-    //             );
-    //         }
-    //
-    //         const property = await tx.orm.public.Property
-    //             .where({
-    //                 id: tenancy.propertyId,
-    //                 managerId,
-    //             })
-    //             .first();
-    //
-    //         if (!property) {
-    //             throw new NotFoundException(
-    //                 'Property not found',
-    //             );
-    //         }
-    //
-    //         const tenant = await tx.orm.public.Tenant
-    //             .where({
-    //                 id: tenancy.tenantId,
-    //                 managerId,
-    //             })
-    //             .first();
-    //
-    //         if (!tenant) {
-    //             throw new NotFoundException(
-    //                 'Tenant not found',
-    //             );
-    //         }
-    //
-    //         const charges =
-    //             await tx.orm.public.PropertyCharge
-    //                 .where({
-    //                     propertyId: property.id,
-    //                     managerId,
-    //                     isActive: true,
-    //                 })
-    //                 .all();
-    //
-    //         const invoiceItems = [
-    //             {
-    //                 propertyChargeId: null,
-    //                 description: 'Monthly rent',
-    //                 quantity: 1,
-    //                 unitAmount: tenancy.monthlyRent,
-    //                 totalAmount: tenancy.monthlyRent,
-    //             },
-    //             ...charges.map((charge) => ({
-    //                 propertyChargeId: charge.id,
-    //                 description: charge.name,
-    //                 quantity: 1,
-    //                 unitAmount: charge.amount,
-    //                 totalAmount: charge.amount,
-    //             })),
-    //         ];
-    //
-    //         const totalAmount = invoiceItems.reduce(
-    //             (total, item) =>
-    //                 total.plus(new Decimal(item.totalAmount)),
-    //             new Decimal(0),
-    //         );
-    //
-    //         if (totalAmount.toNumber() <= 0) {
-    //             throw new BadRequestException(
-    //                 'Invoice total must be greater than zero',
-    //             );
-    //         }
-    //
-    //         const invoice =
-    //             await tx.orm.public.Invoice.create({
-    //                 managerId,
-    //                 propertyId: property.id,
-    //                 tenancyId: tenancy.id,
-    //                 tenantId: tenant.id,
-    //                 invoiceNumber: await this.generateInvoiceNumber(),
-    //                 issueDate,
-    //                 dueDate,
-    //                 subtotal: totalAmount.toString(),
-    //                 totalAmount: totalAmount.toString(),
-    //                 amountPaid: '0',
-    //                 balanceDue: totalAmount.toString(),
-    //                 status: InvoiceStatus.ISSUED,
-    //                 notes: dto.notes,
-    //             });
-    //
-    //         for (const item of invoiceItems) {
-    //             await tx.orm.public.InvoiceItem.create({
-    //                 invoiceId: invoice.id,
-    //                 propertyChargeId: item.propertyChargeId,
-    //                 description: item.description,
-    //                 quantity: item.quantity.toString(),
-    //                 unitAmount: item.unitAmount,
-    //                 totalAmount: item.totalAmount,
-    //             });
-    //         }
-    //
-    //         return invoice;
-    //     });
-    // }
-
     async create(managerId: string, dto: CreateInvoiceDto,) {
         const issueDate = new Date(dto.issueDate);
         const dueDate = new Date(dto.dueDate);
@@ -431,16 +310,20 @@ export class InvoicesService {
             /*
              * 11. Create invoice line items.
              */
+            const createdInvoiceItems = [];
+
             for (const item of invoiceItems) {
-                await tx.orm.public.InvoiceItem.create({
-                    invoiceId: invoice.id,
-                    propertyChargeId:
-                    item.propertyChargeId,
-                    description: item.description,
-                    quantity: item.quantity,
-                    unitAmount: item.unitAmount,
-                    totalAmount: item.totalAmount,
-                });
+                const createdItem =
+                    await tx.orm.public.InvoiceItem.create({
+                        invoiceId: invoice.id,
+                        propertyChargeId:
+                        item.propertyChargeId,
+                        description: item.description,
+                        quantity: item.quantity,
+                        unitAmount: item.unitAmount,
+                        totalAmount: item.totalAmount,
+                    });
+                createdInvoiceItems.push(createdItem);
             }
 
             /*
@@ -480,10 +363,13 @@ export class InvoicesService {
 
             return {
                 invoice,
+                invoiceItems: createdInvoiceItems,
                 calculation: {
                     rent: rentAmount.toFixed(2),
-                    serviceCharges: serviceChargesTotal.toFixed(2),
-                    balanceBroughtForward: balanceBroughtForward.toFixed(2),
+                    serviceCharges:
+                        serviceChargesTotal.toFixed(2),
+                    balanceBroughtForward:
+                        balanceBroughtForward.toFixed(2),
                     subtotal: subtotal.toFixed(2),
                     totalAmount: subtotal.toFixed(2),
                     amountPaid: '0.00',
