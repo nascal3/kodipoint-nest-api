@@ -1748,7 +1748,7 @@
                 }
               },
               "email": {
-                "nullable": true,
+                "nullable": false,
                 "type": {
                   "codecId": "pg/text@1",
                   "kind": "scalar"
@@ -1797,7 +1797,7 @@
                 }
               },
               "phone": {
-                "nullable": true,
+                "nullable": false,
                 "type": {
                   "codecId": "pg/text@1",
                   "kind": "scalar"
@@ -3491,7 +3491,7 @@
                 "email": {
                   "codecId": "pg/text@1",
                   "nativeType": "text",
-                  "nullable": true
+                  "nullable": false
                 },
                 "emergency_contact_name": {
                   "codecId": "pg/text@1",
@@ -3526,7 +3526,7 @@
                 "phone": {
                   "codecId": "pg/text@1",
                   "nativeType": "text",
-                  "nullable": true
+                  "nullable": false
                 },
                 "status": {
                   "codecId": "pg/text@1",
@@ -3647,7 +3647,7 @@
         "kind": "postgres-schema"
       }
     },
-    "storageHash": "7ffcb759111b597f8e94b2fddf76ec1f783c4c8df952ea2b4019f832c67807bf"
+    "storageHash": "967937102004fa931a92cadca663395957b2703738a985ee2346b232007ca1ea"
   },
   "execution": {
     "executionHash": "ea83471ee1d2ab00090a502c2e4299e0835928021b3aa4ab51d0296dcf804cd4",

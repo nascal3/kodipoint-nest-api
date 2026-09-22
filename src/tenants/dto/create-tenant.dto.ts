@@ -6,7 +6,7 @@ import {
     IsString,
 } from 'class-validator';
 
-enum TenancyStatus {
+export enum TenancyStatus {
     ACTIVE = "ACTIVE",
     ENDED = "ENDED"
 }
@@ -33,7 +33,7 @@ export class CreateTenantDto {
         example: 'john.doe@example.com'
     })
     @IsEmail()
-    email?: string;
+    email: string;
 
 
     @ApiProperty({
@@ -41,7 +41,7 @@ export class CreateTenantDto {
         example: '+254718763763'
     })
     @IsPhoneNumber()
-    phone?: string;
+    phone: string;
 
 
     @ApiProperty({
@@ -56,7 +56,7 @@ export class CreateTenantDto {
 
     @ApiProperty({
         description: 'The status of the tenant',
-        example: 'ACTIVE'
+        example: TenancyStatus.ACTIVE
     })
     @IsString()
     status: TenancyStatus;
