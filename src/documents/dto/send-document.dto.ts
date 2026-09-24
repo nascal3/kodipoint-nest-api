@@ -1,6 +1,5 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import {
-    IsEmail,
     IsOptional,
     IsString,
     MaxLength,
@@ -8,15 +7,16 @@ import {
 
 export class SendDocumentDto {
     @ApiPropertyOptional({
-        example: 'tenant@example.com',
-        description: 'Override recipient. Defaults to the tenant email on the record.',
+        example: 'tenant@example.com or +254711XXXYYY',
+        description: 'Override recipient (email for email endpoint, phone for SMS endpoint). Defaults to the tenant contact on the record.',
     })
-    @IsOptional()
-    @IsEmail()
-    to?: string;
+    @IsString()
+    @MaxLength(200)
+    to: string;
 
     @ApiPropertyOptional({
         example: 'Your monthly invoice/receipt',
+        required: false
     })
     @IsOptional()
     @IsString()
@@ -26,8 +26,7 @@ export class SendDocumentDto {
     @ApiPropertyOptional({
         example: 'Please find your invoice/receipt attached.',
     })
-    @IsOptional()
     @IsString()
     @MaxLength(2000)
-    message?: string;
+    message: string;
 }
