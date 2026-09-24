@@ -11,7 +11,7 @@ import { PaymentAllocationsModule } from './payment-allocations/payment-allocati
 import { PaymentsModule } from './payments/payments.module';
 import { ReceiptsModule } from './receipts/receipts.module';
 import { DocumentsModule } from './documents/documents.module';
-// import { ReportsModule } from './reports/reports.module';
+import { ReportsModule } from './reports/reports.module';
 // import { JobsModule } from './jobs/jobs.module';
 
 @Module({
@@ -27,7 +27,7 @@ import { DocumentsModule } from './documents/documents.module';
     PaymentsModule,
     ReceiptsModule,
     DocumentsModule,
-    // ReportsModule,
+    ReportsModule,
     // JobsModule,
   ],
 })
