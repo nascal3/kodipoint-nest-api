@@ -10,6 +10,7 @@ import { ReceiptsService } from '@/receipts/receipts.service';
 
 import { PdfService } from './pdf/pdf.service';
 import { EmailService } from './email/email.service';
+import { SmsService } from './sms/sms.service';
 import { SendDocumentDto } from './dto/send-document.dto';
 import { buildInvoicePdf } from './pdf/builders/invoice-pdf.builder';
 import { buildReceiptPdf } from './pdf/builders/receipt-pdf.builder';
@@ -28,6 +29,7 @@ export class DocumentsService {
         private readonly receiptsService: ReceiptsService,
         private readonly pdfService: PdfService,
         private readonly emailService: EmailService,
+        private readonly smsService: SmsService,
     ) {}
 
     /* ============================ INVOICE ============================ */
@@ -136,6 +138,38 @@ export class DocumentsService {
             message: 'Invoice emailed successfully',
             to: recipient,
             filename: doc.filename,
+        };
+    }
+
+    async smsInvoicePdf(
+        managerId: string,
+        invoiceId: string,
+        dto: SendDocumentDto,
+    ) {
+        const invoice = (await this.invoicesService.getForDelivery(
+            managerId,
+            invoiceId,
+        )) as any;
+
+        const manager = await this.getManager(managerId);
+
+        const recipient = dto.to ?? invoice.tenant?.phone ?? null;
+        if (!recipient) {
+            throw new BadRequestException(
+                'No recipient phone number is available. Provide one in the request body or update the tenant record.',
+            );
+        }
+
+        await this.smsService.sendDocumentNotification(
+            recipient,
+            'invoice',
+            invoice.invoiceNumber,
+            `${manager.firstName} ${manager.lastName}`,
+        );
+
+        return {
+            message: 'Invoice SMS notification sent successfully',
+            to: recipient,
         };
     }
 
@@ -268,6 +302,38 @@ export class DocumentsService {
             message: 'Receipt emailed successfully',
             to: recipient,
             filename: doc.filename,
+        };
+    }
+
+    async smsReceiptPdf(
+        managerId: string,
+        receiptId: string,
+        dto: SendDocumentDto,
+    ) {
+        const receipt = (await this.receiptsService.getForDocument(
+            managerId,
+            receiptId,
+        )) as any;
+
+        const manager = await this.getManager(managerId);
+
+        const recipient = dto.to ?? receipt.tenant?.phone ?? null;
+        if (!recipient) {
+            throw new BadRequestException(
+                'No recipient phone number is available. Provide one in the request body or update the tenant record.',
+            );
+        }
+
+        await this.smsService.sendDocumentNotification(
+            recipient,
+            'receipt',
+            receipt.receiptNumber,
+            `${manager.firstName} ${manager.lastName}`,
+        );
+
+        return {
+            message: 'Receipt SMS notification sent successfully',
+            to: recipient,
         };
     }
 

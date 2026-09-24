@@ -74,6 +74,22 @@ export class DocumentsController {
         );
     }
 
+    @Post('invoices/:invoiceId/pdf/sms')
+    @ApiOperation({ summary: 'Send SMS notification about an invoice PDF to the tenant' })
+    @ApiParam({ name: 'invoiceId', example: 'invoice-uuid' })
+    smsInvoicePdf(
+        @CurrentUser()
+        user: authenticatedUserType.AuthenticatedUser,
+        @Param('invoiceId') invoiceId: string,
+        @Body() dto: SendDocumentDto,
+    ) {
+        return this.documentsService.smsInvoicePdf(
+            user.id,
+            invoiceId,
+            dto,
+        );
+    }
+
     /* ========================== RECEIPTS ============================ */
 
     @Get('receipts/:receiptId/pdf')
@@ -108,6 +124,22 @@ export class DocumentsController {
         @Body() dto: SendDocumentDto,
     ) {
         return this.documentsService.emailReceiptPdf(
+            user.id,
+            receiptId,
+            dto,
+        );
+    }
+
+    @Post('receipts/:receiptId/pdf/sms')
+    @ApiOperation({ summary: 'Send SMS notification about a receipt PDF to the tenant' })
+    @ApiParam({ name: 'receiptId', example: 'receipt-uuid' })
+    smsReceiptPdf(
+        @CurrentUser()
+        user: authenticatedUserType.AuthenticatedUser,
+        @Param('receiptId') receiptId: string,
+        @Body() dto: SendDocumentDto,
+    ) {
+        return this.documentsService.smsReceiptPdf(
             user.id,
             receiptId,
             dto,

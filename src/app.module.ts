@@ -11,7 +11,6 @@ import { PaymentAllocationsModule } from './payment-allocations/payment-allocati
 import { PaymentsModule } from './payments/payments.module';
 import { ReceiptsModule } from './receipts/receipts.module';
 import { DocumentsModule } from './documents/documents.module';
-// import { NotificationsModule } from './notifications/notifications.module';
 // import { ReportsModule } from './reports/reports.module';
 // import { JobsModule } from './jobs/jobs.module';
 
@@ -28,7 +27,6 @@ import { DocumentsModule } from './documents/documents.module';
     PaymentsModule,
     ReceiptsModule,
     DocumentsModule,
-    // NotificationsModule,
     // ReportsModule,
     // JobsModule,
   ],
