@@ -62,8 +62,7 @@ export class DocumentsController {
     @ApiOperation({ summary: 'Email an invoice PDF to the tenant' })
     @ApiParam({ name: 'invoiceId', example: 'invoice-uuid' })
     emailInvoicePdf(
-        @CurrentUser()
-        user: authenticatedUserType.AuthenticatedUser,
+        @CurrentUser() user: authenticatedUserType.AuthenticatedUser,
         @Param('invoiceId') invoiceId: string,
         @Body() dto: SendDocumentDto,
     ) {
@@ -78,8 +77,7 @@ export class DocumentsController {
     @ApiOperation({ summary: 'Send SMS notification about an invoice PDF to the tenant' })
     @ApiParam({ name: 'invoiceId', example: 'invoice-uuid' })
     smsInvoicePdf(
-        @CurrentUser()
-        user: authenticatedUserType.AuthenticatedUser,
+        @CurrentUser() user: authenticatedUserType.AuthenticatedUser,
         @Param('invoiceId') invoiceId: string,
         @Body() dto: SendDocumentDto,
     ) {

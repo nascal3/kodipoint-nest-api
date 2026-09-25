@@ -7,6 +7,7 @@ import {
 import { DatabaseService } from '@/database/database.service';
 import { InvoicesService } from '@/invoices/invoices.service';
 import { ReceiptsService } from '@/receipts/receipts.service';
+import { QueuesService } from '@/queues/queues.service';
 
 import { PdfService } from './pdf/pdf.service';
 import { EmailService } from './email/email.service';
@@ -30,6 +31,7 @@ export class DocumentsService {
         private readonly pdfService: PdfService,
         private readonly emailService: EmailService,
         private readonly smsService: SmsService,
+        private readonly queuesService: QueuesService,
     ) {}
 
     /* ============================ INVOICE ============================ */
@@ -99,11 +101,7 @@ export class DocumentsService {
         };
     }
 
-    async emailInvoicePdf(
-        managerId: string,
-        invoiceId: string,
-        dto: SendDocumentDto,
-    ) {
+    async emailInvoicePdf(managerId: string, invoiceId: string, dto: SendDocumentDto) {
         const invoice = (await this.invoicesService.getForDelivery(
             managerId,
             invoiceId,
@@ -119,7 +117,7 @@ export class DocumentsService {
             );
         }
 
-        await this.emailService.sendWithAttachment({
+        await this.queuesService.publishEmail({
             to: recipient,
             subject:
                 dto.subject ??
@@ -135,17 +133,13 @@ export class DocumentsService {
         });
 
         return {
-            message: 'Invoice emailed successfully',
+            message: 'Invoice email send to queue successfully',
             to: recipient,
             filename: doc.filename,
         };
     }
 
-    async smsInvoicePdf(
-        managerId: string,
-        invoiceId: string,
-        dto: SendDocumentDto,
-    ) {
+    async smsInvoicePdf(managerId: string, invoiceId: string, dto: SendDocumentDto) {
         const invoice = (await this.invoicesService.getForDelivery(
             managerId,
             invoiceId,
@@ -160,15 +154,13 @@ export class DocumentsService {
             );
         }
 
-        await this.smsService.sendDocumentNotification(
-            recipient,
-            'invoice',
-            invoice.invoiceNumber,
-            `${manager.firstName} ${manager.lastName}`,
-        );
+        await this.queuesService.publishSms({
+            to: recipient,
+            message: `Your invoice ${invoice.invoiceNumber} from ${manager.firstName} ${manager.lastName} has been sent to your email. Please check your inbox.`,
+        });
 
         return {
-            message: 'Invoice SMS notification sent successfully',
+            message: 'Invoice SMS notification sent to queue successfully',
             to: recipient,
         };
     }
