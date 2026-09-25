@@ -34,9 +34,9 @@ import type {
 } from '@prisma/orm-postgres/contract/types';
 
 export type StorageHash =
-  StorageHashBase<'967937102004fa931a92cadca663395957b2703738a985ee2346b232007ca1ea'>;
+  StorageHashBase<'31346754e3109193fadf6976addb58392d319414719b6d66edc551876286971a'>;
 export type ExecutionHash =
-  ExecutionHashBase<'ea83471ee1d2ab00090a502c2e4299e0835928021b3aa4ab51d0296dcf804cd4'>;
+  ExecutionHashBase<'dac5f7aae98bf9fa187ebbcdee6938dfe757903240b2c7e9637bfb7163552a1a'>;
 export type ProfileHash =
   ProfileHashBase<'3916f444a8a17ad749191acf9e08dad97d1a327b88c2f1d45d12f240296aa8b2'>;
 
@@ -242,6 +242,14 @@ type DefaultLiteralValue<CodecId extends string, Encoded> = CodecId extends keyo
 
 export type FieldOutputTypes = {
   readonly public: {
+    readonly IdempotencyKey: {
+      readonly id: CodecTypes['pg/uuid@1']['output'];
+      readonly key: CodecTypes['pg/text@1']['output'];
+      readonly managerId: CodecTypes['pg/uuid@1']['output'];
+      readonly endpoint: CodecTypes['pg/text@1']['output'];
+      readonly response: CodecTypes['pg/json@1']['output'];
+      readonly createdAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
+    };
     readonly Invoice: {
       readonly id: CodecTypes['pg/uuid@1']['output'];
       readonly managerId: CodecTypes['pg/uuid@1']['output'];
@@ -388,6 +396,14 @@ export type FieldOutputTypes = {
 };
 export type FieldInputTypes = {
   readonly public: {
+    readonly IdempotencyKey: {
+      readonly id: CodecTypes['pg/uuid@1']['input'];
+      readonly key: CodecTypes['pg/text@1']['input'];
+      readonly managerId: CodecTypes['pg/uuid@1']['input'];
+      readonly endpoint: CodecTypes['pg/text@1']['input'];
+      readonly response: CodecTypes['pg/json@1']['input'];
+      readonly createdAt: CodecTypes['pg/timestamptz-temporal@1']['input'];
+    };
     readonly Invoice: {
       readonly id: CodecTypes['pg/uuid@1']['input'];
       readonly managerId: CodecTypes['pg/uuid@1']['input'];
@@ -534,6 +550,14 @@ export type FieldInputTypes = {
 };
 export type StorageColumnTypes = {
   readonly public: {
+    readonly idempotency_keys: {
+      readonly created_at: CodecTypes['pg/timestamptz-temporal@1']['output'];
+      readonly endpoint: CodecTypes['pg/text@1']['output'];
+      readonly id: CodecTypes['pg/uuid@1']['output'];
+      readonly key: CodecTypes['pg/text@1']['output'];
+      readonly manager_id: CodecTypes['pg/uuid@1']['output'];
+      readonly response: CodecTypes['pg/json@1']['output'];
+    };
     readonly invoice_balance_transfers: {
       readonly amount: CodecTypes['pg/numeric@1']['output'];
       readonly created_at: CodecTypes['pg/timestamptz-temporal@1']['output'];
@@ -680,6 +704,14 @@ export type StorageColumnTypes = {
 };
 export type StorageColumnInputTypes = {
   readonly public: {
+    readonly idempotency_keys: {
+      readonly created_at: CodecTypes['pg/timestamptz-temporal@1']['input'];
+      readonly endpoint: CodecTypes['pg/text@1']['input'];
+      readonly id: CodecTypes['pg/uuid@1']['input'];
+      readonly key: CodecTypes['pg/text@1']['input'];
+      readonly manager_id: CodecTypes['pg/uuid@1']['input'];
+      readonly response: CodecTypes['pg/json@1']['input'];
+    };
     readonly invoice_balance_transfers: {
       readonly amount: CodecTypes['pg/numeric@1']['input'];
       readonly created_at: CodecTypes['pg/timestamptz-temporal@1']['input'];
@@ -824,248 +856,6 @@ export type StorageColumnInputTypes = {
     };
   };
 };
-
-export namespace Models {
-  export type public_User = {
-    id: CodecTypes['pg/uuid@1']['output'];
-    email: CodecTypes['pg/text@1']['output'];
-    passwordHash: CodecTypes['pg/text@1']['output'];
-    firstName: CodecTypes['pg/text@1']['output'];
-    lastName: CodecTypes['pg/text@1']['output'];
-    address: CodecTypes['pg/text@1']['output'];
-    phone: CodecTypes['pg/text@1']['output'];
-    createdAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
-    updatedAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
-    invoiceBalanceTransfers: public_InvoiceBalanceTransfer[];
-    invoices: public_Invoice[];
-    paymentAllocations: public_PaymentAllocation[];
-    payments: public_Payment[];
-    properties: public_Property[];
-    propertyCharges: public_PropertyCharge[];
-    receipts: public_Receipt[];
-    tenancies: public_Tenancy[];
-    tenants: public_Tenant[];
-    readonly [RelationKeys]?:
-      | 'invoiceBalanceTransfers'
-      | 'invoices'
-      | 'paymentAllocations'
-      | 'payments'
-      | 'properties'
-      | 'propertyCharges'
-      | 'receipts'
-      | 'tenancies'
-      | 'tenants';
-  };
-  export type public_Property = {
-    id: CodecTypes['pg/uuid@1']['output'];
-    managerId: CodecTypes['pg/uuid@1']['output'];
-    name: CodecTypes['pg/text@1']['output'];
-    addressLine1: CodecTypes['pg/text@1']['output'];
-    addressLine2: CodecTypes['pg/text@1']['output'] | null;
-    city: CodecTypes['pg/text@1']['output'];
-    state: CodecTypes['pg/text@1']['output'] | null;
-    postalCode: CodecTypes['pg/text@1']['output'] | null;
-    country: CodecTypes['pg/text@1']['output'];
-    description: CodecTypes['pg/text@1']['output'] | null;
-    currency: CodecTypes['pg/text@1']['output'];
-    monthlyRent: CodecTypes['pg/numeric@1']['output'];
-    status: CodecTypes['pg/text@1']['output'];
-    createdAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
-    updatedAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
-    invoices: public_Invoice[];
-    manager: public_User;
-    payments: public_Payment[];
-    propertyCharges: public_PropertyCharge[];
-    tenancies: public_Tenancy[];
-    readonly [RelationKeys]?: 'invoices' | 'manager' | 'payments' | 'propertyCharges' | 'tenancies';
-  };
-  export type public_PropertyCharge = {
-    id: CodecTypes['pg/uuid@1']['output'];
-    managerId: CodecTypes['pg/uuid@1']['output'];
-    propertyId: CodecTypes['pg/uuid@1']['output'];
-    name: CodecTypes['pg/text@1']['output'];
-    description: CodecTypes['pg/text@1']['output'] | null;
-    amount: CodecTypes['pg/numeric@1']['output'];
-    billingFrequency: CodecTypes['pg/text@1']['output'];
-    isActive: CodecTypes['pg/bool@1']['output'];
-    createdAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
-    updatedAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
-    invoiceItems: public_InvoiceItem[];
-    manager: public_User;
-    property: public_Property;
-    readonly [RelationKeys]?: 'invoiceItems' | 'manager' | 'property';
-  };
-  export type public_Tenant = {
-    id: CodecTypes['pg/uuid@1']['output'];
-    managerId: CodecTypes['pg/uuid@1']['output'];
-    firstName: CodecTypes['pg/text@1']['output'];
-    lastName: CodecTypes['pg/text@1']['output'];
-    email: CodecTypes['pg/text@1']['output'];
-    phone: CodecTypes['pg/text@1']['output'];
-    address: CodecTypes['pg/text@1']['output'] | null;
-    emergencyContactName: CodecTypes['pg/text@1']['output'] | null;
-    emergencyContactPhone: CodecTypes['pg/text@1']['output'] | null;
-    status: CodecTypes['pg/text@1']['output'];
-    createdAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
-    updatedAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
-    invoices: public_Invoice[];
-    manager: public_User;
-    payments: public_Payment[];
-    tenancies: public_Tenancy[];
-    readonly [RelationKeys]?: 'invoices' | 'manager' | 'payments' | 'tenancies';
-  };
-  export type public_Tenancy = {
-    id: CodecTypes['pg/uuid@1']['output'];
-    managerId: CodecTypes['pg/uuid@1']['output'];
-    propertyId: CodecTypes['pg/uuid@1']['output'];
-    propertyUnit: CodecTypes['pg/text@1']['output'];
-    tenantId: CodecTypes['pg/uuid@1']['output'];
-    startDate: CodecTypes['pg/date-temporal@1']['output'];
-    endDate: CodecTypes['pg/date-temporal@1']['output'] | null;
-    monthlyRent: CodecTypes['pg/numeric@1']['output'];
-    status: CodecTypes['pg/text@1']['output'];
-    assignedAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
-    unassignedAt: CodecTypes['pg/timestamptz-temporal@1']['output'] | null;
-    createdAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
-    updatedAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
-    invoices: public_Invoice[];
-    manager: public_User;
-    property: public_Property;
-    tenant: public_Tenant;
-    readonly [RelationKeys]?: 'invoices' | 'manager' | 'property' | 'tenant';
-  };
-  export type public_Invoice = {
-    id: CodecTypes['pg/uuid@1']['output'];
-    managerId: CodecTypes['pg/uuid@1']['output'];
-    propertyId: CodecTypes['pg/uuid@1']['output'];
-    tenancyId: CodecTypes['pg/uuid@1']['output'];
-    tenantId: CodecTypes['pg/uuid@1']['output'];
-    invoiceNumber: CodecTypes['pg/text@1']['output'];
-    issueDate: CodecTypes['pg/date-temporal@1']['output'];
-    dueDate: CodecTypes['pg/date-temporal@1']['output'];
-    subtotal: CodecTypes['pg/numeric@1']['output'];
-    totalAmount: CodecTypes['pg/numeric@1']['output'];
-    amountPaid: CodecTypes['pg/numeric@1']['output'];
-    balanceDue: CodecTypes['pg/numeric@1']['output'];
-    status: CodecTypes['pg/text@1']['output'];
-    notes: CodecTypes['pg/text@1']['output'] | null;
-    createdAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
-    updatedAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
-    incomingBalanceTransfers: public_InvoiceBalanceTransfer[];
-    invoiceItems: public_InvoiceItem[];
-    manager: public_User;
-    outgoingBalanceTransfers: public_InvoiceBalanceTransfer[];
-    paymentAllocations: public_PaymentAllocation[];
-    payments: public_Payment[];
-    property: public_Property;
-    tenancy: public_Tenancy;
-    tenant: public_Tenant;
-    readonly [RelationKeys]?:
-      | 'incomingBalanceTransfers'
-      | 'invoiceItems'
-      | 'manager'
-      | 'outgoingBalanceTransfers'
-      | 'paymentAllocations'
-      | 'payments'
-      | 'property'
-      | 'tenancy'
-      | 'tenant';
-  };
-  export type public_InvoiceItem = {
-    id: CodecTypes['pg/uuid@1']['output'];
-    invoiceId: CodecTypes['pg/uuid@1']['output'];
-    propertyChargeId: CodecTypes['pg/uuid@1']['output'] | null;
-    description: CodecTypes['pg/text@1']['output'];
-    quantity: CodecTypes['pg/numeric@1']['output'];
-    unitAmount: CodecTypes['pg/numeric@1']['output'];
-    totalAmount: CodecTypes['pg/numeric@1']['output'];
-    createdAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
-    updatedAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
-    invoice: public_Invoice;
-    propertyCharge: public_PropertyCharge | null;
-    readonly [RelationKeys]?: 'invoice' | 'propertyCharge';
-  };
-  export type public_Payment = {
-    id: CodecTypes['pg/uuid@1']['output'];
-    managerId: CodecTypes['pg/uuid@1']['output'];
-    propertyId: CodecTypes['pg/uuid@1']['output'];
-    invoiceId: CodecTypes['pg/uuid@1']['output'];
-    tenantId: CodecTypes['pg/uuid@1']['output'];
-    paymentDate: CodecTypes['pg/date-temporal@1']['output'];
-    amount: CodecTypes['pg/numeric@1']['output'];
-    paymentMethod: CodecTypes['pg/text@1']['output'];
-    referenceNumber: CodecTypes['pg/text@1']['output'] | null;
-    notes: CodecTypes['pg/text@1']['output'] | null;
-    status: CodecTypes['pg/text@1']['output'];
-    createdAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
-    updatedAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
-    allocations: public_PaymentAllocation[];
-    invoice: public_Invoice;
-    manager: public_User;
-    property: public_Property;
-    receipt: public_Receipt | null;
-    tenant: public_Tenant;
-    readonly [RelationKeys]?:
-      'allocations' | 'invoice' | 'manager' | 'property' | 'receipt' | 'tenant';
-  };
-  export type public_Receipt = {
-    id: CodecTypes['pg/uuid@1']['output'];
-    managerId: CodecTypes['pg/uuid@1']['output'];
-    paymentId: CodecTypes['pg/uuid@1']['output'];
-    receiptNumber: CodecTypes['pg/text@1']['output'];
-    issuedAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
-    notes: CodecTypes['pg/text@1']['output'] | null;
-    createdAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
-    manager: public_User;
-    payment: public_Payment;
-    readonly [RelationKeys]?: 'manager' | 'payment';
-  };
-  export type public_InvoiceBalanceTransfer = {
-    id: CodecTypes['pg/uuid@1']['output'];
-    managerId: CodecTypes['pg/uuid@1']['output'];
-    sourceInvoiceId: CodecTypes['pg/uuid@1']['output'];
-    targetInvoiceId: CodecTypes['pg/uuid@1']['output'];
-    amount: CodecTypes['pg/numeric@1']['output'];
-    transferredAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
-    notes: CodecTypes['pg/text@1']['output'] | null;
-    createdAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
-    manager: public_User;
-    sourceInvoice: public_Invoice;
-    targetInvoice: public_Invoice;
-    readonly [RelationKeys]?: 'manager' | 'sourceInvoice' | 'targetInvoice';
-  };
-  export type public_PaymentAllocation = {
-    id: CodecTypes['pg/uuid@1']['output'];
-    managerId: CodecTypes['pg/uuid@1']['output'];
-    paymentId: CodecTypes['pg/uuid@1']['output'];
-    invoiceId: CodecTypes['pg/uuid@1']['output'];
-    amount: CodecTypes['pg/numeric@1']['output'];
-    allocatedAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
-    notes: CodecTypes['pg/text@1']['output'] | null;
-    createdAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
-    invoice: public_Invoice;
-    manager: public_User;
-    payment: public_Payment;
-    readonly [RelationKeys]?: 'invoice' | 'manager' | 'payment';
-  };
-}
-
-export declare const models: {
-  public: {
-    User: Models.public_User;
-    Property: Models.public_Property;
-    PropertyCharge: Models.public_PropertyCharge;
-    Tenant: Models.public_Tenant;
-    Tenancy: Models.public_Tenancy;
-    Invoice: Models.public_Invoice;
-    InvoiceItem: Models.public_InvoiceItem;
-    Payment: Models.public_Payment;
-    Receipt: Models.public_Receipt;
-    InvoiceBalanceTransfer: Models.public_InvoiceBalanceTransfer;
-    PaymentAllocation: Models.public_PaymentAllocation;
-  };
-};
-
 export type TypeMaps = TypeMapsType<
   CodecTypes,
   QueryOperationTypes,
@@ -1084,6 +874,58 @@ type ContractBase = Omit<
         readonly kind: 'postgres-schema';
         readonly entries: {
           readonly table: {
+            readonly idempotency_keys: {
+              columns: {
+                readonly id: {
+                  readonly nativeType: 'uuid';
+                  readonly codecId: 'pg/uuid@1';
+                  readonly nullable: false;
+                };
+                readonly key: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                };
+                readonly manager_id: {
+                  readonly nativeType: 'uuid';
+                  readonly codecId: 'pg/uuid@1';
+                  readonly nullable: false;
+                };
+                readonly endpoint: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                };
+                readonly response: {
+                  readonly nativeType: 'json';
+                  readonly codecId: 'pg/json@1';
+                  readonly nullable: false;
+                };
+                readonly created_at: {
+                  readonly nativeType: 'timestamptz';
+                  readonly codecId: 'pg/timestamptz-temporal@1';
+                  readonly nullable: false;
+                  readonly default: { readonly kind: 'function'; readonly expression: 'now()' };
+                };
+              };
+              primaryKey: { readonly columns: readonly ['id'] };
+              uniques: readonly [{ readonly columns: readonly ['key'] }];
+              indexes: readonly [
+                {
+                  readonly name: 'idempotency_keys_manager_id_idx_c3dee277';
+                  readonly prefix: 'idempotency_keys_manager_id_idx';
+                  readonly columns: readonly ['manager_id'];
+                  readonly unique: false;
+                },
+                {
+                  readonly name: 'idempotency_keys_key_idx_2077e847';
+                  readonly prefix: 'idempotency_keys_key_idx';
+                  readonly columns: readonly ['key'];
+                  readonly unique: false;
+                },
+              ];
+              foreignKeys: readonly [];
+            };
             readonly invoice_balance_transfers: {
               columns: {
                 readonly id: {
@@ -2323,11 +2165,59 @@ type ContractBase = Omit<
       readonly namespace: 'public' & NamespaceId;
       readonly model: 'PaymentAllocation';
     };
+    readonly idempotency_keys: {
+      readonly namespace: 'public' & NamespaceId;
+      readonly model: 'IdempotencyKey';
+    };
   };
   readonly domain: {
     readonly namespaces: {
       readonly public: {
         readonly models: {
+          readonly IdempotencyKey: {
+            readonly fields: {
+              readonly id: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/uuid@1' };
+              };
+              readonly key: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly managerId: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/uuid@1' };
+              };
+              readonly endpoint: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly response: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/json@1' };
+              };
+              readonly createdAt: {
+                readonly nullable: false;
+                readonly type: {
+                  readonly kind: 'scalar';
+                  readonly codecId: 'pg/timestamptz-temporal@1';
+                };
+              };
+            };
+            readonly relations: Record<string, never>;
+            readonly storage: {
+              readonly table: 'idempotency_keys';
+              readonly namespaceId: 'public';
+              readonly fields: {
+                readonly id: { readonly column: 'id' };
+                readonly key: { readonly column: 'key' };
+                readonly managerId: { readonly column: 'manager_id' };
+                readonly endpoint: { readonly column: 'endpoint' };
+                readonly response: { readonly column: 'response' };
+                readonly createdAt: { readonly column: 'created_at' };
+              };
+            };
+          };
           readonly Invoice: {
             readonly fields: {
               readonly id: {
@@ -2427,7 +2317,6 @@ type ContractBase = Omit<
               readonly manager: {
                 readonly to: { readonly namespace: 'public' & NamespaceId; readonly model: 'User' };
                 readonly cardinality: 'N:1';
-                readonly nullable: false;
                 readonly on: {
                   readonly localFields: readonly ['managerId'];
                   readonly targetFields: readonly ['id'];
@@ -2472,7 +2361,6 @@ type ContractBase = Omit<
                   readonly model: 'Property';
                 };
                 readonly cardinality: 'N:1';
-                readonly nullable: false;
                 readonly on: {
                   readonly localFields: readonly ['propertyId'];
                   readonly targetFields: readonly ['id'];
@@ -2484,7 +2372,6 @@ type ContractBase = Omit<
                   readonly model: 'Tenancy';
                 };
                 readonly cardinality: 'N:1';
-                readonly nullable: false;
                 readonly on: {
                   readonly localFields: readonly ['tenancyId'];
                   readonly targetFields: readonly ['id'];
@@ -2496,7 +2383,6 @@ type ContractBase = Omit<
                   readonly model: 'Tenant';
                 };
                 readonly cardinality: 'N:1';
-                readonly nullable: false;
                 readonly on: {
                   readonly localFields: readonly ['tenantId'];
                   readonly targetFields: readonly ['id'];
@@ -2571,7 +2457,6 @@ type ContractBase = Omit<
               readonly manager: {
                 readonly to: { readonly namespace: 'public' & NamespaceId; readonly model: 'User' };
                 readonly cardinality: 'N:1';
-                readonly nullable: false;
                 readonly on: {
                   readonly localFields: readonly ['managerId'];
                   readonly targetFields: readonly ['id'];
@@ -2583,7 +2468,6 @@ type ContractBase = Omit<
                   readonly model: 'Invoice';
                 };
                 readonly cardinality: 'N:1';
-                readonly nullable: false;
                 readonly on: {
                   readonly localFields: readonly ['sourceInvoiceId'];
                   readonly targetFields: readonly ['id'];
@@ -2595,7 +2479,6 @@ type ContractBase = Omit<
                   readonly model: 'Invoice';
                 };
                 readonly cardinality: 'N:1';
-                readonly nullable: false;
                 readonly on: {
                   readonly localFields: readonly ['targetInvoiceId'];
                   readonly targetFields: readonly ['id'];
@@ -2669,7 +2552,6 @@ type ContractBase = Omit<
                   readonly model: 'Invoice';
                 };
                 readonly cardinality: 'N:1';
-                readonly nullable: false;
                 readonly on: {
                   readonly localFields: readonly ['invoiceId'];
                   readonly targetFields: readonly ['id'];
@@ -2681,7 +2563,6 @@ type ContractBase = Omit<
                   readonly model: 'PropertyCharge';
                 };
                 readonly cardinality: 'N:1';
-                readonly nullable: true;
                 readonly on: {
                   readonly localFields: readonly ['propertyChargeId'];
                   readonly targetFields: readonly ['id'];
@@ -2783,7 +2664,6 @@ type ContractBase = Omit<
                   readonly model: 'Invoice';
                 };
                 readonly cardinality: 'N:1';
-                readonly nullable: false;
                 readonly on: {
                   readonly localFields: readonly ['invoiceId'];
                   readonly targetFields: readonly ['id'];
@@ -2792,7 +2672,6 @@ type ContractBase = Omit<
               readonly manager: {
                 readonly to: { readonly namespace: 'public' & NamespaceId; readonly model: 'User' };
                 readonly cardinality: 'N:1';
-                readonly nullable: false;
                 readonly on: {
                   readonly localFields: readonly ['managerId'];
                   readonly targetFields: readonly ['id'];
@@ -2804,7 +2683,6 @@ type ContractBase = Omit<
                   readonly model: 'Property';
                 };
                 readonly cardinality: 'N:1';
-                readonly nullable: false;
                 readonly on: {
                   readonly localFields: readonly ['propertyId'];
                   readonly targetFields: readonly ['id'];
@@ -2816,7 +2694,6 @@ type ContractBase = Omit<
                   readonly model: 'Receipt';
                 };
                 readonly cardinality: '1:1';
-                readonly nullable: true;
                 readonly on: {
                   readonly localFields: readonly ['id'];
                   readonly targetFields: readonly ['paymentId'];
@@ -2828,7 +2705,6 @@ type ContractBase = Omit<
                   readonly model: 'Tenant';
                 };
                 readonly cardinality: 'N:1';
-                readonly nullable: false;
                 readonly on: {
                   readonly localFields: readonly ['tenantId'];
                   readonly targetFields: readonly ['id'];
@@ -2903,7 +2779,6 @@ type ContractBase = Omit<
                   readonly model: 'Invoice';
                 };
                 readonly cardinality: 'N:1';
-                readonly nullable: false;
                 readonly on: {
                   readonly localFields: readonly ['invoiceId'];
                   readonly targetFields: readonly ['id'];
@@ -2912,7 +2787,6 @@ type ContractBase = Omit<
               readonly manager: {
                 readonly to: { readonly namespace: 'public' & NamespaceId; readonly model: 'User' };
                 readonly cardinality: 'N:1';
-                readonly nullable: false;
                 readonly on: {
                   readonly localFields: readonly ['managerId'];
                   readonly targetFields: readonly ['id'];
@@ -2924,7 +2798,6 @@ type ContractBase = Omit<
                   readonly model: 'Payment';
                 };
                 readonly cardinality: 'N:1';
-                readonly nullable: false;
                 readonly on: {
                   readonly localFields: readonly ['paymentId'];
                   readonly targetFields: readonly ['id'];
@@ -3030,7 +2903,6 @@ type ContractBase = Omit<
               readonly manager: {
                 readonly to: { readonly namespace: 'public' & NamespaceId; readonly model: 'User' };
                 readonly cardinality: 'N:1';
-                readonly nullable: false;
                 readonly on: {
                   readonly localFields: readonly ['managerId'];
                   readonly targetFields: readonly ['id'];
@@ -3156,7 +3028,6 @@ type ContractBase = Omit<
               readonly manager: {
                 readonly to: { readonly namespace: 'public' & NamespaceId; readonly model: 'User' };
                 readonly cardinality: 'N:1';
-                readonly nullable: false;
                 readonly on: {
                   readonly localFields: readonly ['managerId'];
                   readonly targetFields: readonly ['id'];
@@ -3168,7 +3039,6 @@ type ContractBase = Omit<
                   readonly model: 'Property';
                 };
                 readonly cardinality: 'N:1';
-                readonly nullable: false;
                 readonly on: {
                   readonly localFields: readonly ['propertyId'];
                   readonly targetFields: readonly ['id'];
@@ -3233,7 +3103,6 @@ type ContractBase = Omit<
               readonly manager: {
                 readonly to: { readonly namespace: 'public' & NamespaceId; readonly model: 'User' };
                 readonly cardinality: 'N:1';
-                readonly nullable: false;
                 readonly on: {
                   readonly localFields: readonly ['managerId'];
                   readonly targetFields: readonly ['id'];
@@ -3245,7 +3114,6 @@ type ContractBase = Omit<
                   readonly model: 'Payment';
                 };
                 readonly cardinality: 'N:1';
-                readonly nullable: false;
                 readonly on: {
                   readonly localFields: readonly ['paymentId'];
                   readonly targetFields: readonly ['id'];
@@ -3348,7 +3216,6 @@ type ContractBase = Omit<
               readonly manager: {
                 readonly to: { readonly namespace: 'public' & NamespaceId; readonly model: 'User' };
                 readonly cardinality: 'N:1';
-                readonly nullable: false;
                 readonly on: {
                   readonly localFields: readonly ['managerId'];
                   readonly targetFields: readonly ['id'];
@@ -3360,7 +3227,6 @@ type ContractBase = Omit<
                   readonly model: 'Property';
                 };
                 readonly cardinality: 'N:1';
-                readonly nullable: false;
                 readonly on: {
                   readonly localFields: readonly ['propertyId'];
                   readonly targetFields: readonly ['id'];
@@ -3372,7 +3238,6 @@ type ContractBase = Omit<
                   readonly model: 'Tenant';
                 };
                 readonly cardinality: 'N:1';
-                readonly nullable: false;
                 readonly on: {
                   readonly localFields: readonly ['tenantId'];
                   readonly targetFields: readonly ['id'];
@@ -3471,7 +3336,6 @@ type ContractBase = Omit<
               readonly manager: {
                 readonly to: { readonly namespace: 'public' & NamespaceId; readonly model: 'User' };
                 readonly cardinality: 'N:1';
-                readonly nullable: false;
                 readonly on: {
                   readonly localFields: readonly ['managerId'];
                   readonly targetFields: readonly ['id'];
@@ -3708,6 +3572,14 @@ type ContractBase = Omit<
     readonly executionHash: ExecutionHash;
     readonly mutations: {
       readonly defaults: readonly [
+        {
+          readonly ref: {
+            readonly namespace: 'public';
+            readonly table: 'idempotency_keys';
+            readonly column: 'id';
+          };
+          readonly onCreate: { readonly kind: 'generator'; readonly id: 'uuidv4' };
+        },
         {
           readonly ref: {
             readonly namespace: 'public';

@@ -85,6 +85,7 @@ export class PaymentsController {
             dto.invoiceId,
             dto.amount.toString(),
             dto.notes,
+            dto.idempotencyKey,
         );
     }
 }

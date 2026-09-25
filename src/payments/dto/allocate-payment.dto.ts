@@ -28,4 +28,12 @@ export class AllocatePaymentDto {
     @IsOptional()
     @IsString()
     notes?: string;
+
+    @ApiProperty({
+        example: 'idempotency-key-67890',
+        description: 'Unique key to ensure idempotency. If provided, duplicate requests with the same key will return the cached response.',
+    })
+    @IsOptional()
+    @IsString()
+    idempotencyKey?: string;
 }
