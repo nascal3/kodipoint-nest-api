@@ -13,7 +13,6 @@ import { ReceiptsModule } from './receipts/receipts.module';
 import { DocumentsModule } from './documents/documents.module';
 import { ReportsModule } from './reports/reports.module';
 import { QueuesModule } from './queues/queues.module';
-// import { JobsModule } from './jobs/jobs.module';
 
 @Module({
   imports: [
@@ -29,8 +28,7 @@ import { QueuesModule } from './queues/queues.module';
     ReceiptsModule,
     DocumentsModule,
     ReportsModule,
-    QueuesModule,
-    // JobsModule,
+    QueuesModule
   ],
 })
 export class AppModule {}
