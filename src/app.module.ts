@@ -12,7 +12,7 @@ import { PaymentsModule } from './payments/payments.module';
 import { ReceiptsModule } from './receipts/receipts.module';
 import { DocumentsModule } from './documents/documents.module';
 import { ReportsModule } from './reports/reports.module';
-// import { JobsModule } from './jobs/jobs.module';
+import { QueuesModule } from './queues/queues.module';
 
 @Module({
   imports: [
@@ -28,7 +28,7 @@ import { ReportsModule } from './reports/reports.module';
     ReceiptsModule,
     DocumentsModule,
     ReportsModule,
-    // JobsModule,
+    QueuesModule
   ],
 })
 export class AppModule {}

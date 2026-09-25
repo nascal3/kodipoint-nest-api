@@ -4,6 +4,7 @@ import {
   DocumentBuilder,
   SwaggerModule,
 } from '@nestjs/swagger';
+import { Transport, MicroserviceOptions } from '@nestjs/microservices';
 
 import { AppModule } from './app.module';
 import {HttpExceptionFilter} from "@/common/filters/http-exception.filter";
@@ -32,6 +33,18 @@ async function bootstrap() {
         new HttpExceptionFilter(),
     );
 
+  // Connect to RabbitMQ for microservices
+  const rabbitmqUrl = process.env.RABBITMQ_URL || 'amqp://localhost:5672';
+  app.connectMicroservice<MicroserviceOptions>({
+    transport: Transport.RMQ,
+    options: {
+      urls: [rabbitmqUrl],
+      queue: 'kodipoint_queue',
+      queueOptions: {
+        durable: true,
+      },
+    },
+  });
 
     const swaggerConfig = new DocumentBuilder()
       .setTitle('Property Management API')
@@ -62,6 +75,7 @@ async function bootstrap() {
       }
   });
 
+  await app.startAllMicroservices();
   await app.listen(process.env.PORT ?? 3000);
 }
 

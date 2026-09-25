@@ -14,6 +14,14 @@ export interface SendMailOptions {
     };
 }
 
+export interface SendEmailOptions {
+    to: string;
+    from?: string;
+    subject: string;
+    text?: string;
+    html?: string;
+}
+
 @Injectable()
 export class EmailService {
     private readonly logger = new Logger(EmailService.name);
@@ -61,5 +69,15 @@ export class EmailService {
         this.logger.log(
             `Sent "${options.subject}" to ${options.to} (attachment: ${options.attachment.filename})`,
         );
+    }
+
+    async send(options: SendEmailOptions): Promise<void> {
+        await this.transporter.sendMail({
+            from: options.from ?? this.defaultFrom,
+            to: options.to,
+            subject: options.subject,
+            text: options.text,
+            html: options.html,
+        });
     }
 }
