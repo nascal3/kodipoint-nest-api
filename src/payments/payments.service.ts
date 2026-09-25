@@ -16,9 +16,10 @@ export class PaymentsService {
         private readonly prisma: DatabaseService,
     ) {}
 
-    async create(managerId: string, dto: CreatePaymentDto,) {
+    async create(managerId: string, dto: CreatePaymentDto) {
         const paymentAmount = money(dto.amount);
         const paymentDate = new Date(dto.paymentDate);
+        const idempotencyKey = `payment-${Date.now()}-${crypto.randomUUID()}`;
 
         if (!paymentAmount.greaterThan(0)) {
             throw new BadRequestException(
@@ -32,7 +33,18 @@ export class PaymentsService {
             );
         }
 
-        return this.prisma.db.transaction(async (tx) => {
+        const existing = await this.prisma.db.orm.public.IdempotencyKey
+                .where({
+                    key: idempotencyKey,
+                    managerId,
+                })
+                .first();
+
+            if (existing) {
+                return existing.response;
+            }
+
+        const result = await this.prisma.db.transaction(async (tx) => {
             const invoice =
                 await tx.orm.public.Invoice
                     .where({
@@ -115,6 +127,15 @@ export class PaymentsService {
                 },
             };
         });
+
+        await this.prisma.db.orm.public.IdempotencyKey.create({
+                key: idempotencyKey,
+                managerId,
+                endpoint: 'POST /payments',
+                response: result,
+            });
+
+        return result;
     }
 
     async allocateExistingPayment(
@@ -123,8 +144,22 @@ export class PaymentsService {
         invoiceId: string,
         amount: string,
         notes?: string,
+        idempotencyKey?: string,
     ) {
         const requestedAmount = money(amount);
+
+        if (idempotencyKey) {
+            const existing = await this.prisma.db.orm.public.IdempotencyKey
+                .where({
+                    key: idempotencyKey,
+                    managerId,
+                })
+                .first();
+
+            if (existing) {
+                return existing.response;
+            }
+        }
 
         if (!requestedAmount.greaterThan(0)) {
             throw new BadRequestException(
@@ -132,7 +167,7 @@ export class PaymentsService {
             );
         }
 
-        return this.prisma.db.transaction(async (tx) => {
+        const result = await this.prisma.db.transaction(async (tx) => {
             const payment =
                 await tx.orm.public.Payment
                     .where({
@@ -262,13 +297,38 @@ export class PaymentsService {
                 },
             };
         });
+
+        if (idempotencyKey) {
+            await this.prisma.db.orm.public.IdempotencyKey.create({
+                key: idempotencyKey!,
+                managerId,
+                endpoint: `POST /payments/${paymentId}/allocations`,
+                response: result,
+            });
+        }
+
+        return result;
     }
 
     async reversePayment(
         managerId: string,
         paymentId: string,
+        idempotencyKey?: string,
     ) {
-        return this.prisma.db.transaction(async (tx) => {
+        if (idempotencyKey) {
+            const existing = await this.prisma.db.orm.public.IdempotencyKey
+                .where({
+                    key: idempotencyKey,
+                    managerId,
+                })
+                .first();
+
+            if (existing) {
+                return existing.response;
+            }
+        }
+
+        const result = await this.prisma.db.transaction(async (tx) => {
             const payment =
                 await tx.orm.public.Payment
                     .where({
@@ -357,6 +417,17 @@ export class PaymentsService {
                 affectedInvoiceIds,
             };
         });
+
+        if (idempotencyKey) {
+            await this.prisma.db.orm.public.IdempotencyKey.create({
+                key: idempotencyKey,
+                managerId,
+                endpoint: `POST /payments/${paymentId}/reverse`,
+                response: result,
+            });
+        }
+
+        return result;
     }
 
     async findAll(managerId: string) {

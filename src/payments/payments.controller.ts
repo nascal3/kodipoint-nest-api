@@ -17,7 +17,7 @@ import * as authenticatedUserType from '@/common/types/authenticated-user.type';
 
 import {CreatePaymentDto} from './dto/create-payment.dto';
 import {PaymentsService} from './payments.service';
-import {AllocatePaymentDto} from "@/payments/dto/allocate-payment.dto";
+import {AllocatePaymentDto} from "@/payment-allocations/dto/allocate-payment.dto";
 
 @ApiTags('Payments')
 @ApiBearerAuth('access-token')
@@ -85,6 +85,7 @@ export class PaymentsController {
             dto.invoiceId,
             dto.amount.toString(),
             dto.notes,
+            dto.idempotencyKey,
         );
     }
 }

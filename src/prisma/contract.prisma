@@ -284,3 +284,16 @@ model PaymentAllocation {
   @@index([managerId, invoiceId])
   @@map("payment_allocations")
 }
+
+model IdempotencyKey {
+  id        Uuid   @id @default(uuid())
+  key       String @unique
+  managerId Uuid   @map("manager_id")
+  endpoint  String
+  response  Json
+  createdAt temporal.createdAt() @map("created_at")
+
+  @@index([managerId])
+  @@index([key])
+  @@map("idempotency_keys")
+}
