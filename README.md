@@ -23,7 +23,7 @@
 
 ## Description
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+Real estate properties management system. Entails registration of an account for the user(real estate manager). The user is also able to manage tenants and their properties. The user can invoice the tenants attached to a property based on the property rent or other service charges attached to that property. The user can also generate receipts for invoices created and paid by a tenant. The system is able to track income over each of the properties over time the same as to the tenants invoicing and payment records.
 
 ## Project setup
 
