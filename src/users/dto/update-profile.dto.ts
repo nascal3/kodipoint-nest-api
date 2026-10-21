@@ -43,6 +43,30 @@ export class UpdateProfileDto {
     @IsString()
     address: string;
 
+    @ApiProperty({
+        description: 'The billing address that will show on the invoice/receipt',
+        example: 'P.O Box 12345 00400 Kiambu',
+        required: false,
+    })
+    @IsString()
+    billingAddress: string;
+
+    @ApiProperty({
+        description: 'The billing email that will show on the invoice/receipt',
+        example: 'john.doe@example.com',
+        required: false,
+    })
+    @IsString()
+    billingEmail: string;
+
+    @ApiProperty({
+        description: 'The organization/agency name that will show on the invoice/receipt',
+        example: 'Kodipoint Agency',
+        required: false,
+    })
+    @IsString()
+    organization: string;
+
 
     @ApiProperty({
         description: 'The phone number of the user',
