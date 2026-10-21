@@ -1,0 +1,2995 @@
+[
+  {
+    "id": "schema.public",
+    "label": "Create schema \"public\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres"
+    },
+    "precheck": [],
+    "execute": [
+      {
+        "description": "Create schema \"public\"",
+        "sql": "CREATE SCHEMA IF NOT EXISTS \"public\"",
+        "params": []
+      }
+    ],
+    "postcheck": []
+  },
+  {
+    "id": "table.idempotency_keys",
+    "label": "Create table \"idempotency_keys\"",
+    "summary": "Creates table \"idempotency_keys\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "idempotency_keys"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"idempotency_keys\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"idempotency_keys\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"idempotency_keys\"",
+        "sql": "CREATE TABLE \"public\".\"idempotency_keys\" (\n  \"created_at\" timestamptz DEFAULT (now()) NOT NULL,\n  \"endpoint\" text NOT NULL,\n  \"id\" uuid NOT NULL,\n  \"key\" text NOT NULL,\n  \"manager_id\" uuid NOT NULL,\n  \"response\" json NOT NULL,\n  PRIMARY KEY (\"id\")\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"idempotency_keys\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"idempotency_keys\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "table.invoice_balance_transfers",
+    "label": "Create table \"invoice_balance_transfers\"",
+    "summary": "Creates table \"invoice_balance_transfers\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "invoice_balance_transfers"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"invoice_balance_transfers\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"invoice_balance_transfers\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"invoice_balance_transfers\"",
+        "sql": "CREATE TABLE \"public\".\"invoice_balance_transfers\" (\n  \"amount\" numeric NOT NULL,\n  \"created_at\" timestamptz DEFAULT (now()) NOT NULL,\n  \"id\" uuid NOT NULL,\n  \"manager_id\" uuid NOT NULL,\n  \"notes\" text,\n  \"source_invoice_id\" uuid NOT NULL,\n  \"target_invoice_id\" uuid NOT NULL,\n  \"transferred_at\" timestamptz NOT NULL,\n  PRIMARY KEY (\"id\")\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"invoice_balance_transfers\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"invoice_balance_transfers\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "table.invoice_items",
+    "label": "Create table \"invoice_items\"",
+    "summary": "Creates table \"invoice_items\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "invoice_items"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"invoice_items\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"invoice_items\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"invoice_items\"",
+        "sql": "CREATE TABLE \"public\".\"invoice_items\" (\n  \"created_at\" timestamptz DEFAULT (now()) NOT NULL,\n  \"description\" text NOT NULL,\n  \"id\" uuid NOT NULL,\n  \"invoice_id\" uuid NOT NULL,\n  \"property_charge_id\" uuid,\n  \"quantity\" numeric NOT NULL,\n  \"total_amount\" numeric NOT NULL,\n  \"unit_amount\" numeric NOT NULL,\n  \"updated_at\" timestamptz NOT NULL,\n  PRIMARY KEY (\"id\")\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"invoice_items\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"invoice_items\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "table.invoices",
+    "label": "Create table \"invoices\"",
+    "summary": "Creates table \"invoices\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "invoices"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"invoices\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"invoices\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"invoices\"",
+        "sql": "CREATE TABLE \"public\".\"invoices\" (\n  \"amount_paid\" numeric NOT NULL,\n  \"balance_due\" numeric NOT NULL,\n  \"created_at\" timestamptz DEFAULT (now()) NOT NULL,\n  \"due_date\" date NOT NULL,\n  \"id\" uuid NOT NULL,\n  \"invoice_number\" text NOT NULL,\n  \"issue_date\" date NOT NULL,\n  \"manager_id\" uuid NOT NULL,\n  \"notes\" text,\n  \"property_id\" uuid NOT NULL,\n  \"status\" text NOT NULL,\n  \"subtotal\" numeric NOT NULL,\n  \"tenancy_id\" uuid NOT NULL,\n  \"tenant_id\" uuid NOT NULL,\n  \"total_amount\" numeric NOT NULL,\n  \"updated_at\" timestamptz NOT NULL,\n  PRIMARY KEY (\"id\")\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"invoices\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"invoices\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "table.payment_allocations",
+    "label": "Create table \"payment_allocations\"",
+    "summary": "Creates table \"payment_allocations\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "payment_allocations"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"payment_allocations\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"payment_allocations\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"payment_allocations\"",
+        "sql": "CREATE TABLE \"public\".\"payment_allocations\" (\n  \"allocated_at\" timestamptz NOT NULL,\n  \"amount\" numeric NOT NULL,\n  \"created_at\" timestamptz DEFAULT (now()) NOT NULL,\n  \"id\" uuid NOT NULL,\n  \"invoice_id\" uuid NOT NULL,\n  \"manager_id\" uuid NOT NULL,\n  \"notes\" text,\n  \"payment_id\" uuid NOT NULL,\n  PRIMARY KEY (\"id\")\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"payment_allocations\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"payment_allocations\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "table.payments",
+    "label": "Create table \"payments\"",
+    "summary": "Creates table \"payments\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "payments"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"payments\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"payments\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"payments\"",
+        "sql": "CREATE TABLE \"public\".\"payments\" (\n  \"amount\" numeric NOT NULL,\n  \"created_at\" timestamptz DEFAULT (now()) NOT NULL,\n  \"id\" uuid NOT NULL,\n  \"invoice_id\" uuid NOT NULL,\n  \"manager_id\" uuid NOT NULL,\n  \"notes\" text,\n  \"payment_date\" date NOT NULL,\n  \"payment_method\" text NOT NULL,\n  \"property_id\" uuid NOT NULL,\n  \"reference_number\" text,\n  \"status\" text NOT NULL,\n  \"tenant_id\" uuid NOT NULL,\n  \"updated_at\" timestamptz NOT NULL,\n  PRIMARY KEY (\"id\")\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"payments\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"payments\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "table.properties",
+    "label": "Create table \"properties\"",
+    "summary": "Creates table \"properties\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "properties"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"properties\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"properties\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"properties\"",
+        "sql": "CREATE TABLE \"public\".\"properties\" (\n  \"address_line_1\" text NOT NULL,\n  \"address_line_2\" text,\n  \"city\" text NOT NULL,\n  \"country\" text NOT NULL,\n  \"created_at\" timestamptz DEFAULT (now()) NOT NULL,\n  \"currency\" text DEFAULT 'KES' NOT NULL,\n  \"description\" text,\n  \"id\" uuid NOT NULL,\n  \"manager_id\" uuid NOT NULL,\n  \"monthly_rent\" numeric NOT NULL,\n  \"name\" text NOT NULL,\n  \"postal_code\" text,\n  \"state\" text,\n  \"status\" text DEFAULT 'ACTIVE' NOT NULL,\n  \"updated_at\" timestamptz NOT NULL,\n  PRIMARY KEY (\"id\")\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"properties\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"properties\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "table.property_charges",
+    "label": "Create table \"property_charges\"",
+    "summary": "Creates table \"property_charges\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "property_charges"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"property_charges\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"property_charges\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"property_charges\"",
+        "sql": "CREATE TABLE \"public\".\"property_charges\" (\n  \"amount\" numeric NOT NULL,\n  \"billing_frequency\" text NOT NULL,\n  \"created_at\" timestamptz DEFAULT (now()) NOT NULL,\n  \"description\" text,\n  \"id\" uuid NOT NULL,\n  \"is_active\" bool NOT NULL,\n  \"manager_id\" uuid NOT NULL,\n  \"name\" text NOT NULL,\n  \"property_id\" uuid NOT NULL,\n  \"updated_at\" timestamptz NOT NULL,\n  PRIMARY KEY (\"id\")\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"property_charges\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"property_charges\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "table.receipts",
+    "label": "Create table \"receipts\"",
+    "summary": "Creates table \"receipts\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "receipts"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"receipts\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"receipts\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"receipts\"",
+        "sql": "CREATE TABLE \"public\".\"receipts\" (\n  \"created_at\" timestamptz DEFAULT (now()) NOT NULL,\n  \"id\" uuid NOT NULL,\n  \"issued_at\" timestamptz NOT NULL,\n  \"manager_id\" uuid NOT NULL,\n  \"notes\" text,\n  \"payment_id\" uuid NOT NULL,\n  \"receipt_number\" text NOT NULL,\n  PRIMARY KEY (\"id\")\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"receipts\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"receipts\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "table.tenancies",
+    "label": "Create table \"tenancies\"",
+    "summary": "Creates table \"tenancies\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "tenancies"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"tenancies\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"tenancies\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"tenancies\"",
+        "sql": "CREATE TABLE \"public\".\"tenancies\" (\n  \"assigned_at\" timestamptz NOT NULL,\n  \"created_at\" timestamptz DEFAULT (now()) NOT NULL,\n  \"end_date\" date,\n  \"id\" uuid NOT NULL,\n  \"manager_id\" uuid NOT NULL,\n  \"monthly_rent\" numeric NOT NULL,\n  \"property_id\" uuid NOT NULL,\n  \"property_unit\" text NOT NULL,\n  \"start_date\" date NOT NULL,\n  \"status\" text DEFAULT 'ACTIVE' NOT NULL,\n  \"tenant_id\" uuid NOT NULL,\n  \"unassigned_at\" timestamptz,\n  \"updated_at\" timestamptz NOT NULL,\n  PRIMARY KEY (\"id\")\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"tenancies\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"tenancies\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "table.tenants",
+    "label": "Create table \"tenants\"",
+    "summary": "Creates table \"tenants\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "tenants"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"tenants\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"tenants\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"tenants\"",
+        "sql": "CREATE TABLE \"public\".\"tenants\" (\n  \"address\" text,\n  \"created_at\" timestamptz DEFAULT (now()) NOT NULL,\n  \"email\" text NOT NULL,\n  \"emergency_contact_name\" text,\n  \"emergency_contact_phone\" text,\n  \"first_name\" text NOT NULL,\n  \"id\" uuid NOT NULL,\n  \"last_name\" text NOT NULL,\n  \"manager_id\" uuid NOT NULL,\n  \"phone\" text NOT NULL,\n  \"status\" text DEFAULT 'ACTIVE' NOT NULL,\n  \"updated_at\" timestamptz NOT NULL,\n  PRIMARY KEY (\"id\")\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"tenants\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"tenants\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "table.users",
+    "label": "Create table \"users\"",
+    "summary": "Creates table \"users\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "users"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"users\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"users\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"users\"",
+        "sql": "CREATE TABLE \"public\".\"users\" (\n  \"address\" text NOT NULL,\n  \"created_at\" timestamptz DEFAULT (now()) NOT NULL,\n  \"email\" text NOT NULL,\n  \"first_name\" text NOT NULL,\n  \"id\" uuid NOT NULL,\n  \"last_name\" text NOT NULL,\n  \"organization\" text,\n  \"password_hash\" text NOT NULL,\n  \"phone\" text NOT NULL,\n  \"role\" text DEFAULT 'administrator' NOT NULL,\n  \"status\" text DEFAULT 'active' NOT NULL,\n  \"updated_at\" timestamptz NOT NULL,\n  PRIMARY KEY (\"id\")\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"users\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"users\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unique.idempotency_keys.idempotency_keys_key_key",
+    "label": "Add unique constraint on \"idempotency_keys\" (key)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "idempotency_keys_key_key",
+        "table": "idempotency_keys"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"idempotency_keys_key_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "idempotency_keys_key_key",
+          "public",
+          "\"public\".\"idempotency_keys\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"idempotency_keys_key_key\"",
+        "sql": "ALTER TABLE \"public\".\"idempotency_keys\" ADD CONSTRAINT \"idempotency_keys_key_key\" UNIQUE (\"key\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"idempotency_keys_key_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "idempotency_keys_key_key",
+          "public",
+          "\"public\".\"idempotency_keys\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unique.invoices.invoices_invoice_number_key",
+    "label": "Add unique constraint on \"invoices\" (invoice_number)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "invoices_invoice_number_key",
+        "table": "invoices"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"invoices_invoice_number_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "invoices_invoice_number_key",
+          "public",
+          "\"public\".\"invoices\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"invoices_invoice_number_key\"",
+        "sql": "ALTER TABLE \"public\".\"invoices\" ADD CONSTRAINT \"invoices_invoice_number_key\" UNIQUE (\"invoice_number\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"invoices_invoice_number_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "invoices_invoice_number_key",
+          "public",
+          "\"public\".\"invoices\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unique.receipts.receipts_payment_id_key",
+    "label": "Add unique constraint on \"receipts\" (payment_id)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "receipts_payment_id_key",
+        "table": "receipts"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"receipts_payment_id_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "receipts_payment_id_key",
+          "public",
+          "\"public\".\"receipts\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"receipts_payment_id_key\"",
+        "sql": "ALTER TABLE \"public\".\"receipts\" ADD CONSTRAINT \"receipts_payment_id_key\" UNIQUE (\"payment_id\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"receipts_payment_id_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "receipts_payment_id_key",
+          "public",
+          "\"public\".\"receipts\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unique.receipts.receipts_receipt_number_key",
+    "label": "Add unique constraint on \"receipts\" (receipt_number)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "receipts_receipt_number_key",
+        "table": "receipts"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"receipts_receipt_number_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "receipts_receipt_number_key",
+          "public",
+          "\"public\".\"receipts\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"receipts_receipt_number_key\"",
+        "sql": "ALTER TABLE \"public\".\"receipts\" ADD CONSTRAINT \"receipts_receipt_number_key\" UNIQUE (\"receipt_number\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"receipts_receipt_number_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "receipts_receipt_number_key",
+          "public",
+          "\"public\".\"receipts\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unique.users.users_email_key",
+    "label": "Add unique constraint on \"users\" (email)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "users_email_key",
+        "table": "users"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"users_email_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "users_email_key",
+          "public",
+          "\"public\".\"users\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"users_email_key\"",
+        "sql": "ALTER TABLE \"public\".\"users\" ADD CONSTRAINT \"users_email_key\" UNIQUE (\"email\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"users_email_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "users_email_key",
+          "public",
+          "\"public\".\"users\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.idempotency_keys.idempotency_keys_key_idx_2077e847",
+    "label": "Create index \"idempotency_keys_key_idx_2077e847\" on \"idempotency_keys\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "idempotency_keys_key_idx_2077e847",
+        "table": "idempotency_keys"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"idempotency_keys_key_idx_2077e847\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"idempotency_keys_key_idx_2077e847\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"idempotency_keys_key_idx_2077e847\"",
+        "sql": "CREATE INDEX \"idempotency_keys_key_idx_2077e847\" ON \"public\".\"idempotency_keys\" (\"key\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"idempotency_keys_key_idx_2077e847\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"idempotency_keys_key_idx_2077e847\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.idempotency_keys.idempotency_keys_manager_id_idx_c3dee277",
+    "label": "Create index \"idempotency_keys_manager_id_idx_c3dee277\" on \"idempotency_keys\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "idempotency_keys_manager_id_idx_c3dee277",
+        "table": "idempotency_keys"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"idempotency_keys_manager_id_idx_c3dee277\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"idempotency_keys_manager_id_idx_c3dee277\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"idempotency_keys_manager_id_idx_c3dee277\"",
+        "sql": "CREATE INDEX \"idempotency_keys_manager_id_idx_c3dee277\" ON \"public\".\"idempotency_keys\" (\"manager_id\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"idempotency_keys_manager_id_idx_c3dee277\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"idempotency_keys_manager_id_idx_c3dee277\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.invoice_balance_transfers.inv_bal_tx_mgr_src_idx",
+    "label": "Create index \"inv_bal_tx_mgr_src_idx\" on \"invoice_balance_transfers\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "inv_bal_tx_mgr_src_idx",
+        "table": "invoice_balance_transfers"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"inv_bal_tx_mgr_src_idx\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"inv_bal_tx_mgr_src_idx\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"inv_bal_tx_mgr_src_idx\"",
+        "sql": "CREATE INDEX \"inv_bal_tx_mgr_src_idx\" ON \"public\".\"invoice_balance_transfers\" (\"manager_id\", \"source_invoice_id\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"inv_bal_tx_mgr_src_idx\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"inv_bal_tx_mgr_src_idx\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.invoice_balance_transfers.invoice_balance_transfers_manager_id_idx_c3dee277",
+    "label": "Create index \"invoice_balance_transfers_manager_id_idx_c3dee277\" on \"invoice_balance_transfers\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "invoice_balance_transfers_manager_id_idx_c3dee277",
+        "table": "invoice_balance_transfers"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"invoice_balance_transfers_manager_id_idx_c3dee277\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"invoice_balance_transfers_manager_id_idx_c3dee277\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"invoice_balance_transfers_manager_id_idx_c3dee277\"",
+        "sql": "CREATE INDEX \"invoice_balance_transfers_manager_id_idx_c3dee277\" ON \"public\".\"invoice_balance_transfers\" (\"manager_id\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"invoice_balance_transfers_manager_id_idx_c3dee277\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"invoice_balance_transfers_manager_id_idx_c3dee277\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.invoice_balance_transfers.invoice_balance_transfers_source_invoice_id_idx_73ae08f2",
+    "label": "Create index \"invoice_balance_transfers_source_invoice_id_idx_73ae08f2\" on \"invoice_balance_transfers\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "invoice_balance_transfers_source_invoice_id_idx_73ae08f2",
+        "table": "invoice_balance_transfers"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"invoice_balance_transfers_source_invoice_id_idx_73ae08f2\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"invoice_balance_transfers_source_invoice_id_idx_73ae08f2\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"invoice_balance_transfers_source_invoice_id_idx_73ae08f2\"",
+        "sql": "CREATE INDEX \"invoice_balance_transfers_source_invoice_id_idx_73ae08f2\" ON \"public\".\"invoice_balance_transfers\" (\"source_invoice_id\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"invoice_balance_transfers_source_invoice_id_idx_73ae08f2\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"invoice_balance_transfers_source_invoice_id_idx_73ae08f2\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.invoice_balance_transfers.invoice_balance_transfers_target_invoice_id_idx_f14fb2b5",
+    "label": "Create index \"invoice_balance_transfers_target_invoice_id_idx_f14fb2b5\" on \"invoice_balance_transfers\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "invoice_balance_transfers_target_invoice_id_idx_f14fb2b5",
+        "table": "invoice_balance_transfers"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"invoice_balance_transfers_target_invoice_id_idx_f14fb2b5\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"invoice_balance_transfers_target_invoice_id_idx_f14fb2b5\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"invoice_balance_transfers_target_invoice_id_idx_f14fb2b5\"",
+        "sql": "CREATE INDEX \"invoice_balance_transfers_target_invoice_id_idx_f14fb2b5\" ON \"public\".\"invoice_balance_transfers\" (\"target_invoice_id\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"invoice_balance_transfers_target_invoice_id_idx_f14fb2b5\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"invoice_balance_transfers_target_invoice_id_idx_f14fb2b5\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.invoice_items.invoice_items_invoice_id_idx_a3b7555d",
+    "label": "Create index \"invoice_items_invoice_id_idx_a3b7555d\" on \"invoice_items\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "invoice_items_invoice_id_idx_a3b7555d",
+        "table": "invoice_items"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"invoice_items_invoice_id_idx_a3b7555d\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"invoice_items_invoice_id_idx_a3b7555d\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"invoice_items_invoice_id_idx_a3b7555d\"",
+        "sql": "CREATE INDEX \"invoice_items_invoice_id_idx_a3b7555d\" ON \"public\".\"invoice_items\" (\"invoice_id\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"invoice_items_invoice_id_idx_a3b7555d\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"invoice_items_invoice_id_idx_a3b7555d\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.invoice_items.invoice_items_property_charge_id_idx_aad71636",
+    "label": "Create index \"invoice_items_property_charge_id_idx_aad71636\" on \"invoice_items\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "invoice_items_property_charge_id_idx_aad71636",
+        "table": "invoice_items"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"invoice_items_property_charge_id_idx_aad71636\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"invoice_items_property_charge_id_idx_aad71636\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"invoice_items_property_charge_id_idx_aad71636\"",
+        "sql": "CREATE INDEX \"invoice_items_property_charge_id_idx_aad71636\" ON \"public\".\"invoice_items\" (\"property_charge_id\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"invoice_items_property_charge_id_idx_aad71636\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"invoice_items_property_charge_id_idx_aad71636\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.invoices.invoices_manager_id_idx_c3dee277",
+    "label": "Create index \"invoices_manager_id_idx_c3dee277\" on \"invoices\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "invoices_manager_id_idx_c3dee277",
+        "table": "invoices"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"invoices_manager_id_idx_c3dee277\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"invoices_manager_id_idx_c3dee277\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"invoices_manager_id_idx_c3dee277\"",
+        "sql": "CREATE INDEX \"invoices_manager_id_idx_c3dee277\" ON \"public\".\"invoices\" (\"manager_id\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"invoices_manager_id_idx_c3dee277\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"invoices_manager_id_idx_c3dee277\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.invoices.invoices_manager_id_tenant_id_tenancy_id_status_idx_94eb0ddf",
+    "label": "Create index \"invoices_manager_id_tenant_id_tenancy_id_status_idx_94eb0ddf\" on \"invoices\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "invoices_manager_id_tenant_id_tenancy_id_status_idx_94eb0ddf",
+        "table": "invoices"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"invoices_manager_id_tenant_id_tenancy_id_status_idx_94eb0ddf\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"invoices_manager_id_tenant_id_tenancy_id_status_idx_94eb0ddf\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"invoices_manager_id_tenant_id_tenancy_id_status_idx_94eb0ddf\"",
+        "sql": "CREATE INDEX \"invoices_manager_id_tenant_id_tenancy_id_status_idx_94eb0ddf\" ON \"public\".\"invoices\" (\"manager_id\", \"tenant_id\", \"tenancy_id\", \"status\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"invoices_manager_id_tenant_id_tenancy_id_status_idx_94eb0ddf\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"invoices_manager_id_tenant_id_tenancy_id_status_idx_94eb0ddf\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.invoices.invoices_property_id_idx_9fa9619b",
+    "label": "Create index \"invoices_property_id_idx_9fa9619b\" on \"invoices\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "invoices_property_id_idx_9fa9619b",
+        "table": "invoices"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"invoices_property_id_idx_9fa9619b\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"invoices_property_id_idx_9fa9619b\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"invoices_property_id_idx_9fa9619b\"",
+        "sql": "CREATE INDEX \"invoices_property_id_idx_9fa9619b\" ON \"public\".\"invoices\" (\"property_id\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"invoices_property_id_idx_9fa9619b\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"invoices_property_id_idx_9fa9619b\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.invoices.invoices_tenancy_id_idx_c0f9e2da",
+    "label": "Create index \"invoices_tenancy_id_idx_c0f9e2da\" on \"invoices\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "invoices_tenancy_id_idx_c0f9e2da",
+        "table": "invoices"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"invoices_tenancy_id_idx_c0f9e2da\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"invoices_tenancy_id_idx_c0f9e2da\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"invoices_tenancy_id_idx_c0f9e2da\"",
+        "sql": "CREATE INDEX \"invoices_tenancy_id_idx_c0f9e2da\" ON \"public\".\"invoices\" (\"tenancy_id\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"invoices_tenancy_id_idx_c0f9e2da\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"invoices_tenancy_id_idx_c0f9e2da\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.invoices.invoices_tenant_id_idx_41c0d441",
+    "label": "Create index \"invoices_tenant_id_idx_41c0d441\" on \"invoices\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "invoices_tenant_id_idx_41c0d441",
+        "table": "invoices"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"invoices_tenant_id_idx_41c0d441\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"invoices_tenant_id_idx_41c0d441\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"invoices_tenant_id_idx_41c0d441\"",
+        "sql": "CREATE INDEX \"invoices_tenant_id_idx_41c0d441\" ON \"public\".\"invoices\" (\"tenant_id\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"invoices_tenant_id_idx_41c0d441\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"invoices_tenant_id_idx_41c0d441\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.payment_allocations.payment_allocations_invoice_id_idx_a3b7555d",
+    "label": "Create index \"payment_allocations_invoice_id_idx_a3b7555d\" on \"payment_allocations\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "payment_allocations_invoice_id_idx_a3b7555d",
+        "table": "payment_allocations"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"payment_allocations_invoice_id_idx_a3b7555d\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"payment_allocations_invoice_id_idx_a3b7555d\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"payment_allocations_invoice_id_idx_a3b7555d\"",
+        "sql": "CREATE INDEX \"payment_allocations_invoice_id_idx_a3b7555d\" ON \"public\".\"payment_allocations\" (\"invoice_id\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"payment_allocations_invoice_id_idx_a3b7555d\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"payment_allocations_invoice_id_idx_a3b7555d\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.payment_allocations.payment_allocations_manager_id_idx_c3dee277",
+    "label": "Create index \"payment_allocations_manager_id_idx_c3dee277\" on \"payment_allocations\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "payment_allocations_manager_id_idx_c3dee277",
+        "table": "payment_allocations"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"payment_allocations_manager_id_idx_c3dee277\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"payment_allocations_manager_id_idx_c3dee277\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"payment_allocations_manager_id_idx_c3dee277\"",
+        "sql": "CREATE INDEX \"payment_allocations_manager_id_idx_c3dee277\" ON \"public\".\"payment_allocations\" (\"manager_id\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"payment_allocations_manager_id_idx_c3dee277\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"payment_allocations_manager_id_idx_c3dee277\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.payment_allocations.payment_allocations_manager_id_invoice_id_idx_633704ab",
+    "label": "Create index \"payment_allocations_manager_id_invoice_id_idx_633704ab\" on \"payment_allocations\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "payment_allocations_manager_id_invoice_id_idx_633704ab",
+        "table": "payment_allocations"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"payment_allocations_manager_id_invoice_id_idx_633704ab\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"payment_allocations_manager_id_invoice_id_idx_633704ab\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"payment_allocations_manager_id_invoice_id_idx_633704ab\"",
+        "sql": "CREATE INDEX \"payment_allocations_manager_id_invoice_id_idx_633704ab\" ON \"public\".\"payment_allocations\" (\"manager_id\", \"invoice_id\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"payment_allocations_manager_id_invoice_id_idx_633704ab\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"payment_allocations_manager_id_invoice_id_idx_633704ab\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.payment_allocations.payment_allocations_payment_id_idx_7931cf41",
+    "label": "Create index \"payment_allocations_payment_id_idx_7931cf41\" on \"payment_allocations\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "payment_allocations_payment_id_idx_7931cf41",
+        "table": "payment_allocations"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"payment_allocations_payment_id_idx_7931cf41\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"payment_allocations_payment_id_idx_7931cf41\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"payment_allocations_payment_id_idx_7931cf41\"",
+        "sql": "CREATE INDEX \"payment_allocations_payment_id_idx_7931cf41\" ON \"public\".\"payment_allocations\" (\"payment_id\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"payment_allocations_payment_id_idx_7931cf41\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"payment_allocations_payment_id_idx_7931cf41\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.payments.payments_invoice_id_idx_a3b7555d",
+    "label": "Create index \"payments_invoice_id_idx_a3b7555d\" on \"payments\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "payments_invoice_id_idx_a3b7555d",
+        "table": "payments"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"payments_invoice_id_idx_a3b7555d\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"payments_invoice_id_idx_a3b7555d\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"payments_invoice_id_idx_a3b7555d\"",
+        "sql": "CREATE INDEX \"payments_invoice_id_idx_a3b7555d\" ON \"public\".\"payments\" (\"invoice_id\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"payments_invoice_id_idx_a3b7555d\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"payments_invoice_id_idx_a3b7555d\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.payments.payments_manager_id_idx_c3dee277",
+    "label": "Create index \"payments_manager_id_idx_c3dee277\" on \"payments\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "payments_manager_id_idx_c3dee277",
+        "table": "payments"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"payments_manager_id_idx_c3dee277\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"payments_manager_id_idx_c3dee277\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"payments_manager_id_idx_c3dee277\"",
+        "sql": "CREATE INDEX \"payments_manager_id_idx_c3dee277\" ON \"public\".\"payments\" (\"manager_id\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"payments_manager_id_idx_c3dee277\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"payments_manager_id_idx_c3dee277\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.payments.payments_manager_id_tenant_id_payment_date_idx_d119c9fe",
+    "label": "Create index \"payments_manager_id_tenant_id_payment_date_idx_d119c9fe\" on \"payments\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "payments_manager_id_tenant_id_payment_date_idx_d119c9fe",
+        "table": "payments"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"payments_manager_id_tenant_id_payment_date_idx_d119c9fe\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"payments_manager_id_tenant_id_payment_date_idx_d119c9fe\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"payments_manager_id_tenant_id_payment_date_idx_d119c9fe\"",
+        "sql": "CREATE INDEX \"payments_manager_id_tenant_id_payment_date_idx_d119c9fe\" ON \"public\".\"payments\" (\"manager_id\", \"tenant_id\", \"payment_date\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"payments_manager_id_tenant_id_payment_date_idx_d119c9fe\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"payments_manager_id_tenant_id_payment_date_idx_d119c9fe\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.payments.payments_property_id_idx_9fa9619b",
+    "label": "Create index \"payments_property_id_idx_9fa9619b\" on \"payments\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "payments_property_id_idx_9fa9619b",
+        "table": "payments"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"payments_property_id_idx_9fa9619b\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"payments_property_id_idx_9fa9619b\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"payments_property_id_idx_9fa9619b\"",
+        "sql": "CREATE INDEX \"payments_property_id_idx_9fa9619b\" ON \"public\".\"payments\" (\"property_id\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"payments_property_id_idx_9fa9619b\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"payments_property_id_idx_9fa9619b\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.payments.payments_tenant_id_idx_41c0d441",
+    "label": "Create index \"payments_tenant_id_idx_41c0d441\" on \"payments\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "payments_tenant_id_idx_41c0d441",
+        "table": "payments"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"payments_tenant_id_idx_41c0d441\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"payments_tenant_id_idx_41c0d441\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"payments_tenant_id_idx_41c0d441\"",
+        "sql": "CREATE INDEX \"payments_tenant_id_idx_41c0d441\" ON \"public\".\"payments\" (\"tenant_id\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"payments_tenant_id_idx_41c0d441\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"payments_tenant_id_idx_41c0d441\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.properties.properties_manager_id_idx_c3dee277",
+    "label": "Create index \"properties_manager_id_idx_c3dee277\" on \"properties\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "properties_manager_id_idx_c3dee277",
+        "table": "properties"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"properties_manager_id_idx_c3dee277\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"properties_manager_id_idx_c3dee277\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"properties_manager_id_idx_c3dee277\"",
+        "sql": "CREATE INDEX \"properties_manager_id_idx_c3dee277\" ON \"public\".\"properties\" (\"manager_id\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"properties_manager_id_idx_c3dee277\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"properties_manager_id_idx_c3dee277\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.property_charges.property_charges_manager_id_idx_c3dee277",
+    "label": "Create index \"property_charges_manager_id_idx_c3dee277\" on \"property_charges\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "property_charges_manager_id_idx_c3dee277",
+        "table": "property_charges"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"property_charges_manager_id_idx_c3dee277\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"property_charges_manager_id_idx_c3dee277\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"property_charges_manager_id_idx_c3dee277\"",
+        "sql": "CREATE INDEX \"property_charges_manager_id_idx_c3dee277\" ON \"public\".\"property_charges\" (\"manager_id\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"property_charges_manager_id_idx_c3dee277\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"property_charges_manager_id_idx_c3dee277\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.property_charges.property_charges_property_id_idx_9fa9619b",
+    "label": "Create index \"property_charges_property_id_idx_9fa9619b\" on \"property_charges\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "property_charges_property_id_idx_9fa9619b",
+        "table": "property_charges"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"property_charges_property_id_idx_9fa9619b\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"property_charges_property_id_idx_9fa9619b\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"property_charges_property_id_idx_9fa9619b\"",
+        "sql": "CREATE INDEX \"property_charges_property_id_idx_9fa9619b\" ON \"public\".\"property_charges\" (\"property_id\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"property_charges_property_id_idx_9fa9619b\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"property_charges_property_id_idx_9fa9619b\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.receipts.receipts_manager_id_idx_c3dee277",
+    "label": "Create index \"receipts_manager_id_idx_c3dee277\" on \"receipts\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "receipts_manager_id_idx_c3dee277",
+        "table": "receipts"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"receipts_manager_id_idx_c3dee277\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"receipts_manager_id_idx_c3dee277\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"receipts_manager_id_idx_c3dee277\"",
+        "sql": "CREATE INDEX \"receipts_manager_id_idx_c3dee277\" ON \"public\".\"receipts\" (\"manager_id\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"receipts_manager_id_idx_c3dee277\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"receipts_manager_id_idx_c3dee277\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.tenancies.tenancies_manager_id_idx_c3dee277",
+    "label": "Create index \"tenancies_manager_id_idx_c3dee277\" on \"tenancies\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "tenancies_manager_id_idx_c3dee277",
+        "table": "tenancies"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"tenancies_manager_id_idx_c3dee277\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"tenancies_manager_id_idx_c3dee277\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"tenancies_manager_id_idx_c3dee277\"",
+        "sql": "CREATE INDEX \"tenancies_manager_id_idx_c3dee277\" ON \"public\".\"tenancies\" (\"manager_id\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"tenancies_manager_id_idx_c3dee277\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"tenancies_manager_id_idx_c3dee277\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.tenancies.tenancies_property_id_idx_9fa9619b",
+    "label": "Create index \"tenancies_property_id_idx_9fa9619b\" on \"tenancies\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "tenancies_property_id_idx_9fa9619b",
+        "table": "tenancies"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"tenancies_property_id_idx_9fa9619b\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"tenancies_property_id_idx_9fa9619b\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"tenancies_property_id_idx_9fa9619b\"",
+        "sql": "CREATE INDEX \"tenancies_property_id_idx_9fa9619b\" ON \"public\".\"tenancies\" (\"property_id\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"tenancies_property_id_idx_9fa9619b\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"tenancies_property_id_idx_9fa9619b\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.tenancies.tenancies_property_id_status_idx_7a5ca777",
+    "label": "Create index \"tenancies_property_id_status_idx_7a5ca777\" on \"tenancies\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "tenancies_property_id_status_idx_7a5ca777",
+        "table": "tenancies"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"tenancies_property_id_status_idx_7a5ca777\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"tenancies_property_id_status_idx_7a5ca777\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"tenancies_property_id_status_idx_7a5ca777\"",
+        "sql": "CREATE INDEX \"tenancies_property_id_status_idx_7a5ca777\" ON \"public\".\"tenancies\" (\"property_id\", \"status\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"tenancies_property_id_status_idx_7a5ca777\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"tenancies_property_id_status_idx_7a5ca777\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.tenancies.tenancies_tenant_id_idx_41c0d441",
+    "label": "Create index \"tenancies_tenant_id_idx_41c0d441\" on \"tenancies\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "tenancies_tenant_id_idx_41c0d441",
+        "table": "tenancies"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"tenancies_tenant_id_idx_41c0d441\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"tenancies_tenant_id_idx_41c0d441\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"tenancies_tenant_id_idx_41c0d441\"",
+        "sql": "CREATE INDEX \"tenancies_tenant_id_idx_41c0d441\" ON \"public\".\"tenancies\" (\"tenant_id\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"tenancies_tenant_id_idx_41c0d441\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"tenancies_tenant_id_idx_41c0d441\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.tenancies.tenancies_tenant_id_status_idx_788669e7",
+    "label": "Create index \"tenancies_tenant_id_status_idx_788669e7\" on \"tenancies\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "tenancies_tenant_id_status_idx_788669e7",
+        "table": "tenancies"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"tenancies_tenant_id_status_idx_788669e7\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"tenancies_tenant_id_status_idx_788669e7\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"tenancies_tenant_id_status_idx_788669e7\"",
+        "sql": "CREATE INDEX \"tenancies_tenant_id_status_idx_788669e7\" ON \"public\".\"tenancies\" (\"tenant_id\", \"status\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"tenancies_tenant_id_status_idx_788669e7\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"tenancies_tenant_id_status_idx_788669e7\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.tenants.tenants_manager_id_idx_c3dee277",
+    "label": "Create index \"tenants_manager_id_idx_c3dee277\" on \"tenants\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "tenants_manager_id_idx_c3dee277",
+        "table": "tenants"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"tenants_manager_id_idx_c3dee277\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"tenants_manager_id_idx_c3dee277\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"tenants_manager_id_idx_c3dee277\"",
+        "sql": "CREATE INDEX \"tenants_manager_id_idx_c3dee277\" ON \"public\".\"tenants\" (\"manager_id\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"tenants_manager_id_idx_c3dee277\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"tenants_manager_id_idx_c3dee277\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.invoice_balance_transfers.invoice_balance_transfers_manager_id_fkey",
+    "label": "Add foreign key \"invoice_balance_transfers_manager_id_fkey\" on \"invoice_balance_transfers\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "invoice_balance_transfers_manager_id_fkey",
+        "table": "invoice_balance_transfers"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"invoice_balance_transfers_manager_id_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "invoice_balance_transfers_manager_id_fkey",
+          "public",
+          "\"public\".\"invoice_balance_transfers\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"invoice_balance_transfers_manager_id_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"invoice_balance_transfers\"\nADD CONSTRAINT \"invoice_balance_transfers_manager_id_fkey\"\nFOREIGN KEY (\"manager_id\")\nREFERENCES \"public\".\"users\" (\"id\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"invoice_balance_transfers_manager_id_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "invoice_balance_transfers_manager_id_fkey",
+          "public",
+          "\"public\".\"invoice_balance_transfers\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.invoice_balance_transfers.invoice_balance_transfers_source_invoice_id_fkey",
+    "label": "Add foreign key \"invoice_balance_transfers_source_invoice_id_fkey\" on \"invoice_balance_transfers\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "invoice_balance_transfers_source_invoice_id_fkey",
+        "table": "invoice_balance_transfers"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"invoice_balance_transfers_source_invoice_id_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "invoice_balance_transfers_source_invoice_id_fkey",
+          "public",
+          "\"public\".\"invoice_balance_transfers\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"invoice_balance_transfers_source_invoice_id_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"invoice_balance_transfers\"\nADD CONSTRAINT \"invoice_balance_transfers_source_invoice_id_fkey\"\nFOREIGN KEY (\"source_invoice_id\")\nREFERENCES \"public\".\"invoices\" (\"id\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"invoice_balance_transfers_source_invoice_id_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "invoice_balance_transfers_source_invoice_id_fkey",
+          "public",
+          "\"public\".\"invoice_balance_transfers\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.invoice_balance_transfers.invoice_balance_transfers_target_invoice_id_fkey",
+    "label": "Add foreign key \"invoice_balance_transfers_target_invoice_id_fkey\" on \"invoice_balance_transfers\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "invoice_balance_transfers_target_invoice_id_fkey",
+        "table": "invoice_balance_transfers"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"invoice_balance_transfers_target_invoice_id_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "invoice_balance_transfers_target_invoice_id_fkey",
+          "public",
+          "\"public\".\"invoice_balance_transfers\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"invoice_balance_transfers_target_invoice_id_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"invoice_balance_transfers\"\nADD CONSTRAINT \"invoice_balance_transfers_target_invoice_id_fkey\"\nFOREIGN KEY (\"target_invoice_id\")\nREFERENCES \"public\".\"invoices\" (\"id\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"invoice_balance_transfers_target_invoice_id_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "invoice_balance_transfers_target_invoice_id_fkey",
+          "public",
+          "\"public\".\"invoice_balance_transfers\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.invoice_items.invoice_items_invoice_id_fkey",
+    "label": "Add foreign key \"invoice_items_invoice_id_fkey\" on \"invoice_items\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "invoice_items_invoice_id_fkey",
+        "table": "invoice_items"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"invoice_items_invoice_id_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "invoice_items_invoice_id_fkey",
+          "public",
+          "\"public\".\"invoice_items\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"invoice_items_invoice_id_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"invoice_items\"\nADD CONSTRAINT \"invoice_items_invoice_id_fkey\"\nFOREIGN KEY (\"invoice_id\")\nREFERENCES \"public\".\"invoices\" (\"id\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"invoice_items_invoice_id_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "invoice_items_invoice_id_fkey",
+          "public",
+          "\"public\".\"invoice_items\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.invoice_items.invoice_items_property_charge_id_fkey",
+    "label": "Add foreign key \"invoice_items_property_charge_id_fkey\" on \"invoice_items\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "invoice_items_property_charge_id_fkey",
+        "table": "invoice_items"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"invoice_items_property_charge_id_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "invoice_items_property_charge_id_fkey",
+          "public",
+          "\"public\".\"invoice_items\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"invoice_items_property_charge_id_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"invoice_items\"\nADD CONSTRAINT \"invoice_items_property_charge_id_fkey\"\nFOREIGN KEY (\"property_charge_id\")\nREFERENCES \"public\".\"property_charges\" (\"id\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"invoice_items_property_charge_id_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "invoice_items_property_charge_id_fkey",
+          "public",
+          "\"public\".\"invoice_items\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.invoices.invoices_manager_id_fkey",
+    "label": "Add foreign key \"invoices_manager_id_fkey\" on \"invoices\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "invoices_manager_id_fkey",
+        "table": "invoices"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"invoices_manager_id_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "invoices_manager_id_fkey",
+          "public",
+          "\"public\".\"invoices\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"invoices_manager_id_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"invoices\"\nADD CONSTRAINT \"invoices_manager_id_fkey\"\nFOREIGN KEY (\"manager_id\")\nREFERENCES \"public\".\"users\" (\"id\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"invoices_manager_id_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "invoices_manager_id_fkey",
+          "public",
+          "\"public\".\"invoices\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.invoices.invoices_property_id_fkey",
+    "label": "Add foreign key \"invoices_property_id_fkey\" on \"invoices\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "invoices_property_id_fkey",
+        "table": "invoices"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"invoices_property_id_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "invoices_property_id_fkey",
+          "public",
+          "\"public\".\"invoices\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"invoices_property_id_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"invoices\"\nADD CONSTRAINT \"invoices_property_id_fkey\"\nFOREIGN KEY (\"property_id\")\nREFERENCES \"public\".\"properties\" (\"id\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"invoices_property_id_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "invoices_property_id_fkey",
+          "public",
+          "\"public\".\"invoices\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.invoices.invoices_tenancy_id_fkey",
+    "label": "Add foreign key \"invoices_tenancy_id_fkey\" on \"invoices\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "invoices_tenancy_id_fkey",
+        "table": "invoices"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"invoices_tenancy_id_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "invoices_tenancy_id_fkey",
+          "public",
+          "\"public\".\"invoices\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"invoices_tenancy_id_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"invoices\"\nADD CONSTRAINT \"invoices_tenancy_id_fkey\"\nFOREIGN KEY (\"tenancy_id\")\nREFERENCES \"public\".\"tenancies\" (\"id\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"invoices_tenancy_id_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "invoices_tenancy_id_fkey",
+          "public",
+          "\"public\".\"invoices\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.invoices.invoices_tenant_id_fkey",
+    "label": "Add foreign key \"invoices_tenant_id_fkey\" on \"invoices\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "invoices_tenant_id_fkey",
+        "table": "invoices"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"invoices_tenant_id_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "invoices_tenant_id_fkey",
+          "public",
+          "\"public\".\"invoices\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"invoices_tenant_id_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"invoices\"\nADD CONSTRAINT \"invoices_tenant_id_fkey\"\nFOREIGN KEY (\"tenant_id\")\nREFERENCES \"public\".\"tenants\" (\"id\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"invoices_tenant_id_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "invoices_tenant_id_fkey",
+          "public",
+          "\"public\".\"invoices\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.payment_allocations.payment_allocations_manager_id_fkey",
+    "label": "Add foreign key \"payment_allocations_manager_id_fkey\" on \"payment_allocations\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "payment_allocations_manager_id_fkey",
+        "table": "payment_allocations"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"payment_allocations_manager_id_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "payment_allocations_manager_id_fkey",
+          "public",
+          "\"public\".\"payment_allocations\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"payment_allocations_manager_id_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"payment_allocations\"\nADD CONSTRAINT \"payment_allocations_manager_id_fkey\"\nFOREIGN KEY (\"manager_id\")\nREFERENCES \"public\".\"users\" (\"id\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"payment_allocations_manager_id_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "payment_allocations_manager_id_fkey",
+          "public",
+          "\"public\".\"payment_allocations\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.payment_allocations.payment_allocations_payment_id_fkey",
+    "label": "Add foreign key \"payment_allocations_payment_id_fkey\" on \"payment_allocations\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "payment_allocations_payment_id_fkey",
+        "table": "payment_allocations"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"payment_allocations_payment_id_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "payment_allocations_payment_id_fkey",
+          "public",
+          "\"public\".\"payment_allocations\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"payment_allocations_payment_id_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"payment_allocations\"\nADD CONSTRAINT \"payment_allocations_payment_id_fkey\"\nFOREIGN KEY (\"payment_id\")\nREFERENCES \"public\".\"payments\" (\"id\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"payment_allocations_payment_id_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "payment_allocations_payment_id_fkey",
+          "public",
+          "\"public\".\"payment_allocations\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.payment_allocations.payment_allocations_invoice_id_fkey",
+    "label": "Add foreign key \"payment_allocations_invoice_id_fkey\" on \"payment_allocations\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "payment_allocations_invoice_id_fkey",
+        "table": "payment_allocations"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"payment_allocations_invoice_id_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "payment_allocations_invoice_id_fkey",
+          "public",
+          "\"public\".\"payment_allocations\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"payment_allocations_invoice_id_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"payment_allocations\"\nADD CONSTRAINT \"payment_allocations_invoice_id_fkey\"\nFOREIGN KEY (\"invoice_id\")\nREFERENCES \"public\".\"invoices\" (\"id\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"payment_allocations_invoice_id_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "payment_allocations_invoice_id_fkey",
+          "public",
+          "\"public\".\"payment_allocations\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.payments.payments_manager_id_fkey",
+    "label": "Add foreign key \"payments_manager_id_fkey\" on \"payments\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "payments_manager_id_fkey",
+        "table": "payments"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"payments_manager_id_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "payments_manager_id_fkey",
+          "public",
+          "\"public\".\"payments\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"payments_manager_id_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"payments\"\nADD CONSTRAINT \"payments_manager_id_fkey\"\nFOREIGN KEY (\"manager_id\")\nREFERENCES \"public\".\"users\" (\"id\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"payments_manager_id_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "payments_manager_id_fkey",
+          "public",
+          "\"public\".\"payments\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.payments.payments_property_id_fkey",
+    "label": "Add foreign key \"payments_property_id_fkey\" on \"payments\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "payments_property_id_fkey",
+        "table": "payments"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"payments_property_id_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "payments_property_id_fkey",
+          "public",
+          "\"public\".\"payments\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"payments_property_id_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"payments\"\nADD CONSTRAINT \"payments_property_id_fkey\"\nFOREIGN KEY (\"property_id\")\nREFERENCES \"public\".\"properties\" (\"id\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"payments_property_id_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "payments_property_id_fkey",
+          "public",
+          "\"public\".\"payments\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.payments.payments_invoice_id_fkey",
+    "label": "Add foreign key \"payments_invoice_id_fkey\" on \"payments\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "payments_invoice_id_fkey",
+        "table": "payments"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"payments_invoice_id_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "payments_invoice_id_fkey",
+          "public",
+          "\"public\".\"payments\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"payments_invoice_id_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"payments\"\nADD CONSTRAINT \"payments_invoice_id_fkey\"\nFOREIGN KEY (\"invoice_id\")\nREFERENCES \"public\".\"invoices\" (\"id\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"payments_invoice_id_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "payments_invoice_id_fkey",
+          "public",
+          "\"public\".\"payments\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.payments.payments_tenant_id_fkey",
+    "label": "Add foreign key \"payments_tenant_id_fkey\" on \"payments\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "payments_tenant_id_fkey",
+        "table": "payments"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"payments_tenant_id_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "payments_tenant_id_fkey",
+          "public",
+          "\"public\".\"payments\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"payments_tenant_id_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"payments\"\nADD CONSTRAINT \"payments_tenant_id_fkey\"\nFOREIGN KEY (\"tenant_id\")\nREFERENCES \"public\".\"tenants\" (\"id\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"payments_tenant_id_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "payments_tenant_id_fkey",
+          "public",
+          "\"public\".\"payments\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.properties.properties_manager_id_fkey",
+    "label": "Add foreign key \"properties_manager_id_fkey\" on \"properties\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "properties_manager_id_fkey",
+        "table": "properties"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"properties_manager_id_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "properties_manager_id_fkey",
+          "public",
+          "\"public\".\"properties\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"properties_manager_id_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"properties\"\nADD CONSTRAINT \"properties_manager_id_fkey\"\nFOREIGN KEY (\"manager_id\")\nREFERENCES \"public\".\"users\" (\"id\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"properties_manager_id_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "properties_manager_id_fkey",
+          "public",
+          "\"public\".\"properties\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.property_charges.property_charges_manager_id_fkey",
+    "label": "Add foreign key \"property_charges_manager_id_fkey\" on \"property_charges\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "property_charges_manager_id_fkey",
+        "table": "property_charges"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"property_charges_manager_id_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "property_charges_manager_id_fkey",
+          "public",
+          "\"public\".\"property_charges\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"property_charges_manager_id_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"property_charges\"\nADD CONSTRAINT \"property_charges_manager_id_fkey\"\nFOREIGN KEY (\"manager_id\")\nREFERENCES \"public\".\"users\" (\"id\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"property_charges_manager_id_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "property_charges_manager_id_fkey",
+          "public",
+          "\"public\".\"property_charges\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.property_charges.property_charges_property_id_fkey",
+    "label": "Add foreign key \"property_charges_property_id_fkey\" on \"property_charges\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "property_charges_property_id_fkey",
+        "table": "property_charges"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"property_charges_property_id_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "property_charges_property_id_fkey",
+          "public",
+          "\"public\".\"property_charges\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"property_charges_property_id_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"property_charges\"\nADD CONSTRAINT \"property_charges_property_id_fkey\"\nFOREIGN KEY (\"property_id\")\nREFERENCES \"public\".\"properties\" (\"id\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"property_charges_property_id_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "property_charges_property_id_fkey",
+          "public",
+          "\"public\".\"property_charges\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.receipts.receipts_manager_id_fkey",
+    "label": "Add foreign key \"receipts_manager_id_fkey\" on \"receipts\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "receipts_manager_id_fkey",
+        "table": "receipts"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"receipts_manager_id_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "receipts_manager_id_fkey",
+          "public",
+          "\"public\".\"receipts\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"receipts_manager_id_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"receipts\"\nADD CONSTRAINT \"receipts_manager_id_fkey\"\nFOREIGN KEY (\"manager_id\")\nREFERENCES \"public\".\"users\" (\"id\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"receipts_manager_id_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "receipts_manager_id_fkey",
+          "public",
+          "\"public\".\"receipts\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.receipts.receipts_payment_id_fkey",
+    "label": "Add foreign key \"receipts_payment_id_fkey\" on \"receipts\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "receipts_payment_id_fkey",
+        "table": "receipts"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"receipts_payment_id_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "receipts_payment_id_fkey",
+          "public",
+          "\"public\".\"receipts\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"receipts_payment_id_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"receipts\"\nADD CONSTRAINT \"receipts_payment_id_fkey\"\nFOREIGN KEY (\"payment_id\")\nREFERENCES \"public\".\"payments\" (\"id\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"receipts_payment_id_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "receipts_payment_id_fkey",
+          "public",
+          "\"public\".\"receipts\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.tenancies.tenancies_manager_id_fkey",
+    "label": "Add foreign key \"tenancies_manager_id_fkey\" on \"tenancies\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "tenancies_manager_id_fkey",
+        "table": "tenancies"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"tenancies_manager_id_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "tenancies_manager_id_fkey",
+          "public",
+          "\"public\".\"tenancies\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"tenancies_manager_id_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"tenancies\"\nADD CONSTRAINT \"tenancies_manager_id_fkey\"\nFOREIGN KEY (\"manager_id\")\nREFERENCES \"public\".\"users\" (\"id\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"tenancies_manager_id_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "tenancies_manager_id_fkey",
+          "public",
+          "\"public\".\"tenancies\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.tenancies.tenancies_property_id_fkey",
+    "label": "Add foreign key \"tenancies_property_id_fkey\" on \"tenancies\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "tenancies_property_id_fkey",
+        "table": "tenancies"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"tenancies_property_id_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "tenancies_property_id_fkey",
+          "public",
+          "\"public\".\"tenancies\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"tenancies_property_id_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"tenancies\"\nADD CONSTRAINT \"tenancies_property_id_fkey\"\nFOREIGN KEY (\"property_id\")\nREFERENCES \"public\".\"properties\" (\"id\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"tenancies_property_id_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "tenancies_property_id_fkey",
+          "public",
+          "\"public\".\"tenancies\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.tenancies.tenancies_tenant_id_fkey",
+    "label": "Add foreign key \"tenancies_tenant_id_fkey\" on \"tenancies\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "tenancies_tenant_id_fkey",
+        "table": "tenancies"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"tenancies_tenant_id_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "tenancies_tenant_id_fkey",
+          "public",
+          "\"public\".\"tenancies\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"tenancies_tenant_id_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"tenancies\"\nADD CONSTRAINT \"tenancies_tenant_id_fkey\"\nFOREIGN KEY (\"tenant_id\")\nREFERENCES \"public\".\"tenants\" (\"id\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"tenancies_tenant_id_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "tenancies_tenant_id_fkey",
+          "public",
+          "\"public\".\"tenancies\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.tenants.tenants_manager_id_fkey",
+    "label": "Add foreign key \"tenants_manager_id_fkey\" on \"tenants\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "tenants_manager_id_fkey",
+        "table": "tenants"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"tenants_manager_id_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "tenants_manager_id_fkey",
+          "public",
+          "\"public\".\"tenants\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"tenants_manager_id_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"tenants\"\nADD CONSTRAINT \"tenants_manager_id_fkey\"\nFOREIGN KEY (\"manager_id\")\nREFERENCES \"public\".\"users\" (\"id\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"tenants_manager_id_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "tenants_manager_id_fkey",
+          "public",
+          "\"public\".\"tenants\""
+        ]
+      }
+    ]
+  }
+]

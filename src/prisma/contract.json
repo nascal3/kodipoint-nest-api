@@ -2043,6 +2043,13 @@
                   "kind": "scalar"
                 }
               },
+              "organization": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
               "passwordHash": {
                 "nullable": false,
                 "type": {
@@ -2051,6 +2058,20 @@
                 }
               },
               "phone": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "role": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "status": {
                 "nullable": false,
                 "type": {
                   "codecId": "pg/text@1",
@@ -2222,11 +2243,20 @@
                 "lastName": {
                   "column": "last_name"
                 },
+                "organization": {
+                  "column": "organization"
+                },
                 "passwordHash": {
                   "column": "password_hash"
                 },
                 "phone": {
                   "column": "phone"
+                },
+                "role": {
+                  "column": "role"
+                },
+                "status": {
+                  "column": "status"
                 },
                 "updatedAt": {
                   "column": "updated_at"
@@ -3179,6 +3209,10 @@
                 },
                 "status": {
                   "codecId": "pg/text@1",
+                  "default": {
+                    "kind": "literal",
+                    "value": "ACTIVE"
+                  },
                   "nativeType": "text",
                   "nullable": false
                 },
@@ -3496,6 +3530,10 @@
                 },
                 "status": {
                   "codecId": "pg/text@1",
+                  "default": {
+                    "kind": "literal",
+                    "value": "ACTIVE"
+                  },
                   "nativeType": "text",
                   "nullable": false
                 },
@@ -3674,6 +3712,10 @@
                 },
                 "status": {
                   "codecId": "pg/text@1",
+                  "default": {
+                    "kind": "literal",
+                    "value": "ACTIVE"
+                  },
                   "nativeType": "text",
                   "nullable": false
                 },
@@ -3754,6 +3796,11 @@
                   "nativeType": "text",
                   "nullable": false
                 },
+                "organization": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": true
+                },
                 "password_hash": {
                   "codecId": "pg/text@1",
                   "nativeType": "text",
@@ -3761,6 +3808,24 @@
                 },
                 "phone": {
                   "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "role": {
+                  "codecId": "pg/text@1",
+                  "default": {
+                    "kind": "literal",
+                    "value": "administrator"
+                  },
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "status": {
+                  "codecId": "pg/text@1",
+                  "default": {
+                    "kind": "literal",
+                    "value": "ACTIVE"
+                  },
                   "nativeType": "text",
                   "nullable": false
                 },
@@ -3791,7 +3856,7 @@
         "kind": "postgres-schema"
       }
     },
-    "storageHash": "31346754e3109193fadf6976addb58392d319414719b6d66edc551876286971a"
+    "storageHash": "a9aa8f9aea16129a7d2efb5c9ae305a740c1ea38dd038e4ba479c3bc3f1ade4c"
   },
   "execution": {
     "executionHash": "dac5f7aae98bf9fa187ebbcdee6938dfe757903240b2c7e9637bfb7163552a1a",
