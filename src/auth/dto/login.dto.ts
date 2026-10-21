@@ -18,6 +18,5 @@ export class LoginDto {
         description: 'Manager password',
     })
     @IsString()
-    @MinLength(8)
     password: string;
 }
