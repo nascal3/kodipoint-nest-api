@@ -94,6 +94,18 @@ export class UsersService {
             updateData.phone = dto.phone.trim();
         }
 
+        if (dto.billingAddress !== undefined) {
+            updateData.billingAddress = dto.billingAddress.trim();
+        }
+
+        if (dto.billingEmail !== undefined) {
+            updateData.billingEmail = dto.billingEmail.trim();
+        }
+
+        if (dto.organization !== undefined) {
+            updateData.organization = dto.organization.trim();
+        }
+
         if (Object.keys(updateData).length === 0) {
             return this.toSafeUser(currentUser);
         }

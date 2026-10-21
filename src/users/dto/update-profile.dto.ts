@@ -8,18 +8,8 @@ import {
 
 export class UpdateProfileDto {
     @ApiProperty({
-        description: 'The email of the user',
-        example: 'john.doe@example.com',
-        required: false,
-    })
-    @IsEmail()
-    email: string;
-
-
-    @ApiProperty({
         description: 'The first name of the user',
         example: 'John',
-        required: false,
     })
     @IsString()
     @MinLength(1)
@@ -29,11 +19,17 @@ export class UpdateProfileDto {
     @ApiProperty({
         description: 'The last name of the user',
         example: 'Doe',
-        required: false,
     })
     @IsString()
     @MinLength(1)
     lastName: string;
+
+    @ApiProperty({
+        description: 'The email of the user',
+        example: 'john.doe@example.com',
+    })
+    @IsEmail()
+    email: string;
 
 
     @ApiProperty({
@@ -42,6 +38,13 @@ export class UpdateProfileDto {
     })
     @IsString()
     address: string;
+
+    @ApiProperty({
+        description: 'The phone number of the user',
+        example: '+254728762763',
+    })
+    @IsPhoneNumber()
+    phone: string;
 
     @ApiProperty({
         description: 'The billing address that will show on the invoice/receipt',
@@ -66,13 +69,4 @@ export class UpdateProfileDto {
     })
     @IsString()
     organization: string;
-
-
-    @ApiProperty({
-        description: 'The phone number of the user',
-        example: '+254728762763',
-        required: false,
-    })
-    @IsPhoneNumber()
-    phone: string;
 }
