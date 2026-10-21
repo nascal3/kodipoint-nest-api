@@ -129,11 +129,7 @@ export class UsersService {
     /**
      * Change the authenticated manager's password.
      */
-    async changePassword(
-        managerId: string,
-        currentPassword: string,
-        newPassword: string,
-    ) {
+    async changePassword(managerId: string, currentPassword: string, newPassword: string,) {
         const user =
             await this.prisma.db.orm.public.User
                 .where({

@@ -53,6 +53,9 @@ export class AuthService {
                 lastName: dto.lastName.trim(),
                 address: dto.address.trim(),
                 phone: dto.phone.trim(),
+                organization: `${dto.firstName.trim()} ${dto.lastName.trim()}`,
+                billingAddress: dto.address?.trim(),
+                billingEmail: email
             });
 
         return {
@@ -119,10 +122,7 @@ export class AuthService {
     /**
      * Create the JWT payload and access token.
      */
-    private createTokens(
-        userId: string,
-        email: string,
-    ) {
+    private createTokens(userId: string, email: string,) {
         const payload: JwtPayload = {
             sub: userId,
             email,
