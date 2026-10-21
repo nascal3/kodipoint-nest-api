@@ -34,7 +34,7 @@ import type {
 } from '@prisma/orm-postgres/contract/types';
 
 export type StorageHash =
-  StorageHashBase<'a9aa8f9aea16129a7d2efb5c9ae305a740c1ea38dd038e4ba479c3bc3f1ade4c'>;
+  StorageHashBase<'8cc605edb98a34d7cc83e0cd4638f39054afa778ae1628b9582beabb455ec1e5'>;
 export type ExecutionHash =
   ExecutionHashBase<'dac5f7aae98bf9fa187ebbcdee6938dfe757903240b2c7e9637bfb7163552a1a'>;
 export type ProfileHash =
@@ -392,6 +392,8 @@ export type FieldOutputTypes = {
       readonly role: CodecTypes['pg/text@1']['output'];
       readonly status: CodecTypes['pg/text@1']['output'];
       readonly organization: CodecTypes['pg/text@1']['output'] | null;
+      readonly billingEmail: CodecTypes['pg/text@1']['output'] | null;
+      readonly billingAddress: CodecTypes['pg/text@1']['output'] | null;
       readonly createdAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
       readonly updatedAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
     };
@@ -549,6 +551,8 @@ export type FieldInputTypes = {
       readonly role: CodecTypes['pg/text@1']['input'];
       readonly status: CodecTypes['pg/text@1']['input'];
       readonly organization: CodecTypes['pg/text@1']['input'] | null;
+      readonly billingEmail: CodecTypes['pg/text@1']['input'] | null;
+      readonly billingAddress: CodecTypes['pg/text@1']['input'] | null;
       readonly createdAt: CodecTypes['pg/timestamptz-temporal@1']['input'];
       readonly updatedAt: CodecTypes['pg/timestamptz-temporal@1']['input'];
     };
@@ -697,6 +701,8 @@ export type StorageColumnTypes = {
     };
     readonly users: {
       readonly address: CodecTypes['pg/text@1']['output'];
+      readonly billing_address: CodecTypes['pg/text@1']['output'] | null;
+      readonly billing_email: CodecTypes['pg/text@1']['output'] | null;
       readonly created_at: CodecTypes['pg/timestamptz-temporal@1']['output'];
       readonly email: CodecTypes['pg/text@1']['output'];
       readonly first_name: CodecTypes['pg/text@1']['output'];
@@ -854,6 +860,8 @@ export type StorageColumnInputTypes = {
     };
     readonly users: {
       readonly address: CodecTypes['pg/text@1']['input'];
+      readonly billing_address: CodecTypes['pg/text@1']['input'] | null;
+      readonly billing_email: CodecTypes['pg/text@1']['input'] | null;
       readonly created_at: CodecTypes['pg/timestamptz-temporal@1']['input'];
       readonly email: CodecTypes['pg/text@1']['input'];
       readonly first_name: CodecTypes['pg/text@1']['input'];
@@ -881,6 +889,8 @@ export namespace Models {
     role: CodecTypes['pg/text@1']['output'];
     status: CodecTypes['pg/text@1']['output'];
     organization: CodecTypes['pg/text@1']['output'] | null;
+    billingEmail: CodecTypes['pg/text@1']['output'] | null;
+    billingAddress: CodecTypes['pg/text@1']['output'] | null;
     createdAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
     updatedAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
     invoiceBalanceTransfers: public_InvoiceBalanceTransfer[];
@@ -2416,6 +2426,16 @@ type ContractBase = Omit<
                   readonly codecId: 'pg/text@1';
                   readonly nullable: true;
                 };
+                readonly billing_email: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: true;
+                };
+                readonly billing_address: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: true;
+                };
                 readonly created_at: {
                   readonly nativeType: 'timestamptz';
                   readonly codecId: 'pg/timestamptz-temporal@1';
@@ -3753,6 +3773,14 @@ type ContractBase = Omit<
                 readonly nullable: true;
                 readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
               };
+              readonly billingEmail: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly billingAddress: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
               readonly createdAt: {
                 readonly nullable: false;
                 readonly type: {
@@ -3883,6 +3911,8 @@ type ContractBase = Omit<
                 readonly role: { readonly column: 'role' };
                 readonly status: { readonly column: 'status' };
                 readonly organization: { readonly column: 'organization' };
+                readonly billingEmail: { readonly column: 'billing_email' };
+                readonly billingAddress: { readonly column: 'billing_address' };
                 readonly createdAt: { readonly column: 'created_at' };
                 readonly updatedAt: { readonly column: 'updated_at' };
               };

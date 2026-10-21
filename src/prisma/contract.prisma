@@ -1,16 +1,18 @@
 // use prisma-8
 
 model User {
-  id           Uuid   @id @default(uuid())
-  email        String @unique
-  passwordHash String @map("password_hash")
-  firstName    String @map("first_name")
-  lastName     String @map("last_name")
-  address      String
-  phone        String
-  role         String @default("administrator")
-  status       String @default("ACTIVE")
-  organization String?
+  id             Uuid   @id @default(uuid())
+  email          String @unique
+  passwordHash   String @map("password_hash")
+  firstName      String @map("first_name")
+  lastName       String @map("last_name")
+  address        String
+  phone          String
+  role           String @default("administrator")
+  status         String @default("ACTIVE")
+  organization   String?
+  billingEmail   String? @map("billing_email")
+  billingAddress String? @map("billing_address")
 
   createdAt temporal.createdAt() @map("created_at")
   updatedAt temporal.updatedAt() @map("updated_at")

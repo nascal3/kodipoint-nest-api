@@ -2008,6 +2008,20 @@
                   "kind": "scalar"
                 }
               },
+              "billingAddress": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "billingEmail": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
               "createdAt": {
                 "nullable": false,
                 "type": {
@@ -2227,6 +2241,12 @@
               "fields": {
                 "address": {
                   "column": "address"
+                },
+                "billingAddress": {
+                  "column": "billing_address"
+                },
+                "billingEmail": {
+                  "column": "billing_email"
                 },
                 "createdAt": {
                   "column": "created_at"
@@ -3767,6 +3787,16 @@
                   "nativeType": "text",
                   "nullable": false
                 },
+                "billing_address": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": true
+                },
+                "billing_email": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": true
+                },
                 "created_at": {
                   "codecId": "pg/timestamptz-temporal@1",
                   "default": {
@@ -3856,7 +3886,7 @@
         "kind": "postgres-schema"
       }
     },
-    "storageHash": "a9aa8f9aea16129a7d2efb5c9ae305a740c1ea38dd038e4ba479c3bc3f1ade4c"
+    "storageHash": "8cc605edb98a34d7cc83e0cd4638f39054afa778ae1628b9582beabb455ec1e5"
   },
   "execution": {
     "executionHash": "dac5f7aae98bf9fa187ebbcdee6938dfe757903240b2c7e9637bfb7163552a1a",
