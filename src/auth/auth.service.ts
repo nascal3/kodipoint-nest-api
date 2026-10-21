@@ -1,7 +1,7 @@
 import {
+    BadRequestException,
     ConflictException,
     Injectable,
-    UnauthorizedException,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
@@ -80,9 +80,10 @@ export class AuthService {
                 .first();
 
         if (!user) {
-            throw new UnauthorizedException(
-                'Invalid email or password',
-            );
+            throw new BadRequestException({
+                message: 'Wrong Email or Password',
+                details: 'Wrong Email or Password',
+            });
         }
 
         const passwordMatches = await argon2.verify(
@@ -91,9 +92,10 @@ export class AuthService {
         );
 
         if (!passwordMatches) {
-            throw new UnauthorizedException(
-                'Invalid email or password',
-            );
+            throw new BadRequestException({
+                message: 'Wrong Email or Password',
+                details: 'Wrong Email or Password',
+            });
         }
 
         return user;

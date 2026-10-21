@@ -12,6 +12,7 @@ type ErrorResponse = {
     message?: string | string[];
     error?: string;
     statusCode?: number;
+    details?: string;
 };
 
 @Catch()
@@ -60,14 +61,15 @@ export class HttpExceptionFilter
             success: false,
             statusCode: status,
             timestamp: new Date().toISOString(),
-            path: request.url,
-            method: request.method,
+            // path: request.url,
+            // method: request.method,
             message: normalized.message,
             ...(normalized.error
                 ? { error: normalized.error }
                 : {}),
-            ...(process.env.NODE_ENV === 'development' &&
-            exception instanceof Error
+            ...(normalized.details
+                ? { details: normalized.details }
+                : process.env.NODE_ENV === 'development' && exception instanceof Error
                 ? { details: exception.message }
                 : {}),
         });
@@ -78,6 +80,7 @@ export class HttpExceptionFilter
     ): {
         message: string | string[];
         error?: string;
+        details?: string;
     } {
         if (typeof value === 'string') {
             return {
@@ -90,6 +93,9 @@ export class HttpExceptionFilter
                 message: value.message ?? 'Request failed',
                 ...(value.error
                     ? { error: value.error }
+                    : {}),
+                ...(value.details
+                    ? { details: value.details }
                     : {}),
             };
         }
