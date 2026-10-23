@@ -1,4 +1,5 @@
 import {
+    BadRequestException,
     ConflictException,
     Injectable,
     NotFoundException,
@@ -8,6 +9,7 @@ import * as argon2 from 'argon2';
 
 import { DatabaseService } from '@/database/database.service';
 import { UpdateProfileDto } from './dto/update-profile.dto';
+import {Temporal} from "@js-temporal/polyfill";
 
 @Injectable()
 export class UsersService {
@@ -150,7 +152,7 @@ export class UsersService {
             );
 
         if (!passwordMatches) {
-            throw new UnauthorizedException(
+            throw new BadRequestException(
                 'Current password is incorrect',
             );
         }
@@ -166,6 +168,7 @@ export class UsersService {
                 })
                 .update({
                     passwordHash,
+                    passwordUpdatedAt: Temporal.Now.instant(),
                 });
 
         if (!updatedUser) {

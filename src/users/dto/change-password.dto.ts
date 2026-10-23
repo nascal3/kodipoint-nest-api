@@ -11,7 +11,6 @@ export class ChangePasswordDto {
         required: true,
     })
     @IsString()
-    @MinLength(8)
     currentPassword: string;
 
 

@@ -34,7 +34,7 @@ import type {
 } from '@prisma/orm-postgres/contract/types';
 
 export type StorageHash =
-  StorageHashBase<'8cc605edb98a34d7cc83e0cd4638f39054afa778ae1628b9582beabb455ec1e5'>;
+  StorageHashBase<'4c786a561639e270284fb1f9913652ae407bc771484860c003fd1ea81b7759e8'>;
 export type ExecutionHash =
   ExecutionHashBase<'dac5f7aae98bf9fa187ebbcdee6938dfe757903240b2c7e9637bfb7163552a1a'>;
 export type ProfileHash =
@@ -394,6 +394,7 @@ export type FieldOutputTypes = {
       readonly organization: CodecTypes['pg/text@1']['output'] | null;
       readonly billingEmail: CodecTypes['pg/text@1']['output'] | null;
       readonly billingAddress: CodecTypes['pg/text@1']['output'] | null;
+      readonly passwordUpdatedAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
       readonly createdAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
       readonly updatedAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
     };
@@ -553,6 +554,7 @@ export type FieldInputTypes = {
       readonly organization: CodecTypes['pg/text@1']['input'] | null;
       readonly billingEmail: CodecTypes['pg/text@1']['input'] | null;
       readonly billingAddress: CodecTypes['pg/text@1']['input'] | null;
+      readonly passwordUpdatedAt: CodecTypes['pg/timestamptz-temporal@1']['input'];
       readonly createdAt: CodecTypes['pg/timestamptz-temporal@1']['input'];
       readonly updatedAt: CodecTypes['pg/timestamptz-temporal@1']['input'];
     };
@@ -710,6 +712,7 @@ export type StorageColumnTypes = {
       readonly last_name: CodecTypes['pg/text@1']['output'];
       readonly organization: CodecTypes['pg/text@1']['output'] | null;
       readonly password_hash: CodecTypes['pg/text@1']['output'];
+      readonly password_updated_at: CodecTypes['pg/timestamptz-temporal@1']['output'];
       readonly phone: CodecTypes['pg/text@1']['output'];
       readonly role: CodecTypes['pg/text@1']['output'];
       readonly status: CodecTypes['pg/text@1']['output'];
@@ -869,6 +872,7 @@ export type StorageColumnInputTypes = {
       readonly last_name: CodecTypes['pg/text@1']['input'];
       readonly organization: CodecTypes['pg/text@1']['input'] | null;
       readonly password_hash: CodecTypes['pg/text@1']['input'];
+      readonly password_updated_at: CodecTypes['pg/timestamptz-temporal@1']['input'];
       readonly phone: CodecTypes['pg/text@1']['input'];
       readonly role: CodecTypes['pg/text@1']['input'];
       readonly status: CodecTypes['pg/text@1']['input'];
@@ -891,6 +895,7 @@ export namespace Models {
     organization: CodecTypes['pg/text@1']['output'] | null;
     billingEmail: CodecTypes['pg/text@1']['output'] | null;
     billingAddress: CodecTypes['pg/text@1']['output'] | null;
+    passwordUpdatedAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
     createdAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
     updatedAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
     invoiceBalanceTransfers: public_InvoiceBalanceTransfer[];
@@ -2436,6 +2441,11 @@ type ContractBase = Omit<
                   readonly codecId: 'pg/text@1';
                   readonly nullable: true;
                 };
+                readonly password_updated_at: {
+                  readonly nativeType: 'timestamptz';
+                  readonly codecId: 'pg/timestamptz-temporal@1';
+                  readonly nullable: false;
+                };
                 readonly created_at: {
                   readonly nativeType: 'timestamptz';
                   readonly codecId: 'pg/timestamptz-temporal@1';
@@ -3781,6 +3791,13 @@ type ContractBase = Omit<
                 readonly nullable: true;
                 readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
               };
+              readonly passwordUpdatedAt: {
+                readonly nullable: false;
+                readonly type: {
+                  readonly kind: 'scalar';
+                  readonly codecId: 'pg/timestamptz-temporal@1';
+                };
+              };
               readonly createdAt: {
                 readonly nullable: false;
                 readonly type: {
@@ -3913,6 +3930,7 @@ type ContractBase = Omit<
                 readonly organization: { readonly column: 'organization' };
                 readonly billingEmail: { readonly column: 'billing_email' };
                 readonly billingAddress: { readonly column: 'billing_address' };
+                readonly passwordUpdatedAt: { readonly column: 'password_updated_at' };
                 readonly createdAt: { readonly column: 'created_at' };
                 readonly updatedAt: { readonly column: 'updated_at' };
               };

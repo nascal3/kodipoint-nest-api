@@ -2071,6 +2071,13 @@
                   "kind": "scalar"
                 }
               },
+              "passwordUpdatedAt": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/timestamptz-temporal@1",
+                  "kind": "scalar"
+                }
+              },
               "phone": {
                 "nullable": false,
                 "type": {
@@ -2268,6 +2275,9 @@
                 },
                 "passwordHash": {
                   "column": "password_hash"
+                },
+                "passwordUpdatedAt": {
+                  "column": "password_updated_at"
                 },
                 "phone": {
                   "column": "phone"
@@ -3836,6 +3846,11 @@
                   "nativeType": "text",
                   "nullable": false
                 },
+                "password_updated_at": {
+                  "codecId": "pg/timestamptz-temporal@1",
+                  "nativeType": "timestamptz",
+                  "nullable": false
+                },
                 "phone": {
                   "codecId": "pg/text@1",
                   "nativeType": "text",
@@ -3886,7 +3901,7 @@
         "kind": "postgres-schema"
       }
     },
-    "storageHash": "8cc605edb98a34d7cc83e0cd4638f39054afa778ae1628b9582beabb455ec1e5"
+    "storageHash": "4c786a561639e270284fb1f9913652ae407bc771484860c003fd1ea81b7759e8"
   },
   "execution": {
     "executionHash": "dac5f7aae98bf9fa187ebbcdee6938dfe757903240b2c7e9637bfb7163552a1a",

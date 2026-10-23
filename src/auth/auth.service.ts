@@ -10,6 +10,7 @@ import * as argon2 from 'argon2';
 import { DatabaseService } from '@/database/database.service';
 import { LoginDto } from './dto/login.dto';
 import { RegisterDto } from './dto/register.dto';
+import {Temporal} from "@js-temporal/polyfill";
 
 type JwtPayload = {
     sub: string;
@@ -55,7 +56,8 @@ export class AuthService {
                 phone: dto.phone.trim(),
                 organization: `${dto.firstName.trim()} ${dto.lastName.trim()}`,
                 billingAddress: dto.address?.trim(),
-                billingEmail: email
+                billingEmail: email,
+                passwordUpdatedAt: Temporal.Now.instant(),
             });
 
         return {
