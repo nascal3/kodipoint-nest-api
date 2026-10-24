@@ -16,8 +16,9 @@ export enum InvoiceStatus {
 
 export class ListInvoicesDto {
     @ApiProperty({
-        example: 'DRAFT',
+        example: 'ISSUED',
         description: 'Invoice status',
+        required: false
     })
     @IsOptional()
     @IsString()
