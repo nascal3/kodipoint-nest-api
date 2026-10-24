@@ -8,6 +8,7 @@ import { AllPropertiesIncomeReportDto } from './dto/all-properties-income-report
 import { TotalRentOwedReportDto } from './dto/total-rent-owed-report.dto';
 import { SortOrder } from './dto/pagination.dto';
 import Decimal from 'decimal.js';
+import { Temporal } from '@js-temporal/polyfill';
 
 @Injectable()
 export class ReportsService {
@@ -32,8 +33,12 @@ export class ReportsService {
 
         if (dto.fromDate || dto.toDate) {
             where.paymentDate = {
-                ...(dto.fromDate ? { gte: new Date(dto.fromDate) } : {}),
-                ...(dto.toDate ? { lte: new Date(dto.toDate) } : {}),
+                ...(dto.fromDate
+                    ? { gte: Temporal.PlainDate.from(dto.fromDate.slice(0, 10)) }
+                    : {}),
+                ...(dto.toDate
+                    ? { lte: Temporal.PlainDate.from(dto.toDate.slice(0, 10)) }
+                    : {}),
             };
         }
 
@@ -200,8 +205,12 @@ export class ReportsService {
 
         if (dto.fromDate || dto.toDate) {
             where.paymentDate = {
-                ...(dto.fromDate ? { gte: new Date(dto.fromDate) } : {}),
-                ...(dto.toDate ? { lte: new Date(dto.toDate) } : {}),
+                ...(dto.fromDate
+                    ? { gte: Temporal.PlainDate.from(dto.fromDate.slice(0, 10)) }
+                    : {}),
+                ...(dto.toDate
+                    ? { lte: Temporal.PlainDate.from(dto.toDate.slice(0, 10)) }
+                    : {}),
             };
         }
 
@@ -266,17 +275,17 @@ export class ReportsService {
         managerId: string,
         dto: TotalRentOwedReportDto,
     ) {
-        const where: Record<string, unknown> = {
-            managerId,
-        };
-
         const invoices = await this.prisma.db.orm.public.Invoice
             .where((i) =>
                 and(
                     i.managerId.eq(managerId),
                     i.status.in(['ISSUED', 'PARTIALLY_PAID', 'OVERDUE']),
-                    ...(dto.fromDate ? [i.issueDate.gte(new Date(dto.fromDate))] : []),
-                    ...(dto.toDate ? [i.issueDate.lte(new Date(dto.toDate))] : []),
+                    ...(dto.fromDate
+                        ? [i.issueDate.gte(Temporal.PlainDate.from(dto.fromDate.slice(0, 10)))]
+                        : []),
+                    ...(dto.toDate
+                        ? [i.issueDate.lte(Temporal.PlainDate.from(dto.toDate.slice(0, 10)))]
+                        : []),
                 ),
             )
             .all();

@@ -41,6 +41,13 @@ export class PropertiesController {
         return this.propertiesService.findAll(user.id);
     }
 
+    @Get('portfolio-occupancy')
+    getPortfolioOccupancy(
+        @CurrentUser() user: authenticatedUserType.AuthenticatedUser,
+    ) {
+        return this.propertiesService.getPortfolioOccupancy(user.id);
+    }
+
     @Get(':id')
     findOne(
         @CurrentUser() user: authenticatedUserType.AuthenticatedUser,

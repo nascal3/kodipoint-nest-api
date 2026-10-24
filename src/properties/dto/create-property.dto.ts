@@ -3,6 +3,7 @@ import {
     IsNumber,
     IsOptional,
     IsString,
+    IsInt,
     Min,
 } from 'class-validator';
 
@@ -106,4 +107,14 @@ export class CreatePropertyDto {
     @IsNumber()
     @Min(0)
     monthlyRent: number;
+
+    @ApiProperty({
+        description: 'The total number of rentable units in this property',
+        example: 12,
+        minimum: 0,
+    })
+    @IsOptional()
+    @IsInt()
+    @Min(0)
+    unitCount?: number;
 }

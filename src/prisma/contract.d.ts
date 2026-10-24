@@ -34,7 +34,7 @@ import type {
 } from '@prisma/orm-postgres/contract/types';
 
 export type StorageHash =
-  StorageHashBase<'4c786a561639e270284fb1f9913652ae407bc771484860c003fd1ea81b7759e8'>;
+  StorageHashBase<'1d29e3c511faad2ba33f572904bcfecaf8e79bf9e6b2b956183c867812891a17'>;
 export type ExecutionHash =
   ExecutionHashBase<'dac5f7aae98bf9fa187ebbcdee6938dfe757903240b2c7e9637bfb7163552a1a'>;
 export type ProfileHash =
@@ -327,6 +327,7 @@ export type FieldOutputTypes = {
       readonly description: CodecTypes['pg/text@1']['output'] | null;
       readonly currency: CodecTypes['pg/text@1']['output'];
       readonly monthlyRent: CodecTypes['pg/numeric@1']['output'];
+      readonly unitCount: CodecTypes['pg/int4@1']['output'];
       readonly status: CodecTypes['pg/text@1']['output'];
       readonly createdAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
       readonly updatedAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
@@ -487,6 +488,7 @@ export type FieldInputTypes = {
       readonly description: CodecTypes['pg/text@1']['input'] | null;
       readonly currency: CodecTypes['pg/text@1']['input'];
       readonly monthlyRent: CodecTypes['pg/numeric@1']['input'];
+      readonly unitCount: CodecTypes['pg/int4@1']['input'];
       readonly status: CodecTypes['pg/text@1']['input'];
       readonly createdAt: CodecTypes['pg/timestamptz-temporal@1']['input'];
       readonly updatedAt: CodecTypes['pg/timestamptz-temporal@1']['input'];
@@ -649,6 +651,7 @@ export type StorageColumnTypes = {
       readonly postal_code: CodecTypes['pg/text@1']['output'] | null;
       readonly state: CodecTypes['pg/text@1']['output'] | null;
       readonly status: CodecTypes['pg/text@1']['output'];
+      readonly unit_count: CodecTypes['pg/int4@1']['output'];
       readonly updated_at: CodecTypes['pg/timestamptz-temporal@1']['output'];
     };
     readonly property_charges: {
@@ -809,6 +812,7 @@ export type StorageColumnInputTypes = {
       readonly postal_code: CodecTypes['pg/text@1']['input'] | null;
       readonly state: CodecTypes['pg/text@1']['input'] | null;
       readonly status: CodecTypes['pg/text@1']['input'];
+      readonly unit_count: CodecTypes['pg/int4@1']['input'];
       readonly updated_at: CodecTypes['pg/timestamptz-temporal@1']['input'];
     };
     readonly property_charges: {
@@ -931,6 +935,7 @@ export namespace Models {
     description: CodecTypes['pg/text@1']['output'] | null;
     currency: CodecTypes['pg/text@1']['output'];
     monthlyRent: CodecTypes['pg/numeric@1']['output'];
+    unitCount: CodecTypes['pg/int4@1']['output'];
     status: CodecTypes['pg/text@1']['output'];
     createdAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
     updatedAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
@@ -1909,6 +1914,15 @@ type ContractBase = Omit<
                   readonly nativeType: 'numeric';
                   readonly codecId: 'pg/numeric@1';
                   readonly nullable: false;
+                };
+                readonly unit_count: {
+                  readonly nativeType: 'int4';
+                  readonly codecId: 'pg/int4@1';
+                  readonly nullable: false;
+                  readonly default: {
+                    readonly kind: 'literal';
+                    readonly value: DefaultLiteralValue<'pg/int4@1', 0>;
+                  };
                 };
                 readonly status: {
                   readonly nativeType: 'text';
@@ -3218,6 +3232,10 @@ type ContractBase = Omit<
                 readonly nullable: false;
                 readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/numeric@1' };
               };
+              readonly unitCount: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
+              };
               readonly status: {
                 readonly nullable: false;
                 readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
@@ -3308,6 +3326,7 @@ type ContractBase = Omit<
                 readonly description: { readonly column: 'description' };
                 readonly currency: { readonly column: 'currency' };
                 readonly monthlyRent: { readonly column: 'monthly_rent' };
+                readonly unitCount: { readonly column: 'unit_count' };
                 readonly status: { readonly column: 'status' };
                 readonly createdAt: { readonly column: 'created_at' };
                 readonly updatedAt: { readonly column: 'updated_at' };

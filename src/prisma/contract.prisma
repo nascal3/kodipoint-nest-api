@@ -45,6 +45,7 @@ model Property {
   description  String?
   currency     String  @default("KES")
   monthlyRent  Decimal @map("monthly_rent")
+  unitCount    Int     @default(0) @map("unit_count")
   status       String  @default("ACTIVE")
 
   createdAt temporal.createdAt() @map("created_at")

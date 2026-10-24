@@ -1,0 +1,250 @@
+[
+  {
+    "id": "column.public.properties.unit_count",
+    "label": "Add column \"unit_count\" to \"properties\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "unit_count",
+        "table": "properties"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"unit_count\" is missing",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "properties",
+          "unit_count"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add column \"unit_count\"",
+        "sql": "ALTER TABLE \"public\".\"properties\" ADD COLUMN \"unit_count\" int4 DEFAULT 0 NOT NULL"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"unit_count\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "properties",
+          "unit_count"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "column.public.users.billing_address",
+    "label": "Add column \"billing_address\" to \"users\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "billing_address",
+        "table": "users"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"billing_address\" is missing",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "users",
+          "billing_address"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add column \"billing_address\"",
+        "sql": "ALTER TABLE \"public\".\"users\" ADD COLUMN \"billing_address\" text"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"billing_address\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "users",
+          "billing_address"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "column.public.users.billing_email",
+    "label": "Add column \"billing_email\" to \"users\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "billing_email",
+        "table": "users"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"billing_email\" is missing",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "users",
+          "billing_email"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add column \"billing_email\"",
+        "sql": "ALTER TABLE \"public\".\"users\" ADD COLUMN \"billing_email\" text"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"billing_email\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "users",
+          "billing_email"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "column.public.users.password_updated_at",
+    "label": "Add column \"password_updated_at\" to \"users\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "password_updated_at",
+        "table": "users"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"password_updated_at\" is missing",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "users",
+          "password_updated_at"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add column \"password_updated_at\"",
+        "sql": "ALTER TABLE \"public\".\"users\" ADD COLUMN \"password_updated_at\" timestamptz"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"password_updated_at\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "users",
+          "password_updated_at"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "data_migration.backfill-users-password_updated_at",
+    "label": "Data transform: backfill-users-password_updated_at",
+    "operationClass": "data",
+    "target": {
+      "id": "postgres"
+    },
+    "precheck": [
+      {
+        "description": "Check backfill-users-password_updated_at has work to do",
+        "sql": "SELECT EXISTS (SELECT \"id\" AS \"id\" FROM \"public\".\"users\" WHERE \"password_updated_at\" IS NULL LIMIT 1) AS ok",
+        "params": []
+      }
+    ],
+    "execute": [
+      {
+        "description": "Run backfill-users-password_updated_at",
+        "sql": "UPDATE \"public\".\"users\" SET \"password_updated_at\" = $1, \"updated_at\" = $2 WHERE \"password_updated_at\" IS NULL",
+        "params": [
+          "2026-10-24T15:36:52.902212793Z",
+          "2026-10-24T15:36:52.903212902Z"
+        ]
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "Verify backfill-users-password_updated_at resolved all violations",
+        "sql": "SELECT NOT EXISTS (SELECT \"id\" AS \"id\" FROM \"public\".\"users\" WHERE \"password_updated_at\" IS NULL LIMIT 1) AS ok",
+        "params": []
+      }
+    ]
+  },
+  {
+    "id": "alterNullability.setNotNull.users.password_updated_at",
+    "label": "Set NOT NULL on \"users\".\"password_updated_at\"",
+    "operationClass": "destructive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "password_updated_at",
+        "table": "users"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"password_updated_at\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "users",
+          "password_updated_at"
+        ]
+      },
+      {
+        "description": "ensure no NULL values in \"password_updated_at\"",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"public\".\"users\" WHERE \"password_updated_at\" IS NULL) AS \"result\"",
+        "params": []
+      }
+    ],
+    "execute": [
+      {
+        "description": "set NOT NULL on \"password_updated_at\"",
+        "sql": "ALTER TABLE \"public\".\"users\" ALTER COLUMN \"password_updated_at\" SET NOT NULL"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"password_updated_at\" is NOT NULL",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3 AND \"is_nullable\" = $4)) AS \"result\"",
+        "params": [
+          "public",
+          "users",
+          "password_updated_at",
+          "NO"
+        ]
+      }
+    ]
+  }
+]

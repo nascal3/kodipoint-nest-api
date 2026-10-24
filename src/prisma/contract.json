@@ -1190,6 +1190,13 @@
                   "kind": "scalar"
                 }
               },
+              "unitCount": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              },
               "updatedAt": {
                 "nullable": false,
                 "type": {
@@ -1319,6 +1326,9 @@
                 },
                 "status": {
                   "column": "status"
+                },
+                "unitCount": {
+                  "column": "unit_count"
                 },
                 "updatedAt": {
                   "column": "updated_at"
@@ -3246,6 +3256,15 @@
                   "nativeType": "text",
                   "nullable": false
                 },
+                "unit_count": {
+                  "codecId": "pg/int4@1",
+                  "default": {
+                    "kind": "literal",
+                    "value": 0
+                  },
+                  "nativeType": "int4",
+                  "nullable": false
+                },
                 "updated_at": {
                   "codecId": "pg/timestamptz-temporal@1",
                   "nativeType": "timestamptz",
@@ -3901,7 +3920,7 @@
         "kind": "postgres-schema"
       }
     },
-    "storageHash": "4c786a561639e270284fb1f9913652ae407bc771484860c003fd1ea81b7759e8"
+    "storageHash": "1d29e3c511faad2ba33f572904bcfecaf8e79bf9e6b2b956183c867812891a17"
   },
   "execution": {
     "executionHash": "dac5f7aae98bf9fa187ebbcdee6938dfe757903240b2c7e9637bfb7163552a1a",

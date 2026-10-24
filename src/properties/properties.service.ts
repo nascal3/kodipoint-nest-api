@@ -24,6 +24,7 @@ export class PropertiesService {
             description: dto.description,
             currency: dto.currency,
             monthlyRent: dto.monthlyRent.toString(),
+            unitCount: dto.unitCount ?? 0,
             status: 'ACTIVE',
         });
     }
@@ -32,6 +33,37 @@ export class PropertiesService {
         return this.prisma.db.orm.public.Property
             .where({ managerId })
             .all();
+    }
+
+    async getPortfolioOccupancy(managerId: string) {
+        const properties = await this.prisma.db.orm.public.Property
+            .where({ managerId, status: 'ACTIVE' })
+            .all();
+        const propertyIds = new Set(properties.map((property) => property.id));
+
+        const activeTenancies = await this.prisma.db.orm.public.Tenancy
+            .where({ managerId, status: 'ACTIVE' })
+            .all();
+
+        const occupiedUnits = new Set(
+            activeTenancies
+                .filter((tenancy) => propertyIds.has(tenancy.propertyId))
+                .map((tenancy) => `${tenancy.propertyId}:${tenancy.propertyUnit}`),
+        ).size;
+        const totalUnits = properties.reduce(
+            (total, property) => total + property.unitCount,
+            0,
+        );
+
+        return {
+            occupancyPercentage:
+                totalUnits === 0
+                    ? 0
+                    : Number(((occupiedUnits / totalUnits) * 100).toFixed(1)),
+            occupiedUnits,
+            totalUnits,
+            vacantUnits: totalUnits - occupiedUnits,
+        };
     }
 
     async findOne(managerId: string, propertyId: string) {
