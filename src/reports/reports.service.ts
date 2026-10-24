@@ -26,24 +26,27 @@ export class ReportsService {
             throw new NotFoundException('Property not found');
         }
 
-        const where: Record<string, unknown> = {
-            managerId,
-            propertyId: dto.propertyId,
-        };
-
-        if (dto.fromDate || dto.toDate) {
-            where.paymentDate = {
-                ...(dto.fromDate
-                    ? { gte: Temporal.PlainDate.from(dto.fromDate.slice(0, 10)) }
-                    : {}),
-                ...(dto.toDate
-                    ? { lte: Temporal.PlainDate.from(dto.toDate.slice(0, 10)) }
-                    : {}),
-            };
-        }
-
         const payments = await this.prisma.db.orm.public.Payment
-            .where(where)
+            .where((payment) =>
+                and(
+                    payment.managerId.eq(managerId),
+                    payment.propertyId.eq(dto.propertyId),
+                    ...(dto.fromDate
+                        ? [
+                              payment.paymentDate.gte(
+                                  Temporal.PlainDate.from(dto.fromDate.slice(0, 10)),
+                              ),
+                          ]
+                        : []),
+                    ...(dto.toDate
+                        ? [
+                              payment.paymentDate.lte(
+                                  Temporal.PlainDate.from(dto.toDate.slice(0, 10)),
+                              ),
+                          ]
+                        : []),
+                ),
+            )
             .all();
 
         const totalIncome = payments.reduce(
@@ -199,23 +202,26 @@ export class ReportsService {
         managerId: string,
         dto: AllPropertiesIncomeReportDto,
     ) {
-        const where: Record<string, unknown> = {
-            managerId,
-        };
-
-        if (dto.fromDate || dto.toDate) {
-            where.paymentDate = {
-                ...(dto.fromDate
-                    ? { gte: Temporal.PlainDate.from(dto.fromDate.slice(0, 10)) }
-                    : {}),
-                ...(dto.toDate
-                    ? { lte: Temporal.PlainDate.from(dto.toDate.slice(0, 10)) }
-                    : {}),
-            };
-        }
-
         const payments = await this.prisma.db.orm.public.Payment
-            .where(where)
+            .where((payment) =>
+                and(
+                    payment.managerId.eq(managerId),
+                    ...(dto.fromDate
+                        ? [
+                              payment.paymentDate.gte(
+                                  Temporal.PlainDate.from(dto.fromDate.slice(0, 10)),
+                              ),
+                          ]
+                        : []),
+                    ...(dto.toDate
+                        ? [
+                              payment.paymentDate.lte(
+                                  Temporal.PlainDate.from(dto.toDate.slice(0, 10)),
+                              ),
+                          ]
+                        : []),
+                ),
+            )
             .all();
 
         const totalIncome = payments.reduce(
