@@ -232,7 +232,8 @@ export class AuthService {
             providerAccountId: profile.googleId,
         });
 
-        return user;
+
+        return {...user, newUser: true};
     }
 
     /**
