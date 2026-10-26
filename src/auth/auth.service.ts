@@ -253,17 +253,6 @@ export class AuthService {
         };
     }
 
-    async completeGoogleLogin(user: {
-        id: string;
-        email: string;
-        passwordHash: string;
-    }) {
-        return {
-            user: this.toSafeUser(user),
-            ...this.createTokens(user.id, user.email),
-        };
-    }
-
     /**
      * Remove sensitive fields before returning a user.
      */

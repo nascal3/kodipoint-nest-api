@@ -54,12 +54,12 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
         const firstName = user.firstName.trim();
         const email = user.email;
 
-        return this.authService.validateGoogleUser({
+        return {
             googleId: profile.id,
             email,
             firstName,
             lastName,
             picture: profile.photos?.[0]?.value,
-        });
+        };
     }
 }
