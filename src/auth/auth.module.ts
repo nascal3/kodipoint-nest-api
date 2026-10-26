@@ -9,7 +9,9 @@ import { JwtStrategy } from './strategies/jwt.strategy';
 
 @Module({
     imports: [
-        ConfigModule,
+        ConfigModule.forRoot({
+            isGlobal: true,
+        }),
         PassportModule.register({
             defaultStrategy: 'jwt',
         }),
