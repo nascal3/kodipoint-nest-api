@@ -1,11 +1,15 @@
-import { Injectable } from '@nestjs/common';
+import {Injectable, UnauthorizedException} from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
-import { Strategy, VerifyCallback } from 'passport-google-oauth20';
+import { Strategy, VerifyCallback, Profile } from 'passport-google-oauth20';
 import { ConfigService } from '@nestjs/config';
+import { AuthService } from '../auth.service';
 
 @Injectable()
 export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
-    constructor(configService: ConfigService) {
+    constructor(
+        private readonly configService: ConfigService,
+        private readonly authService: AuthService,
+    ) {
         super({
             clientID: configService.getOrThrow<string>('GOOGLE_CLIENT_ID'),
             clientSecret: configService.getOrThrow<string>('GOOGLE_CLIENT_SECRET'),
@@ -21,8 +25,6 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
         done: VerifyCallback,
     ): Promise<any> {
         const { name, emails, photos } = profile;
-
-        // Construct a user object from Google's profile payload
         const user = {
             email: emails[0].value,
             firstName: name.givenName,
@@ -31,7 +33,33 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
             accessToken,
         };
 
-        // You can inject your UserService here to find or create the user in your database
-        done(null, user);
+        if (!user.email) {
+            throw new UnauthorizedException(
+                'Google did not provide an email address',
+            );
+        }
+
+        const emailVerified =
+            (profile as Profile & {
+                _json?: { email_verified?: boolean };
+            })._json?.email_verified === true;
+
+        if (!emailVerified) {
+            throw new UnauthorizedException(
+                'A verified Google email address is required',
+            );
+        }
+
+        const lastName = user.lastName.trim();
+        const firstName = user.firstName.trim();
+        const email = user.email;
+
+        return this.authService.validateGoogleUser({
+            googleId: profile.id,
+            email,
+            firstName,
+            lastName,
+            picture: profile.photos?.[0]?.value,
+        });
     }
 }

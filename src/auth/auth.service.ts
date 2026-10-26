@@ -6,7 +6,6 @@ import {
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import * as argon2 from 'argon2';
-import { randomBytes } from 'node:crypto';
 
 import { DatabaseService } from '@/database/database.service';
 import { LoginDto } from './dto/login.dto';
@@ -234,6 +233,25 @@ export class AuthService {
         });
 
         return user;
+    }
+
+    /**
+     * Log in an existing user authenticated through Google OAuth.
+     */
+    async loginWithGoogle(profile: {
+        googleId: string;
+        email: string;
+        firstName: string;
+        lastName: string;
+        picture?: string;
+        emailVerified: boolean;
+    }) {
+        const user = await this.validateGoogleUser(profile);
+
+        return {
+            user: this.toSafeUser(user),
+            ...this.createTokens(user.id, user.email),
+        };
     }
 
     /**
