@@ -244,10 +244,20 @@ export class AuthService {
         firstName: string;
         lastName: string;
         picture?: string;
-        emailVerified: boolean;
     }) {
         const user = await this.validateGoogleUser(profile);
 
+        return {
+            user: this.toSafeUser(user),
+            ...this.createTokens(user.id, user.email),
+        };
+    }
+
+    async completeGoogleLogin(user: {
+        id: string;
+        email: string;
+        passwordHash: string;
+    }) {
         return {
             user: this.toSafeUser(user),
             ...this.createTokens(user.id, user.email),

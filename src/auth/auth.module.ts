@@ -10,9 +10,7 @@ import { GoogleStrategy } from './strategies/google.strategy';
 
 @Module({
     imports: [
-        ConfigModule.forRoot({
-            isGlobal: true,
-        }),
+        ConfigModule,
         PassportModule.register({
             defaultStrategy: 'jwt',
         }),
