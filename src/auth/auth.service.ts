@@ -1,7 +1,7 @@
 import {
     BadRequestException,
     ConflictException,
-    Injectable,
+    Injectable, UnauthorizedException,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
@@ -141,6 +141,126 @@ export class AuthService {
                 secret: this.getJwtSecret(),
                 expiresIn: expiresIn as any,
             }),
+        };
+    }
+
+    /**
+     * Find or create a user authenticated through Google OAuth.
+     *
+     * Google email must be verified before calling this method.
+     */
+    async validateGoogleUser(profile: {
+        googleId: string;
+        email: string;
+        firstName: string;
+        lastName: string;
+        picture?: string;
+    }) {
+        const email = profile.email.trim().toLowerCase();
+
+        // 1. Check whether this Google account is already linked.
+        const existingOAuthAccount =
+            await this.prisma.db.orm.public.OAuthAccount
+                .where({
+                    provider: 'google',
+                    providerAccountId: profile.googleId,
+                })
+                .first();
+
+        if (existingOAuthAccount) {
+            const user =
+                await this.prisma.db.orm.public.User
+                    .where({
+                        id: existingOAuthAccount.userId,
+                    })
+                    .first();
+
+            if (!user) {
+                throw new UnauthorizedException(
+                    'The Google account is linked to a missing user',
+                );
+            }
+
+            return user;
+        }
+
+        // 2. Check whether a user already exists with this email.
+        const existingUser =
+            await this.prisma.db.orm.public.User
+                .where({ email })
+                .first();
+
+        if (existingUser) {
+            // Link Google to the existing user.
+            await this.prisma.db.orm.public.OAuthAccount.create({
+                userId: existingUser.id,
+                provider: 'google',
+                providerAccountId: profile.googleId,
+            });
+
+            return existingUser;
+        }
+
+        // 3. Create a new user.
+        const firstName = profile.firstName.trim();
+        const lastName = profile.lastName.trim();
+
+        // Generate an unusable-by-the-user password for an
+        // OAuth-only account, assuming passwordHash is required.
+        const passwordHash = await argon2.hash(
+            require('node:crypto').randomBytes(32).toString('hex'),
+        );
+
+        const user =
+            await this.prisma.db.orm.public.User.create({
+                email,
+                passwordHash,
+                firstName,
+                lastName,
+                address: '',
+                phone: '',
+                organization: `${firstName} ${lastName}`,
+                billingAddress: '',
+                billingEmail: email,
+                passwordUpdatedAt: Temporal.Now.instant(),
+            });
+
+        // 4. Link the new user to the Google account.
+        await this.prisma.db.orm.public.OAuthAccount.create({
+            userId: user.id,
+            provider: 'google',
+            providerAccountId: profile.googleId,
+        });
+
+        return user;
+    }
+
+    /**
+     * Log in an existing user authenticated through Google OAuth.
+     */
+    async loginWithGoogle(profile: {
+        googleId: string;
+        email: string;
+        firstName: string;
+        lastName: string;
+        picture?: string;
+    }) {
+        const user = await this.validateGoogleUser(profile);
+
+        return {
+            user: this.toSafeUser(user),
+            ...this.createTokens(user.id, user.email),
+        };
+    }
+
+    async completeGoogleLogin(user: {
+        id: string;
+        email: string;
+        passwordHash: string;
+    }) {
+        return {
+            user: this.toSafeUser(user),
+            ...this.createTokens(user.id, user.email),
         };
     }
 

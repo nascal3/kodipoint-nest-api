@@ -20,6 +20,10 @@
       "model": "Invoice",
       "namespace": "public"
     },
+    "oauth_accounts": {
+      "model": "OAuthAccount",
+      "namespace": "public"
+    },
     "payment_allocations": {
       "model": "PaymentAllocation",
       "namespace": "public"
@@ -711,6 +715,84 @@
               },
               "namespaceId": "public",
               "table": "invoice_items"
+            }
+          },
+          "OAuthAccount": {
+            "fields": {
+              "createdAt": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/timestamptz-temporal@1",
+                  "kind": "scalar"
+                }
+              },
+              "id": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/uuid@1",
+                  "kind": "scalar"
+                }
+              },
+              "provider": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "providerAccountId": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "userId": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/uuid@1",
+                  "kind": "scalar"
+                }
+              }
+            },
+            "relations": {
+              "user": {
+                "cardinality": "N:1",
+                "nullable": false,
+                "on": {
+                  "localFields": [
+                    "userId"
+                  ],
+                  "targetFields": [
+                    "id"
+                  ]
+                },
+                "to": {
+                  "model": "User",
+                  "namespace": "public"
+                }
+              }
+            },
+            "storage": {
+              "fields": {
+                "createdAt": {
+                  "column": "created_at"
+                },
+                "id": {
+                  "column": "id"
+                },
+                "provider": {
+                  "column": "provider"
+                },
+                "providerAccountId": {
+                  "column": "provider_account_id"
+                },
+                "userId": {
+                  "column": "user_id"
+                }
+              },
+              "namespaceId": "public",
+              "table": "oauth_accounts"
             }
           },
           "Payment": {
@@ -2148,6 +2230,21 @@
                   "namespace": "public"
                 }
               },
+              "oauthAccounts": {
+                "cardinality": "1:N",
+                "on": {
+                  "localFields": [
+                    "id"
+                  ],
+                  "targetFields": [
+                    "userId"
+                  ]
+                },
+                "to": {
+                  "model": "OAuthAccount",
+                  "namespace": "public"
+                }
+              },
               "paymentAllocations": {
                 "cardinality": "1:N",
                 "on": {
@@ -2843,6 +2940,82 @@
                   ]
                 }
               ]
+            },
+            "oauth_accounts": {
+              "columns": {
+                "created_at": {
+                  "codecId": "pg/timestamptz-temporal@1",
+                  "default": {
+                    "expression": "now()",
+                    "kind": "function"
+                  },
+                  "nativeType": "timestamptz",
+                  "nullable": false
+                },
+                "id": {
+                  "codecId": "pg/uuid@1",
+                  "nativeType": "uuid",
+                  "nullable": false
+                },
+                "provider": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "provider_account_id": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "user_id": {
+                  "codecId": "pg/uuid@1",
+                  "nativeType": "uuid",
+                  "nullable": false
+                }
+              },
+              "foreignKeys": [
+                {
+                  "source": {
+                    "columns": [
+                      "user_id"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "oauth_accounts"
+                  },
+                  "target": {
+                    "columns": [
+                      "id"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "users"
+                  }
+                }
+              ],
+              "indexes": [
+                {
+                  "columns": [
+                    "provider",
+                    "provider_account_id"
+                  ],
+                  "name": "oauth_accounts_provider_provider_account_id_idx_c388af0e",
+                  "prefix": "oauth_accounts_provider_provider_account_id_idx",
+                  "unique": false
+                },
+                {
+                  "columns": [
+                    "user_id"
+                  ],
+                  "name": "oauth_accounts_user_id_idx_6c952402",
+                  "prefix": "oauth_accounts_user_id_idx",
+                  "unique": false
+                }
+              ],
+              "primaryKey": {
+                "columns": [
+                  "id"
+                ]
+              },
+              "uniques": []
             },
             "payment_allocations": {
               "columns": {
@@ -3920,10 +4093,10 @@
         "kind": "postgres-schema"
       }
     },
-    "storageHash": "1d29e3c511faad2ba33f572904bcfecaf8e79bf9e6b2b956183c867812891a17"
+    "storageHash": "f5f1e8eb8fa9006c0613ae180862f3b07ccdc11cff7d7d9a821b5987a032eccc"
   },
   "execution": {
-    "executionHash": "dac5f7aae98bf9fa187ebbcdee6938dfe757903240b2c7e9637bfb7163552a1a",
+    "executionHash": "f4e0ba2beba364ea24f44bcb588e83d8f56d8d5175ba4d380ceda9851145745e",
     "mutations": {
       "defaults": [
         {
@@ -3998,6 +4171,17 @@
             "column": "updated_at",
             "namespace": "public",
             "table": "invoices"
+          }
+        },
+        {
+          "onCreate": {
+            "id": "uuidv4",
+            "kind": "generator"
+          },
+          "ref": {
+            "column": "id",
+            "namespace": "public",
+            "table": "oauth_accounts"
           }
         },
         {

@@ -28,8 +28,23 @@ model User {
 
   invoiceBalanceTransfers InvoiceBalanceTransfer[]
   paymentAllocations      PaymentAllocation[]
+  oauthAccounts           OAuthAccount[]
 
   @@map("users")
+}
+
+model OAuthAccount {
+  id                Uuid     @id @default(uuid())
+  userId            Uuid     @map("user_id")
+  provider          String
+  providerAccountId String   @map("provider_account_id")
+  createdAt         temporal.createdAt() @map("created_at")
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+  @@index([provider, providerAccountId])
+  @@map("oauth_accounts")
 }
 
 model Property {

@@ -34,9 +34,9 @@ import type {
 } from '@prisma/orm-postgres/contract/types';
 
 export type StorageHash =
-  StorageHashBase<'1d29e3c511faad2ba33f572904bcfecaf8e79bf9e6b2b956183c867812891a17'>;
+  StorageHashBase<'f5f1e8eb8fa9006c0613ae180862f3b07ccdc11cff7d7d9a821b5987a032eccc'>;
 export type ExecutionHash =
-  ExecutionHashBase<'dac5f7aae98bf9fa187ebbcdee6938dfe757903240b2c7e9637bfb7163552a1a'>;
+  ExecutionHashBase<'f4e0ba2beba364ea24f44bcb588e83d8f56d8d5175ba4d380ceda9851145745e'>;
 export type ProfileHash =
   ProfileHashBase<'3916f444a8a17ad749191acf9e08dad97d1a327b88c2f1d45d12f240296aa8b2'>;
 
@@ -289,6 +289,13 @@ export type FieldOutputTypes = {
       readonly createdAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
       readonly updatedAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
     };
+    readonly OAuthAccount: {
+      readonly id: CodecTypes['pg/uuid@1']['output'];
+      readonly userId: CodecTypes['pg/uuid@1']['output'];
+      readonly provider: CodecTypes['pg/text@1']['output'];
+      readonly providerAccountId: CodecTypes['pg/text@1']['output'];
+      readonly createdAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
+    };
     readonly Payment: {
       readonly id: CodecTypes['pg/uuid@1']['output'];
       readonly managerId: CodecTypes['pg/uuid@1']['output'];
@@ -449,6 +456,13 @@ export type FieldInputTypes = {
       readonly totalAmount: CodecTypes['pg/numeric@1']['input'];
       readonly createdAt: CodecTypes['pg/timestamptz-temporal@1']['input'];
       readonly updatedAt: CodecTypes['pg/timestamptz-temporal@1']['input'];
+    };
+    readonly OAuthAccount: {
+      readonly id: CodecTypes['pg/uuid@1']['input'];
+      readonly userId: CodecTypes['pg/uuid@1']['input'];
+      readonly provider: CodecTypes['pg/text@1']['input'];
+      readonly providerAccountId: CodecTypes['pg/text@1']['input'];
+      readonly createdAt: CodecTypes['pg/timestamptz-temporal@1']['input'];
     };
     readonly Payment: {
       readonly id: CodecTypes['pg/uuid@1']['input'];
@@ -611,6 +625,13 @@ export type StorageColumnTypes = {
       readonly total_amount: CodecTypes['pg/numeric@1']['output'];
       readonly updated_at: CodecTypes['pg/timestamptz-temporal@1']['output'];
     };
+    readonly oauth_accounts: {
+      readonly created_at: CodecTypes['pg/timestamptz-temporal@1']['output'];
+      readonly id: CodecTypes['pg/uuid@1']['output'];
+      readonly provider: CodecTypes['pg/text@1']['output'];
+      readonly provider_account_id: CodecTypes['pg/text@1']['output'];
+      readonly user_id: CodecTypes['pg/uuid@1']['output'];
+    };
     readonly payment_allocations: {
       readonly allocated_at: CodecTypes['pg/timestamptz-temporal@1']['output'];
       readonly amount: CodecTypes['pg/numeric@1']['output'];
@@ -772,6 +793,13 @@ export type StorageColumnInputTypes = {
       readonly total_amount: CodecTypes['pg/numeric@1']['input'];
       readonly updated_at: CodecTypes['pg/timestamptz-temporal@1']['input'];
     };
+    readonly oauth_accounts: {
+      readonly created_at: CodecTypes['pg/timestamptz-temporal@1']['input'];
+      readonly id: CodecTypes['pg/uuid@1']['input'];
+      readonly provider: CodecTypes['pg/text@1']['input'];
+      readonly provider_account_id: CodecTypes['pg/text@1']['input'];
+      readonly user_id: CodecTypes['pg/uuid@1']['input'];
+    };
     readonly payment_allocations: {
       readonly allocated_at: CodecTypes['pg/timestamptz-temporal@1']['input'];
       readonly amount: CodecTypes['pg/numeric@1']['input'];
@@ -904,6 +932,7 @@ export namespace Models {
     updatedAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
     invoiceBalanceTransfers: public_InvoiceBalanceTransfer[];
     invoices: public_Invoice[];
+    oauthAccounts: public_OAuthAccount[];
     paymentAllocations: public_PaymentAllocation[];
     payments: public_Payment[];
     properties: public_Property[];
@@ -914,6 +943,7 @@ export namespace Models {
     readonly [RelationKeys]?:
       | 'invoiceBalanceTransfers'
       | 'invoices'
+      | 'oauthAccounts'
       | 'paymentAllocations'
       | 'payments'
       | 'properties'
@@ -921,6 +951,15 @@ export namespace Models {
       | 'receipts'
       | 'tenancies'
       | 'tenants';
+  };
+  export type public_OAuthAccount = {
+    id: CodecTypes['pg/uuid@1']['output'];
+    userId: CodecTypes['pg/uuid@1']['output'];
+    provider: CodecTypes['pg/text@1']['output'];
+    providerAccountId: CodecTypes['pg/text@1']['output'];
+    createdAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
+    user: public_User;
+    readonly [RelationKeys]?: 'user';
   };
   export type public_Property = {
     id: CodecTypes['pg/uuid@1']['output'];
@@ -1129,6 +1168,7 @@ export namespace Models {
 export declare const models: {
   public: {
     User: Models.public_User;
+    OAuthAccount: Models.public_OAuthAccount;
     Property: Models.public_Property;
     PropertyCharge: Models.public_PropertyCharge;
     Tenant: Models.public_Tenant;
@@ -1579,6 +1619,66 @@ type ContractBase = Omit<
                   readonly target: {
                     readonly namespaceId: 'public' & NamespaceId;
                     readonly tableName: 'tenants';
+                    readonly columns: readonly ['id'];
+                  };
+                },
+              ];
+            };
+            readonly oauth_accounts: {
+              columns: {
+                readonly id: {
+                  readonly nativeType: 'uuid';
+                  readonly codecId: 'pg/uuid@1';
+                  readonly nullable: false;
+                };
+                readonly user_id: {
+                  readonly nativeType: 'uuid';
+                  readonly codecId: 'pg/uuid@1';
+                  readonly nullable: false;
+                };
+                readonly provider: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                };
+                readonly provider_account_id: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                };
+                readonly created_at: {
+                  readonly nativeType: 'timestamptz';
+                  readonly codecId: 'pg/timestamptz-temporal@1';
+                  readonly nullable: false;
+                  readonly default: { readonly kind: 'function'; readonly expression: 'now()' };
+                };
+              };
+              primaryKey: { readonly columns: readonly ['id'] };
+              uniques: readonly [];
+              indexes: readonly [
+                {
+                  readonly name: 'oauth_accounts_user_id_idx_6c952402';
+                  readonly prefix: 'oauth_accounts_user_id_idx';
+                  readonly columns: readonly ['user_id'];
+                  readonly unique: false;
+                },
+                {
+                  readonly name: 'oauth_accounts_provider_provider_account_id_idx_c388af0e';
+                  readonly prefix: 'oauth_accounts_provider_provider_account_id_idx';
+                  readonly columns: readonly ['provider', 'provider_account_id'];
+                  readonly unique: false;
+                },
+              ];
+              foreignKeys: readonly [
+                {
+                  readonly source: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'oauth_accounts';
+                    readonly columns: readonly ['user_id'];
+                  };
+                  readonly target: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'users';
                     readonly columns: readonly ['id'];
                   };
                 },
@@ -2489,6 +2589,10 @@ type ContractBase = Omit<
   readonly targetFamily: 'sql';
   readonly roots: {
     readonly users: { readonly namespace: 'public' & NamespaceId; readonly model: 'User' };
+    readonly oauth_accounts: {
+      readonly namespace: 'public' & NamespaceId;
+      readonly model: 'OAuthAccount';
+    };
     readonly properties: { readonly namespace: 'public' & NamespaceId; readonly model: 'Property' };
     readonly property_charges: {
       readonly namespace: 'public' & NamespaceId;
@@ -2937,6 +3041,55 @@ type ContractBase = Omit<
                 readonly totalAmount: { readonly column: 'total_amount' };
                 readonly createdAt: { readonly column: 'created_at' };
                 readonly updatedAt: { readonly column: 'updated_at' };
+              };
+            };
+          };
+          readonly OAuthAccount: {
+            readonly fields: {
+              readonly id: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/uuid@1' };
+              };
+              readonly userId: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/uuid@1' };
+              };
+              readonly provider: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly providerAccountId: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly createdAt: {
+                readonly nullable: false;
+                readonly type: {
+                  readonly kind: 'scalar';
+                  readonly codecId: 'pg/timestamptz-temporal@1';
+                };
+              };
+            };
+            readonly relations: {
+              readonly user: {
+                readonly to: { readonly namespace: 'public' & NamespaceId; readonly model: 'User' };
+                readonly cardinality: 'N:1';
+                readonly nullable: false;
+                readonly on: {
+                  readonly localFields: readonly ['userId'];
+                  readonly targetFields: readonly ['id'];
+                };
+              };
+            };
+            readonly storage: {
+              readonly table: 'oauth_accounts';
+              readonly namespaceId: 'public';
+              readonly fields: {
+                readonly id: { readonly column: 'id' };
+                readonly userId: { readonly column: 'user_id' };
+                readonly provider: { readonly column: 'provider' };
+                readonly providerAccountId: { readonly column: 'provider_account_id' };
+                readonly createdAt: { readonly column: 'created_at' };
               };
             };
           };
@@ -3855,6 +4008,17 @@ type ContractBase = Omit<
                   readonly targetFields: readonly ['managerId'];
                 };
               };
+              readonly oauthAccounts: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'OAuthAccount';
+                };
+                readonly cardinality: '1:N';
+                readonly on: {
+                  readonly localFields: readonly ['id'];
+                  readonly targetFields: readonly ['userId'];
+                };
+              };
               readonly paymentAllocations: {
                 readonly to: {
                   readonly namespace: 'public' & NamespaceId;
@@ -4031,6 +4195,14 @@ type ContractBase = Omit<
           };
           readonly onCreate: { readonly kind: 'generator'; readonly id: 'instantNow' };
           readonly onUpdate: { readonly kind: 'generator'; readonly id: 'instantNow' };
+        },
+        {
+          readonly ref: {
+            readonly namespace: 'public';
+            readonly table: 'oauth_accounts';
+            readonly column: 'id';
+          };
+          readonly onCreate: { readonly kind: 'generator'; readonly id: 'uuidv4' };
         },
         {
           readonly ref: {

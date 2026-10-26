@@ -11,10 +11,7 @@ type JwtPayload = {
 };
 
 @Injectable()
-export class JwtStrategy extends PassportStrategy(
-    Strategy,
-    'jwt',
-) {
+export class JwtStrategy extends PassportStrategy(Strategy, 'jwt',) {
     constructor(configService: ConfigService) {
         const secret = configService.get<string>('JWT_SECRET');
 
