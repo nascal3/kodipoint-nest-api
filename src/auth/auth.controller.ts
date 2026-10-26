@@ -62,13 +62,31 @@ export class AuthController {
       req.user,
     );
 
+    // Set the JWT in an HttpOnly cookie.
+    res.cookie('kodipoint_access_token', result.accessToken, {
+      httpOnly: true,
+      secure: this.configService.get('NODE_ENV') === 'production',
+      sameSite: 'lax',
+      maxAge: 15 * 60 * 1000,
+      path: '/',
+    });
+
+    // Set the user data in a cookie.
+    res.cookie('kodipoint_user', JSON.stringify(result.user), {
+      httpOnly: true,
+      secure: this.configService.get('NODE_ENV') === 'production',
+      sameSite: 'lax',
+      maxAge: 15 * 60 * 1000,
+      path: '/',
+    });
+
     const frontendUrl = this.configService.getOrThrow<string>(
       'FRONTEND_URL',
     );
 
     // Redirect to your frontend after successful authentication.
     return res.redirect(
-      `${frontendUrl}/login?token=${result}`,
+      `${frontendUrl}/login`,
     );
   }
 }
