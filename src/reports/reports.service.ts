@@ -276,12 +276,11 @@ export class ReportsService {
             );
         }
 
-        const monthlyTotals = Array.from(incomeByMonth.entries())
-            .map(([month, total]) => ({
-                month,
-                total: total.toFixed(2),
-            }))
-            .sort((a, b) => a.month.localeCompare(b.month));
+        const monthlyTotals = this.generateMonthlyTotals(
+            incomeByMonth,
+            dto.fromDate,
+            dto.toDate,
+        );
 
         return {
             summary: {
@@ -366,12 +365,11 @@ export class ReportsService {
             );
         }
 
-        const monthlyTotals = Array.from(owedByMonth.entries())
-            .map(([month, total]) => ({
-                month,
-                total: total.toFixed(2),
-            }))
-            .sort((a, b) => a.month.localeCompare(b.month));
+        const monthlyTotals = this.generateMonthlyTotals(
+            owedByMonth,
+            dto.fromDate,
+            dto.toDate,
+        );
 
         return {
             summary: {
@@ -428,5 +426,49 @@ export class ReportsService {
 
     private getNestedValue(obj: any, path: string): any {
         return path.split('.').reduce((current, key) => current?.[key], obj);
+    }
+
+    private generateMonthlyTotals(
+        dataByMonth: Map<string, Decimal>,
+        fromDate?: string,
+        toDate?: string,
+    ): Array<{ month: string; total: string }> {
+        if (!fromDate || !toDate) {
+            return Array.from(dataByMonth.entries())
+                .map(([month, total]) => ({
+                    month,
+                    total: total.toFixed(2),
+                }))
+                .sort((a, b) => a.month.localeCompare(b.month));
+        }
+
+        const start = Temporal.PlainDate.from(fromDate.slice(0, 10));
+        const end = Temporal.PlainDate.from(toDate.slice(0, 10));
+        const monthlyTotals: Array<{ month: string; total: string }> = [];
+
+        let current = Temporal.PlainDate.from({
+            year: start.year,
+            month: start.month,
+            day: 1,
+        });
+
+        const endDate = Temporal.PlainDate.from({
+            year: end.year,
+            month: end.month,
+            day: 1,
+        });
+
+        while (Temporal.PlainDate.compare(current, endDate) <= 0) {
+            const monthKey = `${current.year}-${String(current.month).padStart(2, '0')}`;
+            const total = dataByMonth.get(monthKey) || new Decimal(0);
+            monthlyTotals.push({
+                month: monthKey,
+                total: total.toFixed(2),
+            });
+
+            current = current.add({ months: 1 });
+        }
+
+        return monthlyTotals;
     }
 }
