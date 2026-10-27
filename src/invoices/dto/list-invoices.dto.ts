@@ -1,8 +1,12 @@
 import { ApiProperty } from '@nestjs/swagger';
+import { Type } from 'class-transformer';
 import {
     IsDateString,
     IsOptional,
     IsString,
+    IsUUID,
+    IsInt,
+    Min,
 } from 'class-validator';
 
 export enum InvoiceStatus {
@@ -25,19 +29,19 @@ export class ListInvoicesDto {
     status?: InvoiceStatus;
 
     @ApiProperty({
-        example: '1234567890',
+        example: '123e4567-e89b-12d3-a456-426614174000',
         description: 'Property ID',
     })
     @IsOptional()
-    @IsString()
+    @IsUUID()
     propertyId?: string;
 
     @ApiProperty({
-        example: '1234567890',
+        example: '123e4567-e89b-12d3-a456-426614174000',
         description: 'Tenant ID',
     })
     @IsOptional()
-    @IsString()
+    @IsUUID()
     tenantId?: string;
 
     @ApiProperty({
@@ -46,7 +50,7 @@ export class ListInvoicesDto {
     })
     @IsOptional()
     @IsDateString()
-    from?: string;
+    fromDate?: string;
 
     @ApiProperty({
         example: '2023-01-01',
@@ -54,5 +58,25 @@ export class ListInvoicesDto {
     })
     @IsOptional()
     @IsDateString()
-    to?: string;
+    toDate?: string;
+
+    @ApiProperty({
+        example: 1,
+        description: 'Page number',
+        required: true
+    })
+    @Type(() => Number)
+    @IsInt()
+    @Min(1)
+    page: number;
+
+    @ApiProperty({
+        example: 10,
+        description: 'Number of items per page',
+        required: true
+    })
+    @Type(() => Number)
+    @IsInt()
+    @Min(1)
+    limit: number;
 }

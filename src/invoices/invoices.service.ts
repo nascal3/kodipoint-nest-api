@@ -12,6 +12,8 @@ import { TenancyStatus } from '@/tenancies/dto/assign-tenant.dto';
 import { UpdateInvoiceDto } from './dto/update-invoice.dto';
 import { SendInvoiceDto, InvoiceDeliveryChannel } from './dto/send-invoice.dto';
 import Decimal from "decimal.js";
+import { Temporal } from '@js-temporal/polyfill';
+import { and } from '@prisma/orm-postgres/orm-client';
 
 @Injectable()
 export class InvoicesService {
@@ -388,37 +390,96 @@ export class InvoicesService {
         });
     }
 
-    async findAll(managerId: string, query: ListInvoicesDto,) {
-        const where: Record<string, unknown> = {
-            managerId,
+    async findAll(managerId: string, query: ListInvoicesDto,): Promise<{
+        data: unknown[];
+        pagination: {
+            page: number;
+            limit: number;
+            total: number;
+            totalPages: number;
+            hasNextPage: boolean;
+            hasPreviousPage: boolean;
         };
+    }> {
+        const { page, limit } = query;
+        const skip = (page - 1) * limit;
 
-        if (query.status) {
-            where.status = query.status;
-        }
+        const [invoices, total] = await Promise.all([
+            this.prisma.db.orm.public.Invoice
+                .where((invoice) =>
+                    and(
+                        invoice.managerId.eq(managerId),
+                        ...(query.status ? [invoice.status.eq(query.status)] : []),
+                        ...(query.propertyId
+                            ? [invoice.propertyId.eq(query.propertyId)]
+                            : []),
+                        ...(query.tenantId
+                            ? [invoice.tenantId.eq(query.tenantId)]
+                            : []),
+                        ...(query.fromDate
+                            ? [
+                                  invoice.issueDate.gte(
+                                      Temporal.PlainDate.from(query.fromDate.slice(0, 10)),
+                                  ),
+                              ]
+                            : []),
+                        ...(query.toDate
+                            ? [
+                                  invoice.issueDate.lte(
+                                      Temporal.PlainDate.from(query.toDate.slice(0, 10)),
+                                  ),
+                              ]
+                            : []),
+                    ),
+                )
+                .offset(skip)
+                .limit(limit)
+                .all(),
+            this.prisma.db.orm.public.Invoice
+                .where((invoice) =>
+                    and(
+                        invoice.managerId.eq(managerId),
+                        ...(query.status ? [invoice.status.eq(query.status)] : []),
+                        ...(query.propertyId
+                            ? [invoice.propertyId.eq(query.propertyId)]
+                            : []),
+                        ...(query.tenantId
+                            ? [invoice.tenantId.eq(query.tenantId)]
+                            : []),
+                        ...(query.fromDate
+                            ? [
+                                  invoice.issueDate.gte(
+                                      Temporal.PlainDate.from(query.fromDate.slice(0, 10)),
+                                  ),
+                              ]
+                            : []),
+                        ...(query.toDate
+                            ? [
+                                  invoice.issueDate.lte(
+                                      Temporal.PlainDate.from(query.toDate.slice(0, 10)),
+                                  ),
+                              ]
+                            : []),
+                    ),
+                )
+                .aggregate((aggregate) => ({ total: aggregate.count() })),
+        ]);
 
-        if (query.propertyId) {
-            where.propertyId = query.propertyId;
-        }
+        const totalPages = Math.ceil(Number(total.total) / limit);
+        const hasNextPage = page < totalPages;
+        const hasPreviousPage = page > 1;
 
-        if (query.tenantId) {
-            where.tenantId = query.tenantId;
-        }
-
-        if (query.from || query.to) {
-            where.issueDate = {
-                ...(query.from
-                    ? { gte: new Date(query.from) }
-                    : {}),
-                ...(query.to
-                    ? { lte: new Date(query.to) }
-                    : {}),
-            };
-        }
-
-        return this.prisma.db.orm.public.Invoice
-            .where(where)
-            .all();
+        return {
+            data: invoices,
+            pagination: {
+                page,
+                limit,
+                total: Number(total.total),
+                totalPages,
+                hasNextPage,
+                hasPreviousPage,
+            },
+        };
     }
 
     async findOne(managerId: string, invoiceId: string) {
