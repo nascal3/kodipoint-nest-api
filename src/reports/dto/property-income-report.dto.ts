@@ -8,13 +8,11 @@ export class PropertyIncomeReportDto extends PaginationDto {
     @IsUUID()
     propertyId: string;
 
-    @ApiProperty({ required: false })
-    @IsOptional()
+    @ApiProperty({ required: true })
     @IsDateString()
-    fromDate?: string;
+    fromDate: string;
 
-    @ApiProperty({ required: false })
-    @IsOptional()
+    @ApiProperty({ required: true })
     @IsDateString()
-    toDate?: string;
+    toDate: string;
 }

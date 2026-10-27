@@ -266,12 +266,30 @@ export class ReportsService {
             dto.limit || 10,
         );
 
+        const incomeByMonth = new Map<string, Decimal>();
+        for (const payment of payments) {
+            const monthKey = `${payment.paymentDate.year}-${String(payment.paymentDate.month).padStart(2, '0')}`;
+            const current = incomeByMonth.get(monthKey) || new Decimal(0);
+            incomeByMonth.set(
+                monthKey,
+                current.plus(new Decimal(String(payment.amount))),
+            );
+        }
+
+        const monthlyTotals = Array.from(incomeByMonth.entries())
+            .map(([month, total]) => ({
+                month,
+                total: total.toFixed(2),
+            }))
+            .sort((a, b) => a.month.localeCompare(b.month));
+
         return {
             summary: {
                 totalIncome: totalIncome.toFixed(2),
                 totalPayments: payments.length,
                 totalProperties: properties.length,
             },
+            monthlyTotals,
             properties: paginatedData.data,
             pagination: paginatedData.pagination,
         };
@@ -338,12 +356,30 @@ export class ReportsService {
             dto.limit || 10,
         );
 
+        const owedByMonth = new Map<string, Decimal>();
+        for (const invoice of invoices) {
+            const monthKey = `${invoice.issueDate.year}-${String(invoice.issueDate.month).padStart(2, '0')}`;
+            const current = owedByMonth.get(monthKey) || new Decimal(0);
+            owedByMonth.set(
+                monthKey,
+                current.plus(new Decimal(String(invoice.balanceDue))),
+            );
+        }
+
+        const monthlyTotals = Array.from(owedByMonth.entries())
+            .map(([month, total]) => ({
+                month,
+                total: total.toFixed(2),
+            }))
+            .sort((a, b) => a.month.localeCompare(b.month));
+
         return {
             summary: {
                 totalOwed: totalOwed.toFixed(2),
                 totalOutstandingInvoices: invoices.length,
                 totalProperties: properties.length,
             },
+            monthlyTotals,
             properties: paginatedData.data,
             pagination: paginatedData.pagination,
         };

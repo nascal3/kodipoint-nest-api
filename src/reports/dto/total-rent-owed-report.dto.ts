@@ -4,13 +4,11 @@ import { IsDateString, IsOptional } from 'class-validator';
 import { PaginationDto } from './pagination.dto';
 
 export class TotalRentOwedReportDto extends PaginationDto {
-    @ApiProperty({ required: false })
-    @IsOptional()
+    @ApiProperty({ required: true })
     @IsDateString()
-    fromDate?: string;
+    fromDate: string;
 
-    @ApiProperty({ required: false })
-    @IsOptional()
+    @ApiProperty({ required: true })
     @IsDateString()
-    toDate?: string;
+    toDate: string;
 }
