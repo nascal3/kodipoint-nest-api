@@ -31,6 +31,7 @@ export class ListInvoicesDto {
     @ApiProperty({
         example: '123e4567-e89b-12d3-a456-426614174000',
         description: 'Property ID',
+        required: false
     })
     @IsOptional()
     @IsUUID()
@@ -39,6 +40,7 @@ export class ListInvoicesDto {
     @ApiProperty({
         example: '123e4567-e89b-12d3-a456-426614174000',
         description: 'Tenant ID',
+        required: false
     })
     @IsOptional()
     @IsUUID()
@@ -48,7 +50,6 @@ export class ListInvoicesDto {
         example: '2023-01-01',
         description: 'Invoice date from',
     })
-    @IsOptional()
     @IsDateString()
     fromDate?: string;
 
@@ -56,7 +57,6 @@ export class ListInvoicesDto {
         example: '2023-01-01',
         description: 'Invoice date to',
     })
-    @IsOptional()
     @IsDateString()
     toDate?: string;
 
