@@ -7,6 +7,7 @@ import { TenantInvoicesReportDto } from './dto/tenant-invoices-report.dto';
 import { AllPropertiesIncomeReportDto } from './dto/all-properties-income-report.dto';
 import { TotalRentOwedReportDto } from './dto/total-rent-owed-report.dto';
 import { InvoiceTableReportDto } from './dto/invoice-table-report.dto';
+import { ProjectedRentReportDto } from './dto/projected-rent-report.dto';
 import { JwtAuthGuard } from '@/common/guards/jwt-auth.guard';
 import { CurrentUser } from '@/common/decorators/current-user.decorator';
 
@@ -82,5 +83,16 @@ export class ReportsController {
     @Query() dto: InvoiceTableReportDto,
   ) {
     return this.reportsService.getInvoiceTableReport(managerId, dto);
+  }
+
+  @Get('projected-rent')
+  @ApiOperation({
+    summary: 'Get projected monthly rent based on all occupied units',
+  })
+  getProjectedRentReport(
+    @CurrentUser('id') managerId: string,
+    @Query() dto: ProjectedRentReportDto,
+  ) {
+    return this.reportsService.getProjectedRentReport(managerId, dto);
   }
 }

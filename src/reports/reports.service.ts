@@ -7,6 +7,7 @@ import { TenantInvoicesReportDto } from './dto/tenant-invoices-report.dto';
 import { AllPropertiesIncomeReportDto } from './dto/all-properties-income-report.dto';
 import { TotalRentOwedReportDto } from './dto/total-rent-owed-report.dto';
 import { InvoiceTableReportDto } from './dto/invoice-table-report.dto';
+import { ProjectedRentReportDto } from './dto/projected-rent-report.dto';
 import { SortOrder } from './dto/pagination.dto';
 import Decimal from 'decimal.js';
 import { Temporal } from '@js-temporal/polyfill';
@@ -559,6 +560,77 @@ export class ReportsService {
         hasNextPage: page < totalPages,
         hasPreviousPage: page > 1,
       },
+    };
+  }
+
+  async getProjectedRentReport(
+    managerId: string,
+    dto: ProjectedRentReportDto,
+  ) {
+    const tenancies = await this.prisma.db.orm.public.Tenancy.where((tenancy) =>
+      and(
+        tenancy.managerId.eq(managerId),
+        tenancy.status.eq('ACTIVE'),
+        ...(dto.propertyId ? [tenancy.propertyId.eq(dto.propertyId)] : []),
+      ),
+    ).all();
+
+    const totalProjectedRent = tenancies.reduce(
+      (sum, tenancy) => sum.plus(new Decimal(String(tenancy.monthlyRent))),
+      new Decimal(0),
+    );
+
+    const rentByProperty = new Map<string, Decimal>();
+    const unitsByProperty = new Map<string, number>();
+
+    for (const tenancy of tenancies) {
+      const currentRent =
+        rentByProperty.get(tenancy.propertyId) || new Decimal(0);
+      rentByProperty.set(
+        tenancy.propertyId,
+        currentRent.plus(new Decimal(String(tenancy.monthlyRent))),
+      );
+
+      const currentUnits = unitsByProperty.get(tenancy.propertyId) || 0;
+      unitsByProperty.set(tenancy.propertyId, currentUnits + 1);
+    }
+
+    const propertyIds = Array.from(rentByProperty.keys());
+    const properties = await this.prisma.db.orm.public.Property.where((p) =>
+      p.id.in(propertyIds),
+    ).all();
+
+    const propertyData = properties.map((property) => ({
+      property: {
+        id: property.id,
+        name: property.name,
+        address: `${property.addressLine1}, ${property.city}`,
+      },
+      occupiedUnits: unitsByProperty.get(property.id) || 0,
+      projectedRent: rentByProperty.get(property.id)?.toFixed(2) || '0.00',
+      currency: property.currency,
+    }));
+
+    const sortedData = this.sortResults(
+      propertyData,
+      dto.sortBy || 'projectedRent',
+      dto.sortOrder || SortOrder.DESC,
+    );
+
+    const paginatedData = this.paginateResults(
+      sortedData,
+      dto.page || 1,
+      dto.limit || 10,
+    );
+
+    return {
+      summary: {
+        totalProjectedRent: totalProjectedRent.toFixed(2),
+        totalOccupiedUnits: tenancies.length,
+        totalProperties: properties.length,
+      },
+      properties: paginatedData.data,
+      pagination: paginatedData.pagination,
     };
   }
 
