@@ -6,6 +6,45 @@ import {
 import { DatabaseService } from '@/database/database.service';
 import { CreatePropertyDto } from './dto/create-property.dto';
 import { UpdatePropertyDto } from './dto/update-property.dto';
+import { ListPropertiesDto } from './dto/list-properties.dto';
+
+interface PropertyWithOccupancy {
+    id: string;
+    managerId: string;
+    name: string;
+    addressLine1: string;
+    addressLine2: string | null;
+    city: string;
+    state: string | null;
+    postalCode: string | null;
+    country: string;
+    description: string | null;
+    currency: string;
+    monthlyRent: string;
+    unitCount: number;
+    status: string;
+    createdAt: Date;
+    updatedAt: Date;
+    occupancyRate: number;
+    occupiedUnits: number;
+    vacantUnits: number;
+    minRent: number;
+    maxRent: number;
+}
+
+interface PaginationMeta {
+    page: number;
+    limit: number;
+    totalCount: number;
+    totalPages: number;
+    hasNextPage: boolean;
+    hasPreviousPage: boolean;
+}
+
+interface FindAllResponse {
+    data: PropertyWithOccupancy[];
+    pagination: PaginationMeta;
+}
 
 @Injectable()
 export class PropertiesService {
@@ -29,10 +68,43 @@ export class PropertiesService {
         });
     }
 
-    async findAll(managerId: string) {
-        const properties = await this.prisma.db.orm.public.Property
-            .where({ managerId })
-            .all();
+    async findAll(managerId: string, query: ListPropertiesDto): Promise<FindAllResponse> {
+        const { page = 1, limit = 10, sortBy = 'createdAt', sortOrder = 'DESC' } = query;
+        const skip = (page - 1) * limit;
+
+        const orderByClause = (property: any) => {
+            const field = (() => {
+                switch (sortBy) {
+                    case 'name':
+                        return property.name;
+                    case 'createdAt':
+                        return property.createdAt;
+                    case 'updatedAt':
+                        return property.updatedAt;
+                    case 'status':
+                        return property.status;
+                    case 'monthlyRent':
+                        return property.monthlyRent;
+                    case 'unitCount':
+                        return property.unitCount;
+                    default:
+                        return property.createdAt;
+                }
+            })();
+            return sortOrder === 'DESC' ? field.desc() : field.asc();
+        };
+
+        const [properties, totalCount] = await Promise.all([
+            this.prisma.db.orm.public.Property
+                .where({ managerId })
+                .orderBy(orderByClause)
+                .offset(skip)
+                .limit(limit)
+                .all(),
+            this.prisma.db.orm.public.Property
+                .where({ managerId })
+                .count(),
+        ]);
 
         const activeTenancies = await this.prisma.db.orm.public.Tenancy
             .where({ managerId, status: 'ACTIVE' })
@@ -67,7 +139,19 @@ export class PropertiesService {
             };
         });
 
-        return propertiesWithOccupancy;
+        const totalPages = Math.ceil(Number(totalCount) / limit);
+
+        return {
+            data: propertiesWithOccupancy,
+            pagination: {
+                page,
+                limit,
+                totalCount: Number(totalCount),
+                totalPages,
+                hasNextPage: page < totalPages,
+                hasPreviousPage: page > 1,
+            },
+        };
     }
 
     async getPortfolioOccupancy(managerId: string) {

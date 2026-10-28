@@ -6,6 +6,7 @@ import {
     Param,
     Patch,
     Post,
+    Query,
     UseGuards,
 } from '@nestjs/common';
 
@@ -13,6 +14,7 @@ import { CurrentUser } from '@/common/decorators/current-user.decorator';
 import { PropertiesService } from './properties.service';
 import { CreatePropertyDto } from './dto/create-property.dto';
 import { UpdatePropertyDto } from './dto/update-property.dto';
+import { ListPropertiesDto } from './dto/list-properties.dto';
 import * as authenticatedUserType from '../common/types/authenticated-user.type';
 import {JwtAuthGuard} from "@/common/guards/jwt-auth.guard";
 
@@ -37,8 +39,11 @@ export class PropertiesController {
     }
 
     @Get()
-    findAll(@CurrentUser() user: authenticatedUserType.AuthenticatedUser) {
-        return this.propertiesService.findAll(user.id);
+    findAll(
+        @CurrentUser() user: authenticatedUserType.AuthenticatedUser,
+        @Query() query: ListPropertiesDto,
+    ) {
+        return this.propertiesService.findAll(user.id, query);
     }
 
     @Get('portfolio-occupancy')
