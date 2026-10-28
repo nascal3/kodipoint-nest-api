@@ -30,9 +30,44 @@ export class PropertiesService {
     }
 
     async findAll(managerId: string) {
-        return this.prisma.db.orm.public.Property
+        const properties = await this.prisma.db.orm.public.Property
             .where({ managerId })
             .all();
+
+        const activeTenancies = await this.prisma.db.orm.public.Tenancy
+            .where({ managerId, status: 'ACTIVE' })
+            .all();
+
+        const propertiesWithOccupancy = properties.map((property) => {
+            const propertyTenancies = activeTenancies
+                .filter((tenancy) => tenancy.propertyId === property.id);
+
+            const occupiedUnits = new Set(
+                propertyTenancies
+                    .map((tenancy) => tenancy.propertyUnit),
+            ).size;
+
+            const rents = propertyTenancies.map((tenancy) => Number(tenancy.monthlyRent));
+            const minRent = rents.length > 0 ? Math.min(...rents) : 0;
+            const maxRent = rents.length > 0 ? Math.max(...rents) : 0;
+
+            const totalUnits = property.unitCount;
+            const occupancyRate = totalUnits === 0
+                ? 0
+                : Number(((occupiedUnits / totalUnits) * 100).toFixed(1));
+            const vacantUnits = totalUnits - occupiedUnits;
+
+            return {
+                ...property,
+                occupancyRate,
+                occupiedUnits,
+                vacantUnits,
+                minRent,
+                maxRent,
+            };
+        });
+
+        return propertiesWithOccupancy;
     }
 
     async getPortfolioOccupancy(managerId: string) {
