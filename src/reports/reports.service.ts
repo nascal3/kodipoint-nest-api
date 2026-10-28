@@ -597,8 +597,22 @@ export class ReportsService {
 
     const propertyIds = Array.from(rentByProperty.keys());
     const properties = await this.prisma.db.orm.public.Property.where((p) =>
-      p.id.in(propertyIds),
+      and(
+        p.managerId.eq(managerId),
+        ...(dto.propertyId ? [p.id.eq(dto.propertyId)] : [p.id.in(propertyIds)]),
+      ),
     ).all();
+
+    const totalPropertyUnits = properties.reduce(
+      (sum, property) => sum + property.unitCount,
+      0,
+    );
+
+    const totalPotentialRent = properties.reduce(
+      (sum, property) =>
+        sum.plus(new Decimal(String(property.monthlyRent)).mul(property.unitCount)),
+      new Decimal(0),
+    );
 
     const propertyData = properties.map((property) => ({
       property: {
@@ -626,7 +640,9 @@ export class ReportsService {
     return {
       summary: {
         totalProjectedRent: totalProjectedRent.toFixed(2),
+        totalPotentialRent: totalPotentialRent.toFixed(2),
         totalOccupiedUnits: tenancies.length,
+        totalVacantUnits: totalPropertyUnits - tenancies.length,
         totalProperties: properties.length,
       },
       properties: paginatedData.data,
