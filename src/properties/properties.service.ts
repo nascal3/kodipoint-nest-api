@@ -103,7 +103,7 @@ export class PropertiesService {
                 .all(),
             this.prisma.db.orm.public.Property
                 .where({ managerId })
-                .count(),
+                .aggregate((aggregate) => ({ total: aggregate.count() })),
         ]);
 
         const activeTenancies = await this.prisma.db.orm.public.Tenancy
@@ -139,14 +139,14 @@ export class PropertiesService {
             };
         });
 
-        const totalPages = Math.ceil(Number(totalCount) / limit);
+        const totalPages = Math.ceil(Number(totalCount.total) / limit);
 
         return {
             data: propertiesWithOccupancy,
             pagination: {
                 page,
                 limit,
-                totalCount: Number(totalCount),
+                totalCount: Number(totalCount.total),
                 totalPages,
                 hasNextPage: page < totalPages,
                 hasPreviousPage: page > 1,
