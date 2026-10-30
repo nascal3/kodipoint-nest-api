@@ -35,6 +35,7 @@ src/
   database/
   documents/
   invoices/
+  locations/
   payment-allocations/
   payments/
   prisma/
