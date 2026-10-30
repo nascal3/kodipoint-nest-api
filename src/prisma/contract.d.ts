@@ -34,9 +34,9 @@ import type {
 } from '@prisma/orm-postgres/contract/types';
 
 export type StorageHash =
-  StorageHashBase<'a9a6b45e01050db70d9ee1399ef787e681ffa61d1b564a08c0af888e9b34fb11'>;
+  StorageHashBase<'cac8b725e9d5c79c554f897cfcf4c2efcff1b5528fbb428b8c90276df29c098d'>;
 export type ExecutionHash =
-  ExecutionHashBase<'f4e0ba2beba364ea24f44bcb588e83d8f56d8d5175ba4d380ceda9851145745e'>;
+  ExecutionHashBase<'3db1dbd3842b77550230aefd088aafb47f6752ea886083b704f4355835d85fbc'>;
 export type ProfileHash =
   ProfileHashBase<'3916f444a8a17ad749191acf9e08dad97d1a327b88c2f1d45d12f240296aa8b2'>;
 
@@ -242,6 +242,19 @@ type DefaultLiteralValue<CodecId extends string, Encoded> = CodecId extends keyo
 
 export type FieldOutputTypes = {
   readonly public: {
+    readonly City: {
+      readonly id: CodecTypes['pg/uuid@1']['output'];
+      readonly name: CodecTypes['pg/text@1']['output'];
+      readonly countryId: CodecTypes['pg/uuid@1']['output'];
+      readonly createdAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
+      readonly updatedAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
+    };
+    readonly Country: {
+      readonly id: CodecTypes['pg/uuid@1']['output'];
+      readonly name: CodecTypes['pg/text@1']['output'];
+      readonly createdAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
+      readonly updatedAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
+    };
     readonly IdempotencyKey: {
       readonly id: CodecTypes['pg/uuid@1']['output'];
       readonly key: CodecTypes['pg/text@1']['output'];
@@ -330,7 +343,7 @@ export type FieldOutputTypes = {
       readonly city: CodecTypes['pg/text@1']['output'];
       readonly state: CodecTypes['pg/text@1']['output'] | null;
       readonly postalCode: CodecTypes['pg/text@1']['output'] | null;
-      readonly country: CodecTypes['pg/text@1']['output'];
+      readonly countryId: CodecTypes['pg/uuid@1']['output'];
       readonly description: CodecTypes['pg/text@1']['output'] | null;
       readonly currency: CodecTypes['pg/text@1']['output'];
       readonly monthlyRent: CodecTypes['pg/numeric@1']['output'];
@@ -410,6 +423,19 @@ export type FieldOutputTypes = {
 };
 export type FieldInputTypes = {
   readonly public: {
+    readonly City: {
+      readonly id: CodecTypes['pg/uuid@1']['input'];
+      readonly name: CodecTypes['pg/text@1']['input'];
+      readonly countryId: CodecTypes['pg/uuid@1']['input'];
+      readonly createdAt: CodecTypes['pg/timestamptz-temporal@1']['input'];
+      readonly updatedAt: CodecTypes['pg/timestamptz-temporal@1']['input'];
+    };
+    readonly Country: {
+      readonly id: CodecTypes['pg/uuid@1']['input'];
+      readonly name: CodecTypes['pg/text@1']['input'];
+      readonly createdAt: CodecTypes['pg/timestamptz-temporal@1']['input'];
+      readonly updatedAt: CodecTypes['pg/timestamptz-temporal@1']['input'];
+    };
     readonly IdempotencyKey: {
       readonly id: CodecTypes['pg/uuid@1']['input'];
       readonly key: CodecTypes['pg/text@1']['input'];
@@ -498,7 +524,7 @@ export type FieldInputTypes = {
       readonly city: CodecTypes['pg/text@1']['input'];
       readonly state: CodecTypes['pg/text@1']['input'] | null;
       readonly postalCode: CodecTypes['pg/text@1']['input'] | null;
-      readonly country: CodecTypes['pg/text@1']['input'];
+      readonly countryId: CodecTypes['pg/uuid@1']['input'];
       readonly description: CodecTypes['pg/text@1']['input'] | null;
       readonly currency: CodecTypes['pg/text@1']['input'];
       readonly monthlyRent: CodecTypes['pg/numeric@1']['input'];
@@ -578,6 +604,19 @@ export type FieldInputTypes = {
 };
 export type StorageColumnTypes = {
   readonly public: {
+    readonly cities: {
+      readonly country_id: CodecTypes['pg/uuid@1']['output'];
+      readonly created_at: CodecTypes['pg/timestamptz-temporal@1']['output'];
+      readonly id: CodecTypes['pg/uuid@1']['output'];
+      readonly name: CodecTypes['pg/text@1']['output'];
+      readonly updated_at: CodecTypes['pg/timestamptz-temporal@1']['output'];
+    };
+    readonly countries: {
+      readonly created_at: CodecTypes['pg/timestamptz-temporal@1']['output'];
+      readonly id: CodecTypes['pg/uuid@1']['output'];
+      readonly name: CodecTypes['pg/text@1']['output'];
+      readonly updated_at: CodecTypes['pg/timestamptz-temporal@1']['output'];
+    };
     readonly idempotency_keys: {
       readonly created_at: CodecTypes['pg/timestamptz-temporal@1']['output'];
       readonly endpoint: CodecTypes['pg/text@1']['output'];
@@ -661,7 +700,7 @@ export type StorageColumnTypes = {
       readonly address_line_1: CodecTypes['pg/text@1']['output'];
       readonly address_line_2: CodecTypes['pg/text@1']['output'] | null;
       readonly city: CodecTypes['pg/text@1']['output'];
-      readonly country: CodecTypes['pg/text@1']['output'];
+      readonly country_id: CodecTypes['pg/uuid@1']['output'];
       readonly created_at: CodecTypes['pg/timestamptz-temporal@1']['output'];
       readonly currency: CodecTypes['pg/text@1']['output'];
       readonly description: CodecTypes['pg/text@1']['output'] | null;
@@ -746,6 +785,19 @@ export type StorageColumnTypes = {
 };
 export type StorageColumnInputTypes = {
   readonly public: {
+    readonly cities: {
+      readonly country_id: CodecTypes['pg/uuid@1']['input'];
+      readonly created_at: CodecTypes['pg/timestamptz-temporal@1']['input'];
+      readonly id: CodecTypes['pg/uuid@1']['input'];
+      readonly name: CodecTypes['pg/text@1']['input'];
+      readonly updated_at: CodecTypes['pg/timestamptz-temporal@1']['input'];
+    };
+    readonly countries: {
+      readonly created_at: CodecTypes['pg/timestamptz-temporal@1']['input'];
+      readonly id: CodecTypes['pg/uuid@1']['input'];
+      readonly name: CodecTypes['pg/text@1']['input'];
+      readonly updated_at: CodecTypes['pg/timestamptz-temporal@1']['input'];
+    };
     readonly idempotency_keys: {
       readonly created_at: CodecTypes['pg/timestamptz-temporal@1']['input'];
       readonly endpoint: CodecTypes['pg/text@1']['input'];
@@ -829,7 +881,7 @@ export type StorageColumnInputTypes = {
       readonly address_line_1: CodecTypes['pg/text@1']['input'];
       readonly address_line_2: CodecTypes['pg/text@1']['input'] | null;
       readonly city: CodecTypes['pg/text@1']['input'];
-      readonly country: CodecTypes['pg/text@1']['input'];
+      readonly country_id: CodecTypes['pg/uuid@1']['input'];
       readonly created_at: CodecTypes['pg/timestamptz-temporal@1']['input'];
       readonly currency: CodecTypes['pg/text@1']['input'];
       readonly description: CodecTypes['pg/text@1']['input'] | null;
@@ -961,6 +1013,24 @@ export namespace Models {
     user: public_User;
     readonly [RelationKeys]?: 'user';
   };
+  export type public_Country = {
+    id: CodecTypes['pg/uuid@1']['output'];
+    name: CodecTypes['pg/text@1']['output'];
+    createdAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
+    updatedAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
+    cities: public_City[];
+    properties: public_Property[];
+    readonly [RelationKeys]?: 'cities' | 'properties';
+  };
+  export type public_City = {
+    id: CodecTypes['pg/uuid@1']['output'];
+    name: CodecTypes['pg/text@1']['output'];
+    countryId: CodecTypes['pg/uuid@1']['output'];
+    createdAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
+    updatedAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
+    country: public_Country;
+    readonly [RelationKeys]?: 'country';
+  };
   export type public_Property = {
     id: CodecTypes['pg/uuid@1']['output'];
     managerId: CodecTypes['pg/uuid@1']['output'];
@@ -970,7 +1040,7 @@ export namespace Models {
     city: CodecTypes['pg/text@1']['output'];
     state: CodecTypes['pg/text@1']['output'] | null;
     postalCode: CodecTypes['pg/text@1']['output'] | null;
-    country: CodecTypes['pg/text@1']['output'];
+    countryId: CodecTypes['pg/uuid@1']['output'];
     description: CodecTypes['pg/text@1']['output'] | null;
     currency: CodecTypes['pg/text@1']['output'];
     monthlyRent: CodecTypes['pg/numeric@1']['output'];
@@ -978,12 +1048,14 @@ export namespace Models {
     status: CodecTypes['pg/text@1']['output'];
     createdAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
     updatedAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
+    country: public_Country;
     invoices: public_Invoice[];
     manager: public_User;
     payments: public_Payment[];
     propertyCharges: public_PropertyCharge[];
     tenancies: public_Tenancy[];
-    readonly [RelationKeys]?: 'invoices' | 'manager' | 'payments' | 'propertyCharges' | 'tenancies';
+    readonly [RelationKeys]?:
+      'country' | 'invoices' | 'manager' | 'payments' | 'propertyCharges' | 'tenancies';
   };
   export type public_PropertyCharge = {
     id: CodecTypes['pg/uuid@1']['output'];
@@ -1169,6 +1241,8 @@ export declare const models: {
   public: {
     User: Models.public_User;
     OAuthAccount: Models.public_OAuthAccount;
+    Country: Models.public_Country;
+    City: Models.public_City;
     Property: Models.public_Property;
     PropertyCharge: Models.public_PropertyCharge;
     Tenant: Models.public_Tenant;
@@ -1201,6 +1275,89 @@ type ContractBase = Omit<
         readonly kind: 'postgres-schema';
         readonly entries: {
           readonly table: {
+            readonly cities: {
+              columns: {
+                readonly id: {
+                  readonly nativeType: 'uuid';
+                  readonly codecId: 'pg/uuid@1';
+                  readonly nullable: false;
+                };
+                readonly name: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                };
+                readonly country_id: {
+                  readonly nativeType: 'uuid';
+                  readonly codecId: 'pg/uuid@1';
+                  readonly nullable: false;
+                };
+                readonly created_at: {
+                  readonly nativeType: 'timestamptz';
+                  readonly codecId: 'pg/timestamptz-temporal@1';
+                  readonly nullable: false;
+                  readonly default: { readonly kind: 'function'; readonly expression: 'now()' };
+                };
+                readonly updated_at: {
+                  readonly nativeType: 'timestamptz';
+                  readonly codecId: 'pg/timestamptz-temporal@1';
+                  readonly nullable: false;
+                };
+              };
+              primaryKey: { readonly columns: readonly ['id'] };
+              uniques: readonly [];
+              indexes: readonly [
+                {
+                  readonly name: 'cities_country_id_idx_30642658';
+                  readonly prefix: 'cities_country_id_idx';
+                  readonly columns: readonly ['country_id'];
+                  readonly unique: false;
+                },
+              ];
+              foreignKeys: readonly [
+                {
+                  readonly source: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'cities';
+                    readonly columns: readonly ['country_id'];
+                  };
+                  readonly target: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'countries';
+                    readonly columns: readonly ['id'];
+                  };
+                },
+              ];
+            };
+            readonly countries: {
+              columns: {
+                readonly id: {
+                  readonly nativeType: 'uuid';
+                  readonly codecId: 'pg/uuid@1';
+                  readonly nullable: false;
+                };
+                readonly name: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                };
+                readonly created_at: {
+                  readonly nativeType: 'timestamptz';
+                  readonly codecId: 'pg/timestamptz-temporal@1';
+                  readonly nullable: false;
+                  readonly default: { readonly kind: 'function'; readonly expression: 'now()' };
+                };
+                readonly updated_at: {
+                  readonly nativeType: 'timestamptz';
+                  readonly codecId: 'pg/timestamptz-temporal@1';
+                  readonly nullable: false;
+                };
+              };
+              primaryKey: { readonly columns: readonly ['id'] };
+              uniques: readonly [{ readonly columns: readonly ['name'] }];
+              indexes: readonly [];
+              foreignKeys: readonly [];
+            };
             readonly idempotency_keys: {
               columns: {
                 readonly id: {
@@ -1991,9 +2148,9 @@ type ContractBase = Omit<
                   readonly codecId: 'pg/text@1';
                   readonly nullable: true;
                 };
-                readonly country: {
-                  readonly nativeType: 'text';
-                  readonly codecId: 'pg/text@1';
+                readonly country_id: {
+                  readonly nativeType: 'uuid';
+                  readonly codecId: 'pg/uuid@1';
                   readonly nullable: false;
                 };
                 readonly description: {
@@ -2054,6 +2211,12 @@ type ContractBase = Omit<
                   readonly columns: readonly ['manager_id'];
                   readonly unique: false;
                 },
+                {
+                  readonly name: 'properties_country_id_idx_30642658';
+                  readonly prefix: 'properties_country_id_idx';
+                  readonly columns: readonly ['country_id'];
+                  readonly unique: false;
+                },
               ];
               foreignKeys: readonly [
                 {
@@ -2065,6 +2228,18 @@ type ContractBase = Omit<
                   readonly target: {
                     readonly namespaceId: 'public' & NamespaceId;
                     readonly tableName: 'users';
+                    readonly columns: readonly ['id'];
+                  };
+                },
+                {
+                  readonly source: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'properties';
+                    readonly columns: readonly ['country_id'];
+                  };
+                  readonly target: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'countries';
                     readonly columns: readonly ['id'];
                   };
                 },
@@ -2593,6 +2768,8 @@ type ContractBase = Omit<
       readonly namespace: 'public' & NamespaceId;
       readonly model: 'OAuthAccount';
     };
+    readonly countries: { readonly namespace: 'public' & NamespaceId; readonly model: 'Country' };
+    readonly cities: { readonly namespace: 'public' & NamespaceId; readonly model: 'City' };
     readonly properties: { readonly namespace: 'public' & NamespaceId; readonly model: 'Property' };
     readonly property_charges: {
       readonly namespace: 'public' & NamespaceId;
@@ -2624,6 +2801,118 @@ type ContractBase = Omit<
     readonly namespaces: {
       readonly public: {
         readonly models: {
+          readonly City: {
+            readonly fields: {
+              readonly id: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/uuid@1' };
+              };
+              readonly name: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly countryId: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/uuid@1' };
+              };
+              readonly createdAt: {
+                readonly nullable: false;
+                readonly type: {
+                  readonly kind: 'scalar';
+                  readonly codecId: 'pg/timestamptz-temporal@1';
+                };
+              };
+              readonly updatedAt: {
+                readonly nullable: false;
+                readonly type: {
+                  readonly kind: 'scalar';
+                  readonly codecId: 'pg/timestamptz-temporal@1';
+                };
+              };
+            };
+            readonly relations: {
+              readonly country: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'Country';
+                };
+                readonly cardinality: 'N:1';
+                readonly nullable: false;
+                readonly on: {
+                  readonly localFields: readonly ['countryId'];
+                  readonly targetFields: readonly ['id'];
+                };
+              };
+            };
+            readonly storage: {
+              readonly table: 'cities';
+              readonly namespaceId: 'public';
+              readonly fields: {
+                readonly id: { readonly column: 'id' };
+                readonly name: { readonly column: 'name' };
+                readonly countryId: { readonly column: 'country_id' };
+                readonly createdAt: { readonly column: 'created_at' };
+                readonly updatedAt: { readonly column: 'updated_at' };
+              };
+            };
+          };
+          readonly Country: {
+            readonly fields: {
+              readonly id: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/uuid@1' };
+              };
+              readonly name: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly createdAt: {
+                readonly nullable: false;
+                readonly type: {
+                  readonly kind: 'scalar';
+                  readonly codecId: 'pg/timestamptz-temporal@1';
+                };
+              };
+              readonly updatedAt: {
+                readonly nullable: false;
+                readonly type: {
+                  readonly kind: 'scalar';
+                  readonly codecId: 'pg/timestamptz-temporal@1';
+                };
+              };
+            };
+            readonly relations: {
+              readonly cities: {
+                readonly to: { readonly namespace: 'public' & NamespaceId; readonly model: 'City' };
+                readonly cardinality: '1:N';
+                readonly on: {
+                  readonly localFields: readonly ['id'];
+                  readonly targetFields: readonly ['countryId'];
+                };
+              };
+              readonly properties: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'Property';
+                };
+                readonly cardinality: '1:N';
+                readonly on: {
+                  readonly localFields: readonly ['id'];
+                  readonly targetFields: readonly ['countryId'];
+                };
+              };
+            };
+            readonly storage: {
+              readonly table: 'countries';
+              readonly namespaceId: 'public';
+              readonly fields: {
+                readonly id: { readonly column: 'id' };
+                readonly name: { readonly column: 'name' };
+                readonly createdAt: { readonly column: 'created_at' };
+                readonly updatedAt: { readonly column: 'updated_at' };
+              };
+            };
+          };
           readonly IdempotencyKey: {
             readonly fields: {
               readonly id: {
@@ -3369,9 +3658,9 @@ type ContractBase = Omit<
                 readonly nullable: true;
                 readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
               };
-              readonly country: {
+              readonly countryId: {
                 readonly nullable: false;
-                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/uuid@1' };
               };
               readonly description: {
                 readonly nullable: true;
@@ -3409,6 +3698,18 @@ type ContractBase = Omit<
               };
             };
             readonly relations: {
+              readonly country: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'Country';
+                };
+                readonly cardinality: 'N:1';
+                readonly nullable: false;
+                readonly on: {
+                  readonly localFields: readonly ['countryId'];
+                  readonly targetFields: readonly ['id'];
+                };
+              };
               readonly invoices: {
                 readonly to: {
                   readonly namespace: 'public' & NamespaceId;
@@ -3475,7 +3776,7 @@ type ContractBase = Omit<
                 readonly city: { readonly column: 'city' };
                 readonly state: { readonly column: 'state' };
                 readonly postalCode: { readonly column: 'postal_code' };
-                readonly country: { readonly column: 'country' };
+                readonly countryId: { readonly column: 'country_id' };
                 readonly description: { readonly column: 'description' };
                 readonly currency: { readonly column: 'currency' };
                 readonly monthlyRent: { readonly column: 'monthly_rent' };
@@ -4146,6 +4447,40 @@ type ContractBase = Omit<
     readonly executionHash: ExecutionHash;
     readonly mutations: {
       readonly defaults: readonly [
+        {
+          readonly ref: {
+            readonly namespace: 'public';
+            readonly table: 'cities';
+            readonly column: 'id';
+          };
+          readonly onCreate: { readonly kind: 'generator'; readonly id: 'uuidv4' };
+        },
+        {
+          readonly ref: {
+            readonly namespace: 'public';
+            readonly table: 'cities';
+            readonly column: 'updated_at';
+          };
+          readonly onCreate: { readonly kind: 'generator'; readonly id: 'instantNow' };
+          readonly onUpdate: { readonly kind: 'generator'; readonly id: 'instantNow' };
+        },
+        {
+          readonly ref: {
+            readonly namespace: 'public';
+            readonly table: 'countries';
+            readonly column: 'id';
+          };
+          readonly onCreate: { readonly kind: 'generator'; readonly id: 'uuidv4' };
+        },
+        {
+          readonly ref: {
+            readonly namespace: 'public';
+            readonly table: 'countries';
+            readonly column: 'updated_at';
+          };
+          readonly onCreate: { readonly kind: 'generator'; readonly id: 'instantNow' };
+          readonly onUpdate: { readonly kind: 'generator'; readonly id: 'instantNow' };
+        },
         {
           readonly ref: {
             readonly namespace: 'public';

@@ -4,6 +4,7 @@ import { DatabaseModule } from './database/database.module';
 import { AuthModule } from './auth/auth.module';
 import { UsersModule } from './users/users.module';
 import { PropertiesModule } from './properties/properties.module';
+import { LocationsModule } from './locations/locations.module';
 import { TenantsModule } from './tenants/tenants.module';
 import { TenanciesModule } from './tenancies/tenancies.module';
 import { InvoicesModule } from './invoices/invoices.module';
@@ -21,6 +22,7 @@ import { HealthModule } from './health/health.module.js';
     AuthModule,
     UsersModule,
     PropertiesModule,
+    LocationsModule,
     TenantsModule,
     TenanciesModule,
     InvoicesModule,

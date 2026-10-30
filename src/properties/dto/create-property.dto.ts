@@ -5,6 +5,7 @@ import {
     IsString,
     IsInt,
     Min,
+    IsUUID,
 } from 'class-validator';
 
 enum PropertyStatus {
@@ -75,11 +76,11 @@ export class CreatePropertyDto {
 
 
     @ApiProperty({
-        description: 'The country where the property is located',
-        example: 'Kenya',
+        description: 'The ID of the country where the property is located',
+        example: '550e8400-e29b-41d4-a716-446655440000',
     })
-    @IsString()
-    country: string;
+    @IsUUID()
+    countryId: string;
 
 
     @ApiProperty({

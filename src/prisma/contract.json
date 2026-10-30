@@ -4,6 +4,14 @@
   "target": "postgres",
   "profileHash": "3916f444a8a17ad749191acf9e08dad97d1a327b88c2f1d45d12f240296aa8b2",
   "roots": {
+    "cities": {
+      "model": "City",
+      "namespace": "public"
+    },
+    "countries": {
+      "model": "Country",
+      "namespace": "public"
+    },
     "idempotency_keys": {
       "model": "IdempotencyKey",
       "namespace": "public"
@@ -61,6 +69,166 @@
     "namespaces": {
       "public": {
         "models": {
+          "City": {
+            "fields": {
+              "countryId": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/uuid@1",
+                  "kind": "scalar"
+                }
+              },
+              "createdAt": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/timestamptz-temporal@1",
+                  "kind": "scalar"
+                }
+              },
+              "id": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/uuid@1",
+                  "kind": "scalar"
+                }
+              },
+              "name": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "updatedAt": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/timestamptz-temporal@1",
+                  "kind": "scalar"
+                }
+              }
+            },
+            "relations": {
+              "country": {
+                "cardinality": "N:1",
+                "nullable": false,
+                "on": {
+                  "localFields": [
+                    "countryId"
+                  ],
+                  "targetFields": [
+                    "id"
+                  ]
+                },
+                "to": {
+                  "model": "Country",
+                  "namespace": "public"
+                }
+              }
+            },
+            "storage": {
+              "fields": {
+                "countryId": {
+                  "column": "country_id"
+                },
+                "createdAt": {
+                  "column": "created_at"
+                },
+                "id": {
+                  "column": "id"
+                },
+                "name": {
+                  "column": "name"
+                },
+                "updatedAt": {
+                  "column": "updated_at"
+                }
+              },
+              "namespaceId": "public",
+              "table": "cities"
+            }
+          },
+          "Country": {
+            "fields": {
+              "createdAt": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/timestamptz-temporal@1",
+                  "kind": "scalar"
+                }
+              },
+              "id": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/uuid@1",
+                  "kind": "scalar"
+                }
+              },
+              "name": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "updatedAt": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/timestamptz-temporal@1",
+                  "kind": "scalar"
+                }
+              }
+            },
+            "relations": {
+              "cities": {
+                "cardinality": "1:N",
+                "on": {
+                  "localFields": [
+                    "id"
+                  ],
+                  "targetFields": [
+                    "countryId"
+                  ]
+                },
+                "to": {
+                  "model": "City",
+                  "namespace": "public"
+                }
+              },
+              "properties": {
+                "cardinality": "1:N",
+                "on": {
+                  "localFields": [
+                    "id"
+                  ],
+                  "targetFields": [
+                    "countryId"
+                  ]
+                },
+                "to": {
+                  "model": "Property",
+                  "namespace": "public"
+                }
+              }
+            },
+            "storage": {
+              "fields": {
+                "createdAt": {
+                  "column": "created_at"
+                },
+                "id": {
+                  "column": "id"
+                },
+                "name": {
+                  "column": "name"
+                },
+                "updatedAt": {
+                  "column": "updated_at"
+                }
+              },
+              "namespaceId": "public",
+              "table": "countries"
+            }
+          },
           "IdempotencyKey": {
             "fields": {
               "createdAt": {
@@ -1195,10 +1363,10 @@
                   "kind": "scalar"
                 }
               },
-              "country": {
+              "countryId": {
                 "nullable": false,
                 "type": {
-                  "codecId": "pg/text@1",
+                  "codecId": "pg/uuid@1",
                   "kind": "scalar"
                 }
               },
@@ -1288,6 +1456,22 @@
               }
             },
             "relations": {
+              "country": {
+                "cardinality": "N:1",
+                "nullable": false,
+                "on": {
+                  "localFields": [
+                    "countryId"
+                  ],
+                  "targetFields": [
+                    "id"
+                  ]
+                },
+                "to": {
+                  "model": "Country",
+                  "namespace": "public"
+                }
+              },
               "invoices": {
                 "cardinality": "1:N",
                 "on": {
@@ -1376,8 +1560,8 @@
                 "city": {
                   "column": "city"
                 },
-                "country": {
-                  "column": "country"
+                "countryId": {
+                  "column": "country_id"
                 },
                 "createdAt": {
                   "column": "created_at"
@@ -2412,6 +2596,115 @@
       "public": {
         "entries": {
           "table": {
+            "cities": {
+              "columns": {
+                "country_id": {
+                  "codecId": "pg/uuid@1",
+                  "nativeType": "uuid",
+                  "nullable": false
+                },
+                "created_at": {
+                  "codecId": "pg/timestamptz-temporal@1",
+                  "default": {
+                    "expression": "now()",
+                    "kind": "function"
+                  },
+                  "nativeType": "timestamptz",
+                  "nullable": false
+                },
+                "id": {
+                  "codecId": "pg/uuid@1",
+                  "nativeType": "uuid",
+                  "nullable": false
+                },
+                "name": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "updated_at": {
+                  "codecId": "pg/timestamptz-temporal@1",
+                  "nativeType": "timestamptz",
+                  "nullable": false
+                }
+              },
+              "foreignKeys": [
+                {
+                  "source": {
+                    "columns": [
+                      "country_id"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "cities"
+                  },
+                  "target": {
+                    "columns": [
+                      "id"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "countries"
+                  }
+                }
+              ],
+              "indexes": [
+                {
+                  "columns": [
+                    "country_id"
+                  ],
+                  "name": "cities_country_id_idx_30642658",
+                  "prefix": "cities_country_id_idx",
+                  "unique": false
+                }
+              ],
+              "primaryKey": {
+                "columns": [
+                  "id"
+                ]
+              },
+              "uniques": []
+            },
+            "countries": {
+              "columns": {
+                "created_at": {
+                  "codecId": "pg/timestamptz-temporal@1",
+                  "default": {
+                    "expression": "now()",
+                    "kind": "function"
+                  },
+                  "nativeType": "timestamptz",
+                  "nullable": false
+                },
+                "id": {
+                  "codecId": "pg/uuid@1",
+                  "nativeType": "uuid",
+                  "nullable": false
+                },
+                "name": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "updated_at": {
+                  "codecId": "pg/timestamptz-temporal@1",
+                  "nativeType": "timestamptz",
+                  "nullable": false
+                }
+              },
+              "foreignKeys": [],
+              "indexes": [],
+              "primaryKey": {
+                "columns": [
+                  "id"
+                ]
+              },
+              "uniques": [
+                {
+                  "columns": [
+                    "name"
+                  ]
+                }
+              ]
+            },
             "idempotency_keys": {
               "columns": {
                 "created_at": {
@@ -3362,9 +3655,9 @@
                   "nativeType": "text",
                   "nullable": false
                 },
-                "country": {
-                  "codecId": "pg/text@1",
-                  "nativeType": "text",
+                "country_id": {
+                  "codecId": "pg/uuid@1",
+                  "nativeType": "uuid",
                   "nullable": false
                 },
                 "created_at": {
@@ -3460,9 +3753,33 @@
                     "namespaceId": "public",
                     "tableName": "users"
                   }
+                },
+                {
+                  "source": {
+                    "columns": [
+                      "country_id"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "properties"
+                  },
+                  "target": {
+                    "columns": [
+                      "id"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "countries"
+                  }
                 }
               ],
               "indexes": [
+                {
+                  "columns": [
+                    "country_id"
+                  ],
+                  "name": "properties_country_id_idx_30642658",
+                  "prefix": "properties_country_id_idx",
+                  "unique": false
+                },
                 {
                   "columns": [
                     "manager_id"
@@ -4093,12 +4410,64 @@
         "kind": "postgres-schema"
       }
     },
-    "storageHash": "a9a6b45e01050db70d9ee1399ef787e681ffa61d1b564a08c0af888e9b34fb11"
+    "storageHash": "cac8b725e9d5c79c554f897cfcf4c2efcff1b5528fbb428b8c90276df29c098d"
   },
   "execution": {
-    "executionHash": "f4e0ba2beba364ea24f44bcb588e83d8f56d8d5175ba4d380ceda9851145745e",
+    "executionHash": "3db1dbd3842b77550230aefd088aafb47f6752ea886083b704f4355835d85fbc",
     "mutations": {
       "defaults": [
+        {
+          "onCreate": {
+            "id": "uuidv4",
+            "kind": "generator"
+          },
+          "ref": {
+            "column": "id",
+            "namespace": "public",
+            "table": "cities"
+          }
+        },
+        {
+          "onCreate": {
+            "id": "instantNow",
+            "kind": "generator"
+          },
+          "onUpdate": {
+            "id": "instantNow",
+            "kind": "generator"
+          },
+          "ref": {
+            "column": "updated_at",
+            "namespace": "public",
+            "table": "cities"
+          }
+        },
+        {
+          "onCreate": {
+            "id": "uuidv4",
+            "kind": "generator"
+          },
+          "ref": {
+            "column": "id",
+            "namespace": "public",
+            "table": "countries"
+          }
+        },
+        {
+          "onCreate": {
+            "id": "instantNow",
+            "kind": "generator"
+          },
+          "onUpdate": {
+            "id": "instantNow",
+            "kind": "generator"
+          },
+          "ref": {
+            "column": "updated_at",
+            "namespace": "public",
+            "table": "countries"
+          }
+        },
         {
           "onCreate": {
             "id": "uuidv4",

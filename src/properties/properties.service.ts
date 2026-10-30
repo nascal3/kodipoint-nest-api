@@ -17,7 +17,7 @@ export interface PropertyWithOccupancy {
     city: string;
     state: string | null;
     postalCode: string | null;
-    country: string;
+    countryId: string;
     description: string | null;
     currency: string;
     monthlyRent: string;
@@ -51,6 +51,14 @@ export class PropertiesService {
     constructor(private readonly prisma: DatabaseService) {}
 
     async create(managerId: string, dto: CreatePropertyDto) {
+        const country = await this.prisma.db.orm.public.Country
+            .where({ id: dto.countryId })
+            .first();
+
+        if (!country) {
+            throw new NotFoundException('Country not found');
+        }
+
         return this.prisma.db.orm.public.Property.create({
             managerId,
             name: dto.name,
@@ -59,7 +67,7 @@ export class PropertiesService {
             city: dto.city,
             state: dto.state,
             postalCode: dto.postalCode,
-            country: dto.country,
+            country: (relation) => relation.connect({ id: dto.countryId }),
             description: dto.description,
             currency: dto.currency,
             monthlyRent: dto.monthlyRent.toString(),
@@ -207,7 +215,17 @@ export class PropertiesService {
     ) {
         await this.findOne(managerId, propertyId);
 
-        const { monthlyRent, ...rest } = dto;
+        const { monthlyRent, countryId, ...rest } = dto;
+
+        if (countryId !== undefined) {
+            const country = await this.prisma.db.orm.public.Country
+                .where({ id: countryId })
+                .first();
+
+            if (!country) {
+                throw new NotFoundException('Country not found');
+            }
+        }
 
         return this.prisma.db.orm.public.Property
             .where({
@@ -216,7 +234,10 @@ export class PropertiesService {
             })
             .update({
                 ...rest,
-                ...(monthlyRent !== undefined && { monthlyRent: monthlyRent.toString() })
+                ...(countryId !== undefined && {
+                    country: (relation) => relation.connect({ id: countryId }),
+                }),
+                ...(monthlyRent !== undefined && { monthlyRent: monthlyRent.toString() }),
             });
     }
 

@@ -47,6 +47,33 @@ model OAuthAccount {
   @@map("oauth_accounts")
 }
 
+model Country {
+  id        Uuid   @id @default(uuid())
+  name      String @unique
+
+  createdAt temporal.createdAt() @map("created_at")
+  updatedAt temporal.updatedAt() @map("updated_at")
+
+  cities     City[]
+  properties Property[]
+
+  @@map("countries")
+}
+
+model City {
+  id        Uuid   @id @default(uuid())
+  name      String
+  countryId Uuid   @map("country_id")
+
+  createdAt temporal.createdAt() @map("created_at")
+  updatedAt temporal.updatedAt() @map("updated_at")
+
+  country Country @relation(fields: [countryId], references: [id])
+
+  @@index([countryId])
+  @@map("cities")
+}
+
 model Property {
   id           Uuid    @id @default(uuid())
   managerId    Uuid    @map("manager_id")
@@ -56,7 +83,7 @@ model Property {
   city         String
   state        String?
   postalCode   String? @map("postal_code")
-  country      String
+  countryId    Uuid    @map("country_id")
   description  String?
   currency     String  @default("KES")
   monthlyRent  Decimal @map("monthly_rent")
@@ -66,7 +93,8 @@ model Property {
   createdAt temporal.createdAt() @map("created_at")
   updatedAt temporal.updatedAt() @map("updated_at")
 
-  manager User @relation(fields: [managerId], references: [id])
+  manager  User     @relation(fields: [managerId], references: [id])
+  country Country  @relation(fields: [countryId], references: [id])
 
   propertyCharges PropertyCharge[]
   tenancies       Tenancy[]
@@ -74,6 +102,7 @@ model Property {
   payments        Payment[]
 
   @@index([managerId])
+  @@index([countryId])
   @@map("properties")
 }
 
