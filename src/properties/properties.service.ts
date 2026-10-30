@@ -72,7 +72,7 @@ export class PropertiesService {
             currency: dto.currency,
             monthlyRent: dto.monthlyRent.toString(),
             unitCount: dto.unitCount ?? 0,
-            status: 'ACTIVE',
+            status: dto.status ?? 'ACTIVE',
         });
     }
 
