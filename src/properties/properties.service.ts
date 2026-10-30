@@ -77,8 +77,35 @@ export class PropertiesService {
     }
 
     async findAll(managerId: string, query: ListPropertiesDto): Promise<FindAllResponse> {
-        const { page = 1, limit = 10, sortBy = 'createdAt', sortOrder = 'DESC' } = query;
+        const {
+            page = 1,
+            limit = 10,
+            sortBy = 'createdAt',
+            sortOrder = 'DESC',
+            country,
+            status,
+            name,
+        } = query;
         const skip = (page - 1) * limit;
+
+        const filteredProperties = () => {
+            let propertiesQuery = this.prisma.db.orm.public.Property
+                .where({ managerId });
+
+            if (country) {
+                propertiesQuery = propertiesQuery.where({ countryId: country });
+            }
+            if (status) {
+                propertiesQuery = propertiesQuery.where({ status });
+            }
+            if (name) {
+                propertiesQuery = propertiesQuery.where((property) =>
+                    property.name.ilike(`%${name}%`),
+                );
+            }
+
+            return propertiesQuery;
+        };
 
         const orderByClause = (property: any) => {
             const field = (() => {
@@ -103,14 +130,12 @@ export class PropertiesService {
         };
 
         const [properties, totalCount] = await Promise.all([
-            this.prisma.db.orm.public.Property
-                .where({ managerId })
+            filteredProperties()
                 .orderBy(orderByClause)
                 .offset(skip)
                 .limit(limit)
                 .all(),
-            this.prisma.db.orm.public.Property
-                .where({ managerId })
+            filteredProperties()
                 .aggregate((aggregate) => ({ total: aggregate.count() })),
         ]);
 

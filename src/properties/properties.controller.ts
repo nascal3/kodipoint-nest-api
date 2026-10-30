@@ -48,7 +48,9 @@ export class PropertiesController {
     }
 
     @Get()
-    @ApiOperation({ summary: 'List all properties for the authenticated manager' })
+    @ApiOperation({
+        summary: 'List properties for the authenticated manager with optional filters',
+    })
     findAll(
         @CurrentUser() user: authenticatedUserType.AuthenticatedUser,
         @Query() query: ListPropertiesDto,
