@@ -8,7 +8,7 @@ import { CreatePropertyDto } from './dto/create-property.dto';
 import { UpdatePropertyDto } from './dto/update-property.dto';
 import { ListPropertiesDto } from './dto/list-properties.dto';
 
-interface PropertyWithOccupancy {
+export interface PropertyWithOccupancy {
     id: string;
     managerId: string;
     name: string;
@@ -32,7 +32,7 @@ interface PropertyWithOccupancy {
     maxRent: number;
 }
 
-interface PaginationMeta {
+export interface PaginationMeta {
     page: number;
     limit: number;
     totalCount: number;
@@ -41,7 +41,7 @@ interface PaginationMeta {
     hasPreviousPage: boolean;
 }
 
-interface FindAllResponse {
+export interface FindAllResponse {
     data: PropertyWithOccupancy[];
     pagination: PaginationMeta;
 }
