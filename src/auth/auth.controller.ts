@@ -1,4 +1,5 @@
 import {Body, Controller, Get, Post, Req, Res, UnauthorizedException, UseGuards} from "@nestjs/common";
+import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { GoogleOAuthGuard } from '@/auth/guards/google-oauth.guard';
 import {AuthService} from "@/auth/auth.service";
 import {RegisterDto} from "@/auth/dto/register.dto";
@@ -14,6 +15,7 @@ interface GoogleAuthenticatedUser {
   picture?: string;
 }
 
+@ApiTags('Auth')
 @Controller({
   path: 'auth',
   version: '1',
@@ -25,26 +27,27 @@ export class AuthController {
   ) {}
 
   @Post('register')
+  @ApiOperation({ summary: 'Register a new user account' })
   register(@Body() dto: RegisterDto) {
     return this.authService.register(dto);
   }
 
   @Post('login')
+  @ApiOperation({ summary: 'Authenticate user and return access token' })
   login(@Body() dto: LoginDto) {
     return this.authService.login(dto);
   }
 
   @Get('google')
   @UseGuards(GoogleOAuthGuard)
+  @ApiOperation({ summary: 'Initiate Google OAuth login flow' })
   googleLogin(): void {
     // Passport handles the redirect to Google.
   }
 
-  /**
-   * Handle Google's OAuth redirect/callback.
-   */
   @Get('google/redirect')
   @UseGuards(GoogleOAuthGuard)
+  @ApiOperation({ summary: 'Handle Google OAuth callback and redirect to frontend' })
   async googleCallback(
     @Req()
     req: Request & { user: GoogleAuthenticatedUser },

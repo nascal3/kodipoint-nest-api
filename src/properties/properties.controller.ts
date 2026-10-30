@@ -9,6 +9,12 @@ import {
     Query,
     UseGuards,
 } from '@nestjs/common';
+import {
+    ApiBearerAuth,
+    ApiOperation,
+    ApiParam,
+    ApiTags,
+} from '@nestjs/swagger';
 
 import { CurrentUser } from '@/common/decorators/current-user.decorator';
 import { PropertiesService } from './properties.service';
@@ -18,6 +24,8 @@ import { ListPropertiesDto } from './dto/list-properties.dto';
 import * as authenticatedUserType from '../common/types/authenticated-user.type';
 import {JwtAuthGuard} from "@/common/guards/jwt-auth.guard";
 
+@ApiTags('Properties')
+@ApiBearerAuth('access-token')
 @Controller({
     path: 'properties',
     version: '1',
@@ -31,6 +39,7 @@ export class PropertiesController {
     }
 
     @Post()
+    @ApiOperation({ summary: 'Create a new property' })
     create(
         @CurrentUser() user: authenticatedUserType.AuthenticatedUser,
         @Body() dto: CreatePropertyDto,
@@ -39,6 +48,7 @@ export class PropertiesController {
     }
 
     @Get()
+    @ApiOperation({ summary: 'List all properties for the authenticated manager' })
     findAll(
         @CurrentUser() user: authenticatedUserType.AuthenticatedUser,
         @Query() query: ListPropertiesDto,
@@ -47,6 +57,7 @@ export class PropertiesController {
     }
 
     @Get('portfolio-occupancy')
+    @ApiOperation({ summary: 'Get portfolio occupancy statistics' })
     getPortfolioOccupancy(
         @CurrentUser() user: authenticatedUserType.AuthenticatedUser,
     ) {
@@ -54,6 +65,8 @@ export class PropertiesController {
     }
 
     @Get(':id')
+    @ApiOperation({ summary: 'Get a single property by ID' })
+    @ApiParam({ name: 'id', example: 'property-uuid' })
     findOne(
         @CurrentUser() user: authenticatedUserType.AuthenticatedUser,
         @Param('id') propertyId: string,
@@ -62,6 +75,8 @@ export class PropertiesController {
     }
 
     @Patch(':id')
+    @ApiOperation({ summary: 'Update a property' })
+    @ApiParam({ name: 'id', example: 'property-uuid' })
     update(
         @CurrentUser() user: authenticatedUserType.AuthenticatedUser,
         @Param('id') propertyId: string,
@@ -75,6 +90,8 @@ export class PropertiesController {
     }
 
     @Delete(':id')
+    @ApiOperation({ summary: 'Archive a property' })
+    @ApiParam({ name: 'id', example: 'property-uuid' })
     archive(
         @CurrentUser() user: authenticatedUserType.AuthenticatedUser,
         @Param('id') propertyId: string,

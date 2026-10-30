@@ -6,6 +6,8 @@ import {
 } from '@nestjs/common';
 import {
     ApiBearerAuth,
+    ApiOperation,
+    ApiParam,
     ApiTags,
 } from '@nestjs/swagger';
 
@@ -29,6 +31,8 @@ export class PaymentAllocationsController {
     }
 
     @Get('payment/:paymentId')
+    @ApiOperation({ summary: 'Get payment allocations for a specific payment' })
+    @ApiParam({ name: 'paymentId', example: 'payment-uuid' })
     findByPayment(
         @CurrentUser() user: authenticatedUserType.AuthenticatedUser,
         @Param('paymentId') paymentId: string,
@@ -40,6 +44,8 @@ export class PaymentAllocationsController {
     }
 
     @Get('invoice/:invoiceId')
+    @ApiOperation({ summary: 'Get payment allocations for a specific invoice' })
+    @ApiParam({ name: 'invoiceId', example: 'invoice-uuid' })
     findByInvoice(
         @CurrentUser() user: authenticatedUserType.AuthenticatedUser,
         @Param('invoiceId') invoiceId: string,

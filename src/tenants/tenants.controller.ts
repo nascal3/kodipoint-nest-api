@@ -8,6 +8,12 @@ import {
     Post,
     UseGuards,
 } from '@nestjs/common';
+import {
+    ApiBearerAuth,
+    ApiOperation,
+    ApiParam,
+    ApiTags,
+} from '@nestjs/swagger';
 
 import { CurrentUser } from '@/common/decorators/current-user.decorator';
 import { TenantsService } from './tenants.service';
@@ -16,6 +22,8 @@ import { UpdateTenantDto } from './dto/update-tenant.dto';
 import * as authenticatedUserType from '@/common/types/authenticated-user.type';
 import {JwtAuthGuard} from "@/common/guards/jwt-auth.guard";
 
+@ApiTags('Tenants')
+@ApiBearerAuth('access-token')
 @Controller({
     path: 'tenants',
     version: '1',
@@ -27,12 +35,8 @@ export class TenantsController {
         private readonly tenantsService: TenantsService,
     ) {}
 
-    /**
-     * Create a tenant for the authenticated manager.
-     *
-     * POST /api/v1/tenants
-     */
     @Post()
+    @ApiOperation({ summary: 'Create a tenant for the authenticated manager' })
     create(
         @CurrentUser() user: authenticatedUserType.AuthenticatedUser,
         @Body() dto: CreateTenantDto,
@@ -40,22 +44,15 @@ export class TenantsController {
         return this.tenantsService.create(user.id, dto);
     }
 
-    /**
-     * List all tenants belonging to the authenticated manager.
-     *
-     * GET /api/v1/tenants
-     */
     @Get()
+    @ApiOperation({ summary: 'List all tenants belonging to the authenticated manager' })
     findAll(@CurrentUser() user: authenticatedUserType.AuthenticatedUser) {
         return this.tenantsService.findAll(user.id);
     }
 
-    /**
-     * Get one tenant belonging to the authenticated manager.
-     *
-     * GET /api/v1/tenants/:id
-     */
     @Get(':id')
+    @ApiOperation({ summary: 'Get one tenant belonging to the authenticated manager' })
+    @ApiParam({ name: 'id', example: 'tenant-uuid' })
     findOne(
         @CurrentUser() user: authenticatedUserType.AuthenticatedUser,
         @Param('id') tenantId: string,
@@ -63,12 +60,9 @@ export class TenantsController {
         return this.tenantsService.findOne(user.id, tenantId);
     }
 
-    /**
-     * Update tenant details.
-     *
-     * PATCH /api/v1/tenants/:id
-     */
     @Patch(':id')
+    @ApiOperation({ summary: 'Update tenant details' })
+    @ApiParam({ name: 'id', example: 'tenant-uuid' })
     update(
         @CurrentUser() user: authenticatedUserType.AuthenticatedUser,
         @Param('id') tenantId: string,
@@ -81,12 +75,9 @@ export class TenantsController {
         );
     }
 
-    /**
-     * Archive a tenant instead of physically deleting the record.
-     *
-     * DELETE /api/v1/tenants/:id
-     */
     @Delete(':id')
+    @ApiOperation({ summary: 'Archive a tenant instead of physically deleting the record' })
+    @ApiParam({ name: 'id', example: 'tenant-uuid' })
     archive(
         @CurrentUser() user: authenticatedUserType.AuthenticatedUser,
         @Param('id') tenantId: string,

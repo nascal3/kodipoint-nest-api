@@ -8,6 +8,11 @@ import {
     Query,
     UseGuards,
 } from '@nestjs/common';
+import {
+    ApiBearerAuth,
+    ApiOperation,
+    ApiTags,
+} from '@nestjs/swagger';
 
 import { CurrentUser } from '@/common/decorators/current-user.decorator';
 import { CreateInvoiceDto } from './dto/create-invoice.dto';
@@ -18,6 +23,8 @@ import { InvoicesService } from './invoices.service';
 import * as authenticatedUserType from '@/common/types/authenticated-user.type';
 import {JwtAuthGuard} from "@/common/guards/jwt-auth.guard";
 
+@ApiTags('Invoices')
+@ApiBearerAuth('access-token')
 @Controller({
     path: 'invoices',
     version: '1',
@@ -29,12 +36,8 @@ export class InvoicesController {
         private readonly invoicesService: InvoicesService,
     ) {}
 
-    /**
-     * Create an invoice for an active tenancy.
-     *
-     * POST /api/v1/invoices
-     */
     @Post()
+    @ApiOperation({ summary: 'Create an invoice for an active tenancy' })
     create(
         @CurrentUser() user: authenticatedUserType.AuthenticatedUser,
         @Body() dto: CreateInvoiceDto,
@@ -42,12 +45,8 @@ export class InvoicesController {
         return this.invoicesService.create(user.id, dto);
     }
 
-    /**
-     * List invoices owned by the authenticated manager.
-     *
-     * GET /api/v1/invoices
-     */
     @Get()
+    @ApiOperation({ summary: 'List invoices owned by the authenticated manager' })
     findAll(
         @CurrentUser() user: authenticatedUserType.AuthenticatedUser,
         @Query() query: ListInvoicesDto,
@@ -58,12 +57,8 @@ export class InvoicesController {
         );
     }
 
-    /**
-     * Get one invoice with line items and payments.
-     *
-     * GET /api/v1/invoices/:id
-     */
     @Get(':id')
+    @ApiOperation({ summary: 'Get one invoice with line items and payments' })
     findOne(
         @CurrentUser() user: authenticatedUserType.AuthenticatedUser,
         @Param('id') invoiceId: string,
@@ -74,12 +69,8 @@ export class InvoicesController {
         );
     }
 
-    /**
-     * Edit a draft invoice.
-     *
-     * PATCH /api/v1/invoices/:id
-     */
     @Patch(':id')
+    @ApiOperation({ summary: 'Edit a draft invoice' })
     update(
         @CurrentUser() user: authenticatedUserType.AuthenticatedUser,
         @Param('id') invoiceId: string,
@@ -92,12 +83,8 @@ export class InvoicesController {
         );
     }
 
-    /**
-     * Cancel an invoice.
-     *
-     * POST /api/v1/invoices/:id/cancel
-     */
     @Post(':id/cancel')
+    @ApiOperation({ summary: 'Cancel an invoice' })
     cancel(
         @CurrentUser() user: authenticatedUserType.AuthenticatedUser,
         @Param('id') invoiceId: string,
@@ -108,12 +95,8 @@ export class InvoicesController {
         );
     }
 
-    /**
-     * Queue invoice delivery by email and/or SMS.
-     *
-     * POST /api/v1/invoices/:id/send
-     */
     @Post(':id/send')
+    @ApiOperation({ summary: 'Queue invoice delivery by email and/or SMS' })
     send(
         @CurrentUser() user: authenticatedUserType.AuthenticatedUser,
         @Param('id') invoiceId: string,

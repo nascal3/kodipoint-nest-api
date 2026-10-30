@@ -8,6 +8,8 @@ import {
 } from '@nestjs/common';
 import {
     ApiBearerAuth,
+    ApiOperation,
+    ApiParam,
     ApiTags,
 } from '@nestjs/swagger';
 
@@ -32,6 +34,7 @@ export class PaymentsController {
     ) {}
 
     @Post()
+    @ApiOperation({ summary: 'Create a new payment' })
     create(
         @CurrentUser() user: authenticatedUserType.AuthenticatedUser,
         @Body() dto: CreatePaymentDto,
@@ -43,6 +46,7 @@ export class PaymentsController {
     }
 
     @Get()
+    @ApiOperation({ summary: 'List all payments for the authenticated manager' })
     findAll(
         @CurrentUser() user: authenticatedUserType.AuthenticatedUser,
     ) {
@@ -52,6 +56,8 @@ export class PaymentsController {
     }
 
     @Get(':id')
+    @ApiOperation({ summary: 'Get a single payment by ID' })
+    @ApiParam({ name: 'id', example: 'payment-uuid' })
     findOne(
         @CurrentUser() user: authenticatedUserType.AuthenticatedUser,
         @Param('id') paymentId: string,
@@ -63,6 +69,8 @@ export class PaymentsController {
     }
 
     @Post(':id/reverse')
+    @ApiOperation({ summary: 'Reverse a payment' })
+    @ApiParam({ name: 'id', example: 'payment-uuid' })
     reverse(
         @CurrentUser() user: authenticatedUserType.AuthenticatedUser,
         @Param('id') paymentId: string,
@@ -74,6 +82,8 @@ export class PaymentsController {
     }
 
     @Post(':id/allocations')
+    @ApiOperation({ summary: 'Allocate an existing payment to an invoice' })
+    @ApiParam({ name: 'id', example: 'payment-uuid' })
     allocate(
         @CurrentUser() user: authenticatedUserType.AuthenticatedUser,
         @Param('id') paymentId: string,

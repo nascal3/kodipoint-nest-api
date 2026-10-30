@@ -7,6 +7,12 @@ import {
     Post,
     UseGuards,
 } from '@nestjs/common';
+import {
+    ApiBearerAuth,
+    ApiOperation,
+    ApiParam,
+    ApiTags,
+} from '@nestjs/swagger';
 
 import { CurrentUser } from '@/common/decorators/current-user.decorator';
 import { TenanciesService } from './tenancies.service';
@@ -15,6 +21,8 @@ import { UnassignTenantDto } from './dto/unassign-tenant.dto';
 import * as authenticatedUserType from '../common/types/authenticated-user.type';
 import {JwtAuthGuard} from "@/common/guards/jwt-auth.guard";
 
+@ApiTags('Tenancies')
+@ApiBearerAuth('access-token')
 @Controller({
     path: 'tenancies',
     version: '1',
@@ -26,12 +34,8 @@ export class TenanciesController {
         private readonly tenanciesService: TenanciesService,
     ) {}
 
-    /**
-     * Assign a tenant to a property.
-     *
-     * POST /api/v1/tenancies
-     */
     @Post()
+    @ApiOperation({ summary: 'Assign a tenant to a property' })
     assign(
         @CurrentUser() user: authenticatedUserType.AuthenticatedUser,
         @Body() dto: AssignTenantDto,
@@ -39,22 +43,15 @@ export class TenanciesController {
         return this.tenanciesService.assign(user.id, dto);
     }
 
-    /**
-     * List active and historical tenancies.
-     *
-     * GET /api/v1/tenancies
-     */
     @Get()
+    @ApiOperation({ summary: 'List active and historical tenancies' })
     findAll(@CurrentUser() user: authenticatedUserType.AuthenticatedUser) {
         return this.tenanciesService.findAll(user.id);
     }
 
-    /**
-     * Get a single tenancy.
-     *
-     * GET /api/v1/tenancies/:id
-     */
     @Get(':id')
+    @ApiOperation({ summary: 'Get a single tenancy' })
+    @ApiParam({ name: 'id', example: 'tenancy-uuid' })
     findOne(
         @CurrentUser() user: authenticatedUserType.AuthenticatedUser,
         @Param('id') tenancyId: string,
@@ -62,12 +59,9 @@ export class TenanciesController {
         return this.tenanciesService.findOne(user.id, tenancyId);
     }
 
-    /**
-     * End an active tenancy.
-     *
-     * PATCH /api/v1/tenancies/:id/unassign
-     */
     @Patch(':id/unassign')
+    @ApiOperation({ summary: 'End an active tenancy' })
+    @ApiParam({ name: 'id', example: 'tenancy-uuid' })
     unassign(
         @CurrentUser() user: authenticatedUserType.AuthenticatedUser,
         @Param('id') tenancyId: string,
