@@ -68,10 +68,10 @@ async function bootstrap() {
       swaggerConfig,
   );
 
-  SwaggerModule.setup('docs', app, swaggerDocument, {
+  SwaggerModule.setup('api/docs', app, swaggerDocument, {
       swaggerOptions: {
           persistAuthorization: true,
-          yamlDocumentUrl: 'docs-yaml'
+          yamlDocumentUrl: 'api/docs-yaml'
       }
   });
 
