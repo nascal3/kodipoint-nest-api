@@ -8,7 +8,9 @@ import {
   IsString,
   IsUUID,
   Min,
+  ValidateNested,
 } from 'class-validator';
+import { Type } from 'class-transformer';
 
 enum PropertyUnitStatus {
   AVAILABLE = 'AVAILABLE',
@@ -22,6 +24,27 @@ enum BillingFrequency {
   QUARTERLY = 'QUARTERLY',
   BI_ANNUALLY = 'BI_ANNUALLY',
   ANNUALLY = 'ANNUALLY',
+}
+
+class PropertyUnitChargeDto {
+  @ApiProperty({
+    description: 'The ID of the property charge to associate with this unit',
+    example: '550e8400-e29b-41d4-a716-446655440000',
+  })
+  @IsUUID()
+  propertyChargeId: string;
+
+  @ApiProperty({
+    description:
+      'Optional unit-specific amount; omit it to inherit the property charge amount',
+    example: 2500,
+    required: false,
+    minimum: 0,
+  })
+  @IsOptional()
+  @IsNumber()
+  @Min(0)
+  amount?: number;
 }
 
 export class CreatePropertyUnitDto {
@@ -82,4 +105,22 @@ export class CreatePropertyUnitDto {
   @IsArray()
   @IsUUID('4', { each: true })
   propertyChargeIds?: string[];
+
+  @ApiProperty({
+    description:
+      'Property charges to associate with this unit, optionally overriding each charge amount',
+    example: [
+      {
+        propertyChargeId: '550e8400-e29b-41d4-a716-446655440000',
+        amount: 2500,
+      },
+    ],
+    required: false,
+    type: [PropertyUnitChargeDto],
+  })
+  @IsOptional()
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => PropertyUnitChargeDto)
+  propertyCharges?: PropertyUnitChargeDto[];
 }

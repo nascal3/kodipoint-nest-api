@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { and } from '@prisma/orm-postgres/orm-client';
 
 import { DatabaseService } from '@/database/database.service';
@@ -20,6 +24,11 @@ export interface FindAllResponse {
   pagination: PaginationMeta;
 }
 
+type PropertyUnitChargeInput = {
+  propertyChargeId: string;
+  amount?: number;
+};
+
 @Injectable()
 export class PropertyUnitsService {
   constructor(private readonly prisma: DatabaseService) {}
@@ -34,7 +43,8 @@ export class PropertyUnitsService {
       throw new NotFoundException('Property not found');
     }
 
-    const { propertyChargeIds } = dto;
+    const propertyCharges = this.getPropertyCharges(dto);
+    await this.validatePropertyCharges(propertyCharges, dto.propertyId);
 
     const unit = await this.prisma.db.orm.public.PropertyUnit.create({
       managerId,
@@ -46,32 +56,22 @@ export class PropertyUnitsService {
       billingFrequency: dto.billingFrequency,
     });
 
-    if (propertyChargeIds && propertyChargeIds.length > 0) {
-      const charges = await this.prisma.db.orm.public.PropertyCharge.where(
-        (charge) =>
-          and(
-            charge.id.in(propertyChargeIds),
-            charge.propertyId.eq(dto.propertyId),
-          ),
-      ).all();
-
-      if (charges.length !== propertyChargeIds.length) {
-        throw new NotFoundException(
-          'One or more property charges not found or do not belong to this property',
-        );
-      }
-
+    if (propertyCharges.length > 0) {
       await Promise.all(
-        propertyChargeIds.map((chargeId) =>
+        propertyCharges.map((charge) =>
           this.prisma.db.orm.public.PropertyUnitCharge.create({
             propertyUnitId: unit.id,
-            propertyChargeId: chargeId,
+            propertyChargeId: charge.propertyChargeId,
+            customAmount: charge.amount?.toString() ?? null,
           }),
         ),
       );
     }
 
-    return unit;
+    return {
+      ...unit,
+      charges: await this.getUnitChargeDetails(unit.id),
+    };
   }
 
   async findAll(
@@ -136,11 +136,7 @@ export class PropertyUnitsService {
     };
 
     const [units, totalCount] = await Promise.all([
-      filteredUnits()
-        .orderBy(orderByClause)
-        .offset(skip)
-        .limit(limit)
-        .all(),
+      filteredUnits().orderBy(orderByClause).offset(skip).limit(limit).all(),
       filteredUnits().aggregate((aggregate) => ({
         total: aggregate.count(),
       })),
@@ -148,30 +144,50 @@ export class PropertyUnitsService {
 
     const unitIds = units.map((unit) => unit.id);
 
-    const unitCharges = await this.prisma.db.orm.public.PropertyUnitCharge
-      .where((charge) => charge.propertyUnitId.in(unitIds))
-      .all();
+    const unitCharges =
+      await this.prisma.db.orm.public.PropertyUnitCharge.where((charge) =>
+        charge.propertyUnitId.in(unitIds),
+      ).all();
 
-    const chargesByUnitId = unitCharges.reduce((acc, charge) => {
-      if (!acc[charge.propertyUnitId]) {
-        acc[charge.propertyUnitId] = [];
-      }
-      acc[charge.propertyUnitId].push(charge.propertyChargeId);
-      return acc;
-    }, {} as Record<string, string[]>);
+    const chargesByUnitId = unitCharges.reduce(
+      (acc, charge) => {
+        if (!acc[charge.propertyUnitId]) {
+          acc[charge.propertyUnitId] = [];
+        }
+        acc[charge.propertyUnitId].push(charge);
+        return acc;
+      },
+      {} as Record<string, typeof unitCharges>,
+    );
 
     const unitsWithCharges = await Promise.all(
       units.map(async (unit) => {
-        const chargeIds = chargesByUnitId[unit.id] || [];
+        const unitChargeLinks = chargesByUnitId[unit.id] || [];
+        const chargeIds = unitChargeLinks.map(
+          (unitCharge) => unitCharge.propertyChargeId,
+        );
         const charges =
           chargeIds.length > 0
-            ? await this.prisma.db.orm.public.PropertyCharge.where(
-                (charge) => charge.id.in(chargeIds),
+            ? await this.prisma.db.orm.public.PropertyCharge.where((charge) =>
+                charge.id.in(chargeIds),
               ).all()
             : [];
+        const unitChargeById = new Map(
+          unitChargeLinks.map((unitCharge) => [
+            unitCharge.propertyChargeId,
+            unitCharge,
+          ]),
+        );
         return {
           ...unit,
-          charges,
+          charges: charges.map((charge) => {
+            const unitCharge = unitChargeById.get(charge.id);
+            return {
+              ...charge,
+              customAmount: unitCharge?.customAmount ?? null,
+              effectiveAmount: unitCharge?.customAmount ?? charge.amount,
+            };
+          }),
         };
       }),
     );
@@ -201,13 +217,28 @@ export class PropertyUnitsService {
       throw new NotFoundException('Property unit not found');
     }
 
-    return unit;
+    return {
+      ...unit,
+      charges: await this.getUnitChargeDetails(unit.id),
+    };
   }
 
   async update(managerId: string, unitId: string, dto: UpdatePropertyUnitDto) {
     const unit = await this.findOne(managerId, unitId);
 
-    const { marketRent, propertyId, propertyChargeIds, ...rest } = dto;
+    const {
+      marketRent,
+      propertyId,
+      propertyChargeIds,
+      propertyCharges: requestedCharges,
+      ...rest
+    } = dto;
+    const shouldUpdateCharges =
+      propertyChargeIds !== undefined || requestedCharges !== undefined;
+    const propertyCharges = this.getPropertyCharges({
+      propertyChargeIds,
+      propertyCharges: requestedCharges,
+    });
 
     if (propertyId !== undefined) {
       const property = await this.prisma.db.orm.public.Property.where({
@@ -220,6 +251,11 @@ export class PropertyUnitsService {
       }
     }
 
+    const targetPropertyId = propertyId ?? unit.propertyId;
+    if (shouldUpdateCharges) {
+      await this.validatePropertyCharges(propertyCharges, targetPropertyId);
+    }
+
     const updatedUnit = await this.prisma.db.orm.public.PropertyUnit.where({
       id: unitId,
       managerId,
@@ -229,40 +265,28 @@ export class PropertyUnitsService {
       ...(marketRent !== undefined && { marketRent: marketRent.toString() }),
     });
 
-    if (propertyChargeIds !== undefined) {
-      const targetPropertyId = propertyId ?? unit.propertyId;
-
+    if (shouldUpdateCharges) {
       await this.prisma.db.orm.public.PropertyUnitCharge.where({
         propertyUnitId: unitId,
       }).delete();
 
-      if (propertyChargeIds.length > 0) {
-        const charges = await this.prisma.db.orm.public.PropertyCharge.where(
-          (charge) =>
-            and(
-              charge.id.in(propertyChargeIds),
-              charge.propertyId.eq(targetPropertyId),
-            ),
-        ).all();
-
-        if (charges.length !== propertyChargeIds.length) {
-          throw new NotFoundException(
-            'One or more property charges not found or do not belong to this property',
-          );
-        }
-
+      if (propertyCharges.length > 0) {
         await Promise.all(
-          propertyChargeIds.map((chargeId) =>
+          propertyCharges.map((charge) =>
             this.prisma.db.orm.public.PropertyUnitCharge.create({
               propertyUnitId: unitId,
-              propertyChargeId: chargeId,
+              propertyChargeId: charge.propertyChargeId,
+              customAmount: charge.amount?.toString() ?? null,
             }),
           ),
         );
       }
     }
 
-    return updatedUnit;
+    return {
+      ...updatedUnit,
+      charges: await this.getUnitChargeDetails(unitId),
+    };
   }
 
   async archive(managerId: string, unitId: string) {
@@ -273,6 +297,83 @@ export class PropertyUnitsService {
       managerId,
     }).update({
       status: 'ARCHIVED',
+    });
+  }
+
+  private getPropertyCharges(input: {
+    propertyChargeIds?: string[];
+    propertyCharges?: PropertyUnitChargeInput[];
+  }): PropertyUnitChargeInput[] {
+    if (
+      input.propertyChargeIds !== undefined &&
+      input.propertyCharges !== undefined
+    ) {
+      throw new BadRequestException(
+        'Use either propertyChargeIds or propertyCharges, not both',
+      );
+    }
+
+    return (
+      input.propertyCharges ??
+      (input.propertyChargeIds ?? []).map((propertyChargeId) => ({
+        propertyChargeId,
+      }))
+    );
+  }
+
+  private async validatePropertyCharges(
+    charges: PropertyUnitChargeInput[],
+    propertyId: string,
+  ) {
+    const chargeIds = charges.map((charge) => charge.propertyChargeId);
+    if (new Set(chargeIds).size !== chargeIds.length) {
+      throw new BadRequestException('Property charges must not be duplicated');
+    }
+
+    if (chargeIds.length === 0) {
+      return;
+    }
+
+    const propertyCharges =
+      await this.prisma.db.orm.public.PropertyCharge.where((charge) =>
+        and(charge.id.in(chargeIds), charge.propertyId.eq(propertyId)),
+      ).all();
+
+    if (propertyCharges.length !== chargeIds.length) {
+      throw new NotFoundException(
+        'One or more property charges not found or do not belong to this property',
+      );
+    }
+  }
+
+  private async getUnitChargeDetails(unitId: string) {
+    const unitCharges =
+      await this.prisma.db.orm.public.PropertyUnitCharge.where({
+        propertyUnitId: unitId,
+      }).all();
+    const chargeIds = unitCharges.map(
+      (unitCharge) => unitCharge.propertyChargeId,
+    );
+    const charges =
+      chargeIds.length > 0
+        ? await this.prisma.db.orm.public.PropertyCharge.where((charge) =>
+            charge.id.in(chargeIds),
+          ).all()
+        : [];
+    const unitChargeById = new Map(
+      unitCharges.map((unitCharge) => [
+        unitCharge.propertyChargeId,
+        unitCharge,
+      ]),
+    );
+
+    return charges.map((charge) => {
+      const unitCharge = unitChargeById.get(charge.id);
+      return {
+        ...charge,
+        customAmount: unitCharge?.customAmount ?? null,
+        effectiveAmount: unitCharge?.customAmount ?? charge.amount,
+      };
     });
   }
 }

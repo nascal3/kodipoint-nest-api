@@ -83,7 +83,7 @@ export class InvoicesService {
             propertyUnitId: tenancy.propertyUnitId,
           }).all()
         : [];
-      const charges =
+      const propertyCharges =
         unitCharges.length > 0
           ? await tx.orm.public.PropertyCharge.where((charge) =>
               and(
@@ -96,6 +96,16 @@ export class InvoicesService {
               ),
             ).all()
           : [];
+      const unitChargeById = new Map(
+        unitCharges.map((unitCharge) => [
+          unitCharge.propertyChargeId,
+          unitCharge,
+        ]),
+      );
+      const charges = propertyCharges.map((charge) => ({
+        ...charge,
+        amount: unitChargeById.get(charge.id)?.customAmount ?? charge.amount,
+      }));
 
       /*
        * 5. Build the normal invoice lines.

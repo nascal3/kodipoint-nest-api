@@ -2155,6 +2155,13 @@
           },
           "PropertyUnitCharge": {
             "fields": {
+              "customAmount": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/numeric@1",
+                  "kind": "scalar"
+                }
+              },
               "propertyChargeId": {
                 "nullable": false,
                 "type": {
@@ -2206,6 +2213,9 @@
             },
             "storage": {
               "fields": {
+                "customAmount": {
+                  "column": "custom_amount"
+                },
                 "propertyChargeId": {
                   "column": "property_charge_id"
                 },
@@ -4467,6 +4477,11 @@
             },
             "property_unit_charges": {
               "columns": {
+                "custom_amount": {
+                  "codecId": "pg/numeric@1",
+                  "nativeType": "numeric",
+                  "nullable": true
+                },
                 "property_charge_id": {
                   "codecId": "pg/uuid@1",
                   "nativeType": "uuid",
@@ -5332,7 +5347,7 @@
         "kind": "postgres-schema"
       }
     },
-    "storageHash": "9c0ad9e95ddcd0c403228650779afb6bf875c71abbc8fb93736306116ee874a5"
+    "storageHash": "9fac4aa1fb1fb3b9f0290663b8daaa1a701b2c0dc421d62caf0de398e9ee52df"
   },
   "execution": {
     "executionHash": "8e9c983ff78a07252f8d86c07b2c152fd109aba234b96c8b51748afacf5a1756",

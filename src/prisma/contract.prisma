@@ -180,8 +180,9 @@ model PropertyUnit {
 }
 
 model PropertyUnitCharge {
-  propertyUnitId   Uuid @map("property_unit_id")
-  propertyChargeId Uuid @map("property_charge_id")
+  propertyUnitId   Uuid     @map("property_unit_id")
+  propertyChargeId Uuid     @map("property_charge_id")
+  customAmount     Decimal? @map("custom_amount")
 
   propertyUnit   PropertyUnit   @relation(fields: [propertyUnitId], references: [id])
   propertyCharge PropertyCharge @relation(fields: [propertyChargeId], references: [id])
