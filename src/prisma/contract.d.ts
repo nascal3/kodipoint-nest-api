@@ -34,7 +34,7 @@ import type {
 } from '@prisma/orm-postgres/contract/types';
 
 export type StorageHash =
-  StorageHashBase<'139770cb8d5db1c459f63df44d800bf2bf2b9f2a27425a7417c26031190f75d0'>;
+  StorageHashBase<'9c0ad9e95ddcd0c403228650779afb6bf875c71abbc8fb93736306116ee874a5'>;
 export type ExecutionHash =
   ExecutionHashBase<'8e9c983ff78a07252f8d86c07b2c152fd109aba234b96c8b51748afacf5a1756'>;
 export type ProfileHash =
@@ -2396,7 +2396,7 @@ type ContractBase = Omit<
                 };
               };
               primaryKey: { readonly columns: readonly ['id'] };
-              uniques: readonly [];
+              uniques: readonly [{ readonly columns: readonly ['name'] }];
               indexes: readonly [
                 {
                   readonly name: 'property_charges_manager_id_idx_c3dee277';

@@ -4457,7 +4457,13 @@
                   "id"
                 ]
               },
-              "uniques": []
+              "uniques": [
+                {
+                  "columns": [
+                    "name"
+                  ]
+                }
+              ]
             },
             "property_unit_charges": {
               "columns": {
@@ -5326,7 +5332,7 @@
         "kind": "postgres-schema"
       }
     },
-    "storageHash": "139770cb8d5db1c459f63df44d800bf2bf2b9f2a27425a7417c26031190f75d0"
+    "storageHash": "9c0ad9e95ddcd0c403228650779afb6bf875c71abbc8fb93736306116ee874a5"
   },
   "execution": {
     "executionHash": "8e9c983ff78a07252f8d86c07b2c152fd109aba234b96c8b51748afacf5a1756",

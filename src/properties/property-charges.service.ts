@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, ConflictException } from '@nestjs/common';
 import { and } from '@prisma/orm-postgres/orm-client';
 
 import { DatabaseService } from '@/database/database.service';
@@ -35,6 +35,14 @@ export class PropertyChargesService {
 
     if (!property) {
       throw new NotFoundException('Property not found');
+    }
+
+    const existingCharge = await this.prisma.db.orm.public.PropertyCharge.where(
+      (charge) => charge.name.eq(dto.name),
+    ).first();
+
+    if (existingCharge) {
+      throw new ConflictException('A property charge with this name already exists');
     }
 
     return this.prisma.db.orm.public.PropertyCharge.create({
@@ -148,7 +156,7 @@ export class PropertyChargesService {
   async update(managerId: string, chargeId: string, dto: UpdatePropertyChargeDto) {
     await this.findOne(managerId, chargeId);
 
-    const { amount, propertyId, ...rest } = dto;
+    const { amount, propertyId, name, ...rest } = dto;
 
     if (propertyId !== undefined) {
       const property = await this.prisma.db.orm.public.Property.where(
@@ -164,6 +172,20 @@ export class PropertyChargesService {
       }
     }
 
+    if (name !== undefined) {
+      const existingCharge = await this.prisma.db.orm.public.PropertyCharge.where(
+        (charge) =>
+          and(
+            charge.name.eq(name),
+            charge.id.neq(chargeId),
+          ),
+      ).first();
+
+      if (existingCharge) {
+        throw new ConflictException('A property charge with this name already exists');
+      }
+    }
+
     return this.prisma.db.orm.public.PropertyCharge.where(
       (charge) =>
         and(charge.id.eq(chargeId), charge.managerId.eq(managerId)),
@@ -171,6 +193,7 @@ export class PropertyChargesService {
       ...rest,
       ...(propertyId !== undefined && { propertyId }),
       ...(amount !== undefined && { amount: amount.toString() }),
+      ...(name !== undefined && { name }),
     });
   }
 
