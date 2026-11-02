@@ -1,0 +1,1427 @@
+[
+  {
+    "id": "dropColumn.properties.country",
+    "label": "Drop column \"country\" from \"properties\"",
+    "operationClass": "destructive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "country",
+        "table": "properties"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"country\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "properties",
+          "country"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "drop column \"country\"",
+        "sql": "ALTER TABLE \"public\".\"properties\" DROP COLUMN \"country\""
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"country\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "properties",
+          "country"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "dropColumn.property_charges.billing_frequency",
+    "label": "Drop column \"billing_frequency\" from \"property_charges\"",
+    "operationClass": "destructive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "billing_frequency",
+        "table": "property_charges"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"billing_frequency\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "property_charges",
+          "billing_frequency"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "drop column \"billing_frequency\"",
+        "sql": "ALTER TABLE \"public\".\"property_charges\" DROP COLUMN \"billing_frequency\""
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"billing_frequency\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "property_charges",
+          "billing_frequency"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "table.cities",
+    "label": "Create table \"cities\"",
+    "summary": "Creates table \"cities\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "cities"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"cities\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"cities\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"cities\"",
+        "sql": "CREATE TABLE \"public\".\"cities\" (\n  \"country_id\" uuid NOT NULL,\n  \"created_at\" timestamptz DEFAULT (now()) NOT NULL,\n  \"id\" uuid NOT NULL,\n  \"name\" text NOT NULL,\n  \"updated_at\" timestamptz NOT NULL,\n  PRIMARY KEY (\"id\")\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"cities\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"cities\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "table.countries",
+    "label": "Create table \"countries\"",
+    "summary": "Creates table \"countries\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "countries"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"countries\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"countries\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"countries\"",
+        "sql": "CREATE TABLE \"public\".\"countries\" (\n  \"created_at\" timestamptz DEFAULT (now()) NOT NULL,\n  \"id\" uuid NOT NULL,\n  \"name\" text NOT NULL,\n  \"updated_at\" timestamptz NOT NULL,\n  PRIMARY KEY (\"id\")\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"countries\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"countries\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "table.oauth_accounts",
+    "label": "Create table \"oauth_accounts\"",
+    "summary": "Creates table \"oauth_accounts\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "oauth_accounts"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"oauth_accounts\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"oauth_accounts\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"oauth_accounts\"",
+        "sql": "CREATE TABLE \"public\".\"oauth_accounts\" (\n  \"created_at\" timestamptz DEFAULT (now()) NOT NULL,\n  \"id\" uuid NOT NULL,\n  \"provider\" text NOT NULL,\n  \"provider_account_id\" text NOT NULL,\n  \"user_id\" uuid NOT NULL,\n  PRIMARY KEY (\"id\")\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"oauth_accounts\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"oauth_accounts\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "table.property_unit_charges",
+    "label": "Create table \"property_unit_charges\"",
+    "summary": "Creates table \"property_unit_charges\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "property_unit_charges"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"property_unit_charges\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"property_unit_charges\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"property_unit_charges\"",
+        "sql": "CREATE TABLE \"public\".\"property_unit_charges\" (\n  \"property_charge_id\" uuid NOT NULL,\n  \"property_unit_id\" uuid NOT NULL,\n  PRIMARY KEY (\"property_unit_id\", \"property_charge_id\")\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"property_unit_charges\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"property_unit_charges\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "table.property_units",
+    "label": "Create table \"property_units\"",
+    "summary": "Creates table \"property_units\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "property_units"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"property_units\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"property_units\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"property_units\"",
+        "sql": "CREATE TABLE \"public\".\"property_units\" (\n  \"bedroom_count\" int4 NOT NULL,\n  \"billing_frequency\" text DEFAULT 'MONTHLY' NOT NULL,\n  \"created_at\" timestamptz DEFAULT (now()) NOT NULL,\n  \"id\" uuid NOT NULL,\n  \"manager_id\" uuid NOT NULL,\n  \"market_rent\" numeric NOT NULL,\n  \"property_id\" uuid NOT NULL,\n  \"status\" text DEFAULT 'AVAILABLE' NOT NULL,\n  \"unit_number\" text NOT NULL,\n  \"updated_at\" timestamptz NOT NULL,\n  PRIMARY KEY (\"id\"),\n  CONSTRAINT \"property_units_billing_frequency_check_3a66bf05\" CHECK (\"billing_frequency\" IN ('MONTHLY', 'QUARTERLY', 'BI_ANNUALLY', 'ANNUALLY')),\n  CONSTRAINT \"property_units_status_check_d1e1aab6\" CHECK (\"status\" IN ('AVAILABLE', 'OCCUPIED', 'MAINTENANCE', 'ARCHIVED'))\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"property_units\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"property_units\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "column.public.tenancies.property_unit_id",
+    "label": "Add column \"property_unit_id\" to \"tenancies\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "property_unit_id",
+        "table": "tenancies"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"property_unit_id\" is missing",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "tenancies",
+          "property_unit_id"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add column \"property_unit_id\"",
+        "sql": "ALTER TABLE \"public\".\"tenancies\" ADD COLUMN \"property_unit_id\" uuid"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"property_unit_id\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "tenancies",
+          "property_unit_id"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "column.public.properties.country_id",
+    "label": "Add column \"country_id\" to \"properties\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "country_id",
+        "table": "properties"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"country_id\" is missing",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "properties",
+          "country_id"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add column \"country_id\"",
+        "sql": "ALTER TABLE \"public\".\"properties\" ADD COLUMN \"country_id\" uuid NOT NULL"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"country_id\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "properties",
+          "country_id"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unique.countries.countries_name_key",
+    "label": "Add unique constraint on \"countries\" (name)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "countries_name_key",
+        "table": "countries"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"countries_name_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "countries_name_key",
+          "public",
+          "\"public\".\"countries\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"countries_name_key\"",
+        "sql": "ALTER TABLE \"public\".\"countries\" ADD CONSTRAINT \"countries_name_key\" UNIQUE (\"name\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"countries_name_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "countries_name_key",
+          "public",
+          "\"public\".\"countries\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "checkConstraint.invoices.invoices_status_check_2eafa38f",
+    "label": "Add check constraint \"invoices_status_check_2eafa38f\" on \"invoices\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "checkConstraint",
+        "name": "invoices_status_check_2eafa38f",
+        "table": "invoices"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"invoices_status_check_2eafa38f\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "invoices_status_check_2eafa38f",
+          "public",
+          "\"public\".\"invoices\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add check constraint \"invoices_status_check_2eafa38f\"",
+        "sql": "ALTER TABLE \"public\".\"invoices\" ADD CONSTRAINT \"invoices_status_check_2eafa38f\" CHECK (\"status\" IN ('DRAFT', 'ISSUED', 'PARTIALLY_PAID', 'PAID', 'OVERDUE', 'CANCELLED'))"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"invoices_status_check_2eafa38f\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "invoices_status_check_2eafa38f",
+          "public",
+          "\"public\".\"invoices\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "checkConstraint.payments.payments_status_check_c6b33104",
+    "label": "Add check constraint \"payments_status_check_c6b33104\" on \"payments\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "checkConstraint",
+        "name": "payments_status_check_c6b33104",
+        "table": "payments"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"payments_status_check_c6b33104\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "payments_status_check_c6b33104",
+          "public",
+          "\"public\".\"payments\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add check constraint \"payments_status_check_c6b33104\"",
+        "sql": "ALTER TABLE \"public\".\"payments\" ADD CONSTRAINT \"payments_status_check_c6b33104\" CHECK (\"status\" IN ('PENDING', 'SUCCESSFUL', 'REVERSED', 'FAILED'))"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"payments_status_check_c6b33104\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "payments_status_check_c6b33104",
+          "public",
+          "\"public\".\"payments\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "checkConstraint.properties.properties_status_check_1bcc6c54",
+    "label": "Add check constraint \"properties_status_check_1bcc6c54\" on \"properties\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "checkConstraint",
+        "name": "properties_status_check_1bcc6c54",
+        "table": "properties"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"properties_status_check_1bcc6c54\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "properties_status_check_1bcc6c54",
+          "public",
+          "\"public\".\"properties\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add check constraint \"properties_status_check_1bcc6c54\"",
+        "sql": "ALTER TABLE \"public\".\"properties\" ADD CONSTRAINT \"properties_status_check_1bcc6c54\" CHECK (\"status\" IN ('ACTIVE', 'INACTIVE', 'MAINTENANCE', 'ARCHIVED'))"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"properties_status_check_1bcc6c54\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "properties_status_check_1bcc6c54",
+          "public",
+          "\"public\".\"properties\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unique.property_charges.property_charges_name_key",
+    "label": "Add unique constraint on \"property_charges\" (name)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "property_charges_name_key",
+        "table": "property_charges"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"property_charges_name_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "property_charges_name_key",
+          "public",
+          "\"public\".\"property_charges\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"property_charges_name_key\"",
+        "sql": "ALTER TABLE \"public\".\"property_charges\" ADD CONSTRAINT \"property_charges_name_key\" UNIQUE (\"name\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"property_charges_name_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "property_charges_name_key",
+          "public",
+          "\"public\".\"property_charges\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "checkConstraint.tenancies.tenancies_status_check_4654e3fb",
+    "label": "Add check constraint \"tenancies_status_check_4654e3fb\" on \"tenancies\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "checkConstraint",
+        "name": "tenancies_status_check_4654e3fb",
+        "table": "tenancies"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"tenancies_status_check_4654e3fb\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "tenancies_status_check_4654e3fb",
+          "public",
+          "\"public\".\"tenancies\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add check constraint \"tenancies_status_check_4654e3fb\"",
+        "sql": "ALTER TABLE \"public\".\"tenancies\" ADD CONSTRAINT \"tenancies_status_check_4654e3fb\" CHECK (\"status\" IN ('ACTIVE', 'ENDED'))"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"tenancies_status_check_4654e3fb\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "tenancies_status_check_4654e3fb",
+          "public",
+          "\"public\".\"tenancies\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "checkConstraint.tenants.tenants_status_check_4654e3fb",
+    "label": "Add check constraint \"tenants_status_check_4654e3fb\" on \"tenants\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "checkConstraint",
+        "name": "tenants_status_check_4654e3fb",
+        "table": "tenants"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"tenants_status_check_4654e3fb\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "tenants_status_check_4654e3fb",
+          "public",
+          "\"public\".\"tenants\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add check constraint \"tenants_status_check_4654e3fb\"",
+        "sql": "ALTER TABLE \"public\".\"tenants\" ADD CONSTRAINT \"tenants_status_check_4654e3fb\" CHECK (\"status\" IN ('ACTIVE', 'ENDED'))"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"tenants_status_check_4654e3fb\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "tenants_status_check_4654e3fb",
+          "public",
+          "\"public\".\"tenants\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "checkConstraint.users.users_status_check_a50a312b",
+    "label": "Add check constraint \"users_status_check_a50a312b\" on \"users\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "checkConstraint",
+        "name": "users_status_check_a50a312b",
+        "table": "users"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"users_status_check_a50a312b\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "users_status_check_a50a312b",
+          "public",
+          "\"public\".\"users\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add check constraint \"users_status_check_a50a312b\"",
+        "sql": "ALTER TABLE \"public\".\"users\" ADD CONSTRAINT \"users_status_check_a50a312b\" CHECK (\"status\" IN ('ACTIVE', 'INACTIVE', 'BANNED'))"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"users_status_check_a50a312b\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "users_status_check_a50a312b",
+          "public",
+          "\"public\".\"users\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.cities.cities_country_id_idx_30642658",
+    "label": "Create index \"cities_country_id_idx_30642658\" on \"cities\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "cities_country_id_idx_30642658",
+        "table": "cities"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"cities_country_id_idx_30642658\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"cities_country_id_idx_30642658\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"cities_country_id_idx_30642658\"",
+        "sql": "CREATE INDEX \"cities_country_id_idx_30642658\" ON \"public\".\"cities\" (\"country_id\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"cities_country_id_idx_30642658\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"cities_country_id_idx_30642658\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.oauth_accounts.oauth_accounts_provider_provider_account_id_idx_c388af0e",
+    "label": "Create index \"oauth_accounts_provider_provider_account_id_idx_c388af0e\" on \"oauth_accounts\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "oauth_accounts_provider_provider_account_id_idx_c388af0e",
+        "table": "oauth_accounts"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"oauth_accounts_provider_provider_account_id_idx_c388af0e\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"oauth_accounts_provider_provider_account_id_idx_c388af0e\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"oauth_accounts_provider_provider_account_id_idx_c388af0e\"",
+        "sql": "CREATE INDEX \"oauth_accounts_provider_provider_account_id_idx_c388af0e\" ON \"public\".\"oauth_accounts\" (\"provider\", \"provider_account_id\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"oauth_accounts_provider_provider_account_id_idx_c388af0e\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"oauth_accounts_provider_provider_account_id_idx_c388af0e\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.oauth_accounts.oauth_accounts_user_id_idx_6c952402",
+    "label": "Create index \"oauth_accounts_user_id_idx_6c952402\" on \"oauth_accounts\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "oauth_accounts_user_id_idx_6c952402",
+        "table": "oauth_accounts"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"oauth_accounts_user_id_idx_6c952402\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"oauth_accounts_user_id_idx_6c952402\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"oauth_accounts_user_id_idx_6c952402\"",
+        "sql": "CREATE INDEX \"oauth_accounts_user_id_idx_6c952402\" ON \"public\".\"oauth_accounts\" (\"user_id\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"oauth_accounts_user_id_idx_6c952402\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"oauth_accounts_user_id_idx_6c952402\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.properties.properties_country_id_idx_30642658",
+    "label": "Create index \"properties_country_id_idx_30642658\" on \"properties\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "properties_country_id_idx_30642658",
+        "table": "properties"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"properties_country_id_idx_30642658\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"properties_country_id_idx_30642658\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"properties_country_id_idx_30642658\"",
+        "sql": "CREATE INDEX \"properties_country_id_idx_30642658\" ON \"public\".\"properties\" (\"country_id\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"properties_country_id_idx_30642658\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"properties_country_id_idx_30642658\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.property_unit_charges.property_unit_charges_property_charge_id_idx_aad71636",
+    "label": "Create index \"property_unit_charges_property_charge_id_idx_aad71636\" on \"property_unit_charges\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "property_unit_charges_property_charge_id_idx_aad71636",
+        "table": "property_unit_charges"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"property_unit_charges_property_charge_id_idx_aad71636\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"property_unit_charges_property_charge_id_idx_aad71636\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"property_unit_charges_property_charge_id_idx_aad71636\"",
+        "sql": "CREATE INDEX \"property_unit_charges_property_charge_id_idx_aad71636\" ON \"public\".\"property_unit_charges\" (\"property_charge_id\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"property_unit_charges_property_charge_id_idx_aad71636\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"property_unit_charges_property_charge_id_idx_aad71636\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.property_unit_charges.property_unit_charges_property_unit_id_idx_2895e80f",
+    "label": "Create index \"property_unit_charges_property_unit_id_idx_2895e80f\" on \"property_unit_charges\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "property_unit_charges_property_unit_id_idx_2895e80f",
+        "table": "property_unit_charges"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"property_unit_charges_property_unit_id_idx_2895e80f\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"property_unit_charges_property_unit_id_idx_2895e80f\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"property_unit_charges_property_unit_id_idx_2895e80f\"",
+        "sql": "CREATE INDEX \"property_unit_charges_property_unit_id_idx_2895e80f\" ON \"public\".\"property_unit_charges\" (\"property_unit_id\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"property_unit_charges_property_unit_id_idx_2895e80f\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"property_unit_charges_property_unit_id_idx_2895e80f\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.property_units.property_units_manager_id_idx_c3dee277",
+    "label": "Create index \"property_units_manager_id_idx_c3dee277\" on \"property_units\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "property_units_manager_id_idx_c3dee277",
+        "table": "property_units"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"property_units_manager_id_idx_c3dee277\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"property_units_manager_id_idx_c3dee277\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"property_units_manager_id_idx_c3dee277\"",
+        "sql": "CREATE INDEX \"property_units_manager_id_idx_c3dee277\" ON \"public\".\"property_units\" (\"manager_id\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"property_units_manager_id_idx_c3dee277\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"property_units_manager_id_idx_c3dee277\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.property_units.property_units_property_id_idx_9fa9619b",
+    "label": "Create index \"property_units_property_id_idx_9fa9619b\" on \"property_units\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "property_units_property_id_idx_9fa9619b",
+        "table": "property_units"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"property_units_property_id_idx_9fa9619b\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"property_units_property_id_idx_9fa9619b\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"property_units_property_id_idx_9fa9619b\"",
+        "sql": "CREATE INDEX \"property_units_property_id_idx_9fa9619b\" ON \"public\".\"property_units\" (\"property_id\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"property_units_property_id_idx_9fa9619b\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"property_units_property_id_idx_9fa9619b\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.property_units.property_units_property_id_status_idx_7a5ca777",
+    "label": "Create index \"property_units_property_id_status_idx_7a5ca777\" on \"property_units\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "property_units_property_id_status_idx_7a5ca777",
+        "table": "property_units"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"property_units_property_id_status_idx_7a5ca777\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"property_units_property_id_status_idx_7a5ca777\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"property_units_property_id_status_idx_7a5ca777\"",
+        "sql": "CREATE INDEX \"property_units_property_id_status_idx_7a5ca777\" ON \"public\".\"property_units\" (\"property_id\", \"status\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"property_units_property_id_status_idx_7a5ca777\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"property_units_property_id_status_idx_7a5ca777\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.tenancies.tenancies_property_unit_id_idx_2895e80f",
+    "label": "Create index \"tenancies_property_unit_id_idx_2895e80f\" on \"tenancies\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "tenancies_property_unit_id_idx_2895e80f",
+        "table": "tenancies"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"tenancies_property_unit_id_idx_2895e80f\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"tenancies_property_unit_id_idx_2895e80f\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"tenancies_property_unit_id_idx_2895e80f\"",
+        "sql": "CREATE INDEX \"tenancies_property_unit_id_idx_2895e80f\" ON \"public\".\"tenancies\" (\"property_unit_id\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"tenancies_property_unit_id_idx_2895e80f\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"tenancies_property_unit_id_idx_2895e80f\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.cities.cities_country_id_fkey",
+    "label": "Add foreign key \"cities_country_id_fkey\" on \"cities\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "cities_country_id_fkey",
+        "table": "cities"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"cities_country_id_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "cities_country_id_fkey",
+          "public",
+          "\"public\".\"cities\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"cities_country_id_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"cities\"\nADD CONSTRAINT \"cities_country_id_fkey\"\nFOREIGN KEY (\"country_id\")\nREFERENCES \"public\".\"countries\" (\"id\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"cities_country_id_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "cities_country_id_fkey",
+          "public",
+          "\"public\".\"cities\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.oauth_accounts.oauth_accounts_user_id_fkey",
+    "label": "Add foreign key \"oauth_accounts_user_id_fkey\" on \"oauth_accounts\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "oauth_accounts_user_id_fkey",
+        "table": "oauth_accounts"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"oauth_accounts_user_id_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "oauth_accounts_user_id_fkey",
+          "public",
+          "\"public\".\"oauth_accounts\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"oauth_accounts_user_id_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"oauth_accounts\"\nADD CONSTRAINT \"oauth_accounts_user_id_fkey\"\nFOREIGN KEY (\"user_id\")\nREFERENCES \"public\".\"users\" (\"id\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"oauth_accounts_user_id_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "oauth_accounts_user_id_fkey",
+          "public",
+          "\"public\".\"oauth_accounts\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.properties.properties_country_id_fkey",
+    "label": "Add foreign key \"properties_country_id_fkey\" on \"properties\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "properties_country_id_fkey",
+        "table": "properties"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"properties_country_id_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "properties_country_id_fkey",
+          "public",
+          "\"public\".\"properties\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"properties_country_id_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"properties\"\nADD CONSTRAINT \"properties_country_id_fkey\"\nFOREIGN KEY (\"country_id\")\nREFERENCES \"public\".\"countries\" (\"id\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"properties_country_id_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "properties_country_id_fkey",
+          "public",
+          "\"public\".\"properties\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.property_unit_charges.property_unit_charges_property_unit_id_fkey",
+    "label": "Add foreign key \"property_unit_charges_property_unit_id_fkey\" on \"property_unit_charges\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "property_unit_charges_property_unit_id_fkey",
+        "table": "property_unit_charges"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"property_unit_charges_property_unit_id_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "property_unit_charges_property_unit_id_fkey",
+          "public",
+          "\"public\".\"property_unit_charges\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"property_unit_charges_property_unit_id_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"property_unit_charges\"\nADD CONSTRAINT \"property_unit_charges_property_unit_id_fkey\"\nFOREIGN KEY (\"property_unit_id\")\nREFERENCES \"public\".\"property_units\" (\"id\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"property_unit_charges_property_unit_id_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "property_unit_charges_property_unit_id_fkey",
+          "public",
+          "\"public\".\"property_unit_charges\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.property_unit_charges.property_unit_charges_property_charge_id_fkey",
+    "label": "Add foreign key \"property_unit_charges_property_charge_id_fkey\" on \"property_unit_charges\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "property_unit_charges_property_charge_id_fkey",
+        "table": "property_unit_charges"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"property_unit_charges_property_charge_id_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "property_unit_charges_property_charge_id_fkey",
+          "public",
+          "\"public\".\"property_unit_charges\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"property_unit_charges_property_charge_id_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"property_unit_charges\"\nADD CONSTRAINT \"property_unit_charges_property_charge_id_fkey\"\nFOREIGN KEY (\"property_charge_id\")\nREFERENCES \"public\".\"property_charges\" (\"id\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"property_unit_charges_property_charge_id_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "property_unit_charges_property_charge_id_fkey",
+          "public",
+          "\"public\".\"property_unit_charges\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.property_units.property_units_manager_id_fkey",
+    "label": "Add foreign key \"property_units_manager_id_fkey\" on \"property_units\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "property_units_manager_id_fkey",
+        "table": "property_units"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"property_units_manager_id_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "property_units_manager_id_fkey",
+          "public",
+          "\"public\".\"property_units\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"property_units_manager_id_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"property_units\"\nADD CONSTRAINT \"property_units_manager_id_fkey\"\nFOREIGN KEY (\"manager_id\")\nREFERENCES \"public\".\"users\" (\"id\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"property_units_manager_id_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "property_units_manager_id_fkey",
+          "public",
+          "\"public\".\"property_units\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.property_units.property_units_property_id_fkey",
+    "label": "Add foreign key \"property_units_property_id_fkey\" on \"property_units\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "property_units_property_id_fkey",
+        "table": "property_units"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"property_units_property_id_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "property_units_property_id_fkey",
+          "public",
+          "\"public\".\"property_units\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"property_units_property_id_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"property_units\"\nADD CONSTRAINT \"property_units_property_id_fkey\"\nFOREIGN KEY (\"property_id\")\nREFERENCES \"public\".\"properties\" (\"id\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"property_units_property_id_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "property_units_property_id_fkey",
+          "public",
+          "\"public\".\"property_units\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.tenancies.tenancies_property_unit_id_fkey",
+    "label": "Add foreign key \"tenancies_property_unit_id_fkey\" on \"tenancies\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "tenancies_property_unit_id_fkey",
+        "table": "tenancies"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"tenancies_property_unit_id_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "tenancies_property_unit_id_fkey",
+          "public",
+          "\"public\".\"tenancies\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"tenancies_property_unit_id_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"tenancies\"\nADD CONSTRAINT \"tenancies_property_unit_id_fkey\"\nFOREIGN KEY (\"property_unit_id\")\nREFERENCES \"public\".\"property_units\" (\"id\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"tenancies_property_unit_id_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "tenancies_property_unit_id_fkey",
+          "public",
+          "\"public\".\"tenancies\""
+        ]
+      }
+    ]
+  }
+]

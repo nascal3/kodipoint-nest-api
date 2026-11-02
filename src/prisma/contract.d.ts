@@ -2455,15 +2455,15 @@ type ContractBase = Omit<
               uniques: readonly [];
               indexes: readonly [
                 {
-                  readonly name: 'property_unit_charges_property_charge_id_idx_aad71636';
-                  readonly prefix: 'property_unit_charges_property_charge_id_idx';
-                  readonly columns: readonly ['property_charge_id'];
-                  readonly unique: false;
-                },
-                {
                   readonly name: 'property_unit_charges_property_unit_id_idx_2895e80f';
                   readonly prefix: 'property_unit_charges_property_unit_id_idx';
                   readonly columns: readonly ['property_unit_id'];
+                  readonly unique: false;
+                },
+                {
+                  readonly name: 'property_unit_charges_property_charge_id_idx_aad71636';
+                  readonly prefix: 'property_unit_charges_property_charge_id_idx';
+                  readonly columns: readonly ['property_charge_id'];
                   readonly unique: false;
                 },
               ];

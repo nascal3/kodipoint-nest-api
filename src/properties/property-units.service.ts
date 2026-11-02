@@ -146,10 +146,40 @@ export class PropertyUnitsService {
       })),
     ]);
 
+    const unitIds = units.map((unit) => unit.id);
+
+    const unitCharges = await this.prisma.db.orm.public.PropertyUnitCharge
+      .where((charge) => charge.propertyUnitId.in(unitIds))
+      .all();
+
+    const chargesByUnitId = unitCharges.reduce((acc, charge) => {
+      if (!acc[charge.propertyUnitId]) {
+        acc[charge.propertyUnitId] = [];
+      }
+      acc[charge.propertyUnitId].push(charge.propertyChargeId);
+      return acc;
+    }, {} as Record<string, string[]>);
+
+    const unitsWithCharges = await Promise.all(
+      units.map(async (unit) => {
+        const chargeIds = chargesByUnitId[unit.id] || [];
+        const charges =
+          chargeIds.length > 0
+            ? await this.prisma.db.orm.public.PropertyCharge.where(
+                (charge) => charge.id.in(chargeIds),
+              ).all()
+            : [];
+        return {
+          ...unit,
+          charges,
+        };
+      }),
+    );
+
     const totalPages = Math.ceil(Number(totalCount.total) / limit);
 
     return {
-      data: units,
+      data: unitsWithCharges,
       pagination: {
         page,
         limit,

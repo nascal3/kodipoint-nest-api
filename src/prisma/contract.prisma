@@ -187,6 +187,7 @@ model PropertyUnitCharge {
   propertyCharge PropertyCharge @relation(fields: [propertyChargeId], references: [id])
 
   @@id([propertyUnitId, propertyChargeId])
+  @@index([propertyUnitId])
   @@index([propertyChargeId])
   @@map("property_unit_charges")
 }
