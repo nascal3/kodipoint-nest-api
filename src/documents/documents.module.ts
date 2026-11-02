@@ -9,19 +9,19 @@ import { DocumentsService } from './documents.service';
 import { PdfService } from './pdf/pdf.service';
 import { EmailService } from './email/email.service';
 import { SmsService } from './sms/sms.service';
-import {AuthModule} from "@/auth/auth.module";
+import { AuthModule } from '@/auth/auth.module';
 import { RabbitMqModule } from '@/queues/rabbitmq.module';
 
 @Module({
-    imports: [
-        AuthModule,
-        DatabaseModule,
-        InvoicesModule,
-        ReceiptsModule,
-        RabbitMqModule,
-    ],
-    controllers: [DocumentsController],
-    providers: [DocumentsService, PdfService, EmailService, SmsService],
-    exports: [DocumentsService, EmailService, SmsService],
+  imports: [
+    AuthModule,
+    DatabaseModule,
+    InvoicesModule,
+    ReceiptsModule,
+    RabbitMqModule,
+  ],
+  controllers: [DocumentsController],
+  providers: [DocumentsService, PdfService, EmailService, SmsService],
+  exports: [DocumentsService, EmailService, SmsService],
 })
 export class DocumentsModule {}

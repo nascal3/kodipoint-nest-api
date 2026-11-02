@@ -1,116 +1,95 @@
 import {
-    ConflictException,
-    Injectable,
-    NotFoundException,
+  ConflictException,
+  Injectable,
+  NotFoundException,
 } from '@nestjs/common';
 
 import { DatabaseService } from '@/database/database.service';
-import {AssignTenantDto, TenancyStatus} from './dto/assign-tenant.dto';
+import { AssignTenantDto, TenancyStatus } from './dto/assign-tenant.dto';
 
 @Injectable()
 export class TenanciesService {
-    constructor(private readonly prisma: DatabaseService) {}
+  constructor(private readonly prisma: DatabaseService) {}
 
-    async findAll(managerId: string) {
-        return this.prisma.db.orm.public.Tenancy
-            .where({ managerId })
-            .all();
+  async findAll(managerId: string) {
+    return this.prisma.db.orm.public.Tenancy.where({ managerId }).all();
+  }
+
+  async findOne(managerId: string, tenancyId: string) {
+    const tenancy = await this.prisma.db.orm.public.Tenancy.where({
+      id: tenancyId,
+      managerId,
+    }).first();
+
+    if (!tenancy) {
+      throw new NotFoundException('Tenancy not found');
     }
 
-    async findOne(
-        managerId: string,
-        tenancyId: string,
-    ) {
-        const tenancy = await this.prisma.db.orm.public.Tenancy
-            .where({
-                id: tenancyId,
-                managerId,
-            })
-            .first();
+    return tenancy;
+  }
 
-        if (!tenancy) {
-            throw new NotFoundException('Tenancy not found');
-        }
+  async assign(managerId: string, dto: AssignTenantDto) {
+    const property = await this.prisma.db.orm.public.Property.where({
+      id: dto.propertyId,
+      managerId,
+    }).first();
 
-        return tenancy;
+    if (!property) {
+      throw new NotFoundException('Property not found');
     }
 
-    async assign(managerId: string, dto: AssignTenantDto) {
-        const property = await this.prisma.db.orm.public.Property
-            .where({
-                id: dto.propertyId,
-                managerId,
-            })
-            .first();
+    const tenant = await this.prisma.db.orm.public.Tenant.where({
+      id: dto.tenantId,
+      managerId,
+    }).first();
 
-        if (!property) {
-            throw new NotFoundException('Property not found');
-        }
-
-        const tenant = await this.prisma.db.orm.public.Tenant
-            .where({
-                id: dto.tenantId,
-                managerId,
-            })
-            .first();
-
-        if (!tenant) {
-            throw new NotFoundException('Tenant not found');
-        }
-
-        const existing = await this.prisma.db.orm.public.Tenancy
-            .where({
-                managerId,
-                propertyId: dto.propertyId,
-                tenantId: dto.tenantId,
-                status: TenancyStatus.ACTIVE,
-            })
-            .first();
-
-        if (existing) {
-            throw new ConflictException(
-                'Tenant is already assigned to this property',
-            );
-        }
-
-        return this.prisma.db.orm.public.Tenancy.create({
-            managerId,
-            propertyId: dto.propertyId,
-            propertyUnit: dto.propertyUnit,
-            tenantId: dto.tenantId,
-            startDate: dto.startDate,
-            monthlyRent: dto.monthlyRent?.toString() ?? property.monthlyRent,
-            status: TenancyStatus.ACTIVE,
-            assignedAt: new Date(),
-        });
+    if (!tenant) {
+      throw new NotFoundException('Tenant not found');
     }
 
-    async unassign(
-        managerId: string,
-        tenancyId: string,
-        endDate: Date,
-    ) {
-        const tenancy = await this.prisma.db.orm.public.Tenancy
-            .where({
-                id: tenancyId,
-                managerId,
-                status: TenancyStatus.ACTIVE,
-            })
-            .first();
+    const existing = await this.prisma.db.orm.public.Tenancy.where({
+      managerId,
+      propertyId: dto.propertyId,
+      tenantId: dto.tenantId,
+      status: TenancyStatus.ACTIVE,
+    }).first();
 
-        if (!tenancy) {
-            throw new NotFoundException('Active tenancy not found');
-        }
-
-        return this.prisma.db.orm.public.Tenancy
-            .where({
-                id: tenancyId,
-                managerId,
-            })
-            .update({
-                status: TenancyStatus.ENDED,
-                endDate,
-                unassignedAt: new Date(),
-            });
+    if (existing) {
+      throw new ConflictException(
+        'Tenant is already assigned to this property',
+      );
     }
+
+    return this.prisma.db.orm.public.Tenancy.create({
+      managerId,
+      propertyId: dto.propertyId,
+      propertyUnit: dto.propertyUnit,
+      tenantId: dto.tenantId,
+      startDate: dto.startDate,
+      monthlyRent: dto.monthlyRent?.toString() ?? property.monthlyRent,
+      status: TenancyStatus.ACTIVE,
+      assignedAt: new Date(),
+    });
+  }
+
+  async unassign(managerId: string, tenancyId: string, endDate: Date) {
+    const tenancy = await this.prisma.db.orm.public.Tenancy.where({
+      id: tenancyId,
+      managerId,
+      status: TenancyStatus.ACTIVE,
+    }).first();
+
+    if (!tenancy) {
+      throw new NotFoundException('Active tenancy not found');
+    }
+
+    return this.prisma.db.orm.public.Tenancy.where({
+      id: tenancyId,
+      managerId,
+    }).update({
+      status: TenancyStatus.ENDED,
+      endDate,
+      unassignedAt: new Date(),
+    });
+  }
 }

@@ -1,10 +1,19 @@
-import {Body, Controller, Get, Post, Req, Res, UnauthorizedException, UseGuards} from "@nestjs/common";
+import {
+  Body,
+  Controller,
+  Get,
+  Post,
+  Req,
+  Res,
+  UnauthorizedException,
+  UseGuards,
+} from '@nestjs/common';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { GoogleOAuthGuard } from '@/auth/guards/google-oauth.guard';
-import {AuthService} from "@/auth/auth.service";
-import {RegisterDto} from "@/auth/dto/register.dto";
-import {LoginDto} from "@/auth/dto/login.dto";
-import {ConfigService} from "@nestjs/config";
+import { AuthService } from '@/auth/auth.service';
+import { RegisterDto } from '@/auth/dto/register.dto';
+import { LoginDto } from '@/auth/dto/login.dto';
+import { ConfigService } from '@nestjs/config';
 import type { Request, Response } from 'express';
 
 interface GoogleAuthenticatedUser {
@@ -23,7 +32,7 @@ interface GoogleAuthenticatedUser {
 export class AuthController {
   constructor(
     private readonly authService: AuthService,
-    private readonly configService: ConfigService
+    private readonly configService: ConfigService,
   ) {}
 
   @Post('register')
@@ -47,7 +56,9 @@ export class AuthController {
 
   @Get('google/redirect')
   @UseGuards(GoogleOAuthGuard)
-  @ApiOperation({ summary: 'Handle Google OAuth callback and redirect to frontend' })
+  @ApiOperation({
+    summary: 'Handle Google OAuth callback and redirect to frontend',
+  })
   async googleCallback(
     @Req()
     req: Request & { user: GoogleAuthenticatedUser },
@@ -55,19 +66,13 @@ export class AuthController {
     res: Response,
   ) {
     if (!req.user) {
-      throw new UnauthorizedException(
-        'Google authentication failed',
-      );
+      throw new UnauthorizedException('Google authentication failed');
     }
 
     // Generate your application's JWT for the authenticated user.
-    const result = await this.authService.loginWithGoogle(
-      req.user,
-    );
+    const result = await this.authService.loginWithGoogle(req.user);
 
-    const frontendUrl = this.configService.getOrThrow<string>(
-      'FRONTEND_URL',
-    );
+    const frontendUrl = this.configService.getOrThrow<string>('FRONTEND_URL');
 
     // Redirect to your frontend after successful authentication.
     // http://localhost:4200/auth/callback?accessToken=YOUR_TOKEN&user={"firstName":"John","lastName":"Doe","email":"john@example.com"}

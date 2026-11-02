@@ -563,10 +563,7 @@ export class ReportsService {
     };
   }
 
-  async getProjectedRentReport(
-    managerId: string,
-    dto: ProjectedRentReportDto,
-  ) {
+  async getProjectedRentReport(managerId: string, dto: ProjectedRentReportDto) {
     const tenancies = await this.prisma.db.orm.public.Tenancy.where((tenancy) =>
       and(
         tenancy.managerId.eq(managerId),
@@ -599,7 +596,9 @@ export class ReportsService {
     const properties = await this.prisma.db.orm.public.Property.where((p) =>
       and(
         p.managerId.eq(managerId),
-        ...(dto.propertyId ? [p.id.eq(dto.propertyId)] : [p.id.in(propertyIds)]),
+        ...(dto.propertyId
+          ? [p.id.eq(dto.propertyId)]
+          : [p.id.in(propertyIds)]),
       ),
     ).all();
 
@@ -610,7 +609,9 @@ export class ReportsService {
 
     const totalPotentialRent = properties.reduce(
       (sum, property) =>
-        sum.plus(new Decimal(String(property.monthlyRent)).mul(property.unitCount)),
+        sum.plus(
+          new Decimal(String(property.monthlyRent)).mul(property.unitCount),
+        ),
       new Decimal(0),
     );
 

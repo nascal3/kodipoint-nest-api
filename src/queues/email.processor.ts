@@ -27,7 +27,7 @@ export class EmailProcessor {
 
     try {
       this.logger.log(`Processing email to ${data.to}`);
-      
+
       if (data.attachment) {
         await this.emailService.sendWithAttachment({
           to: data.to,
@@ -46,15 +46,16 @@ export class EmailProcessor {
           html: data.html,
         });
       }
-      
+
       this.logger.log(`Email sent successfully to ${data.to}`);
-      
+
       // Acknowledge the message
       channel.ack(originalMsg);
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : String(error);
+      const errorMessage =
+        error instanceof Error ? error.message : String(error);
       this.logger.error(`Failed to send email to ${data.to}: ${errorMessage}`);
-      
+
       // Negative acknowledge with requeue
       channel.nack(originalMsg, false, true);
     }

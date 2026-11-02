@@ -20,21 +20,22 @@ export class SmsProcessor {
 
     try {
       this.logger.log(`Processing SMS to ${data.to}`);
-      
+
       await this.smsService.sendSms({
         to: data.to,
         message: data.message,
         from: data.from,
       });
-      
+
       this.logger.log(`SMS sent successfully to ${data.to}`);
-      
+
       // Acknowledge the message
       channel.ack(originalMsg);
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : String(error);
+      const errorMessage =
+        error instanceof Error ? error.message : String(error);
       this.logger.error(`Failed to send SMS to ${data.to}: ${errorMessage}`);
-      
+
       // Negative acknowledge with requeue
       channel.nack(originalMsg, false, true);
     }

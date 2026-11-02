@@ -1,72 +1,66 @@
 import { ApiProperty } from '@nestjs/swagger';
-import {
-    IsEmail,
-    IsPhoneNumber,
-    IsString,
-    MinLength,
-} from 'class-validator';
+import { IsEmail, IsPhoneNumber, IsString, MinLength } from 'class-validator';
 
 export class UpdateProfileDto {
-    @ApiProperty({
-        description: 'The first name of the user',
-        example: 'John',
-    })
-    @IsString()
-    @MinLength(1)
-    firstName: string;
+  @ApiProperty({
+    description: 'The first name of the user',
+    example: 'John',
+  })
+  @IsString()
+  @MinLength(1)
+  firstName: string;
 
+  @ApiProperty({
+    description: 'The last name of the user',
+    example: 'Doe',
+  })
+  @IsString()
+  @MinLength(1)
+  lastName: string;
 
-    @ApiProperty({
-        description: 'The last name of the user',
-        example: 'Doe',
-    })
-    @IsString()
-    @MinLength(1)
-    lastName: string;
+  @ApiProperty({
+    description: 'The email of the user',
+    example: 'john.doe@example.com',
+  })
+  @IsEmail()
+  email: string;
 
-    @ApiProperty({
-        description: 'The email of the user',
-        example: 'john.doe@example.com',
-    })
-    @IsEmail()
-    email: string;
+  @ApiProperty({
+    description: 'The address of the user/ manager',
+    example: 'P.O Box 12345 00400 Kiambu',
+  })
+  @IsString()
+  address: string;
 
+  @ApiProperty({
+    description: 'The phone number of the user',
+    example: '+254728762763',
+  })
+  @IsPhoneNumber()
+  phone: string;
 
-    @ApiProperty({
-        description: 'The address of the user/ manager',
-        example: 'P.O Box 12345 00400 Kiambu'
-    })
-    @IsString()
-    address: string;
+  @ApiProperty({
+    description: 'The billing address that will show on the invoice/receipt',
+    example: 'P.O Box 12345 00400 Kiambu',
+    required: false,
+  })
+  @IsString()
+  billingAddress: string;
 
-    @ApiProperty({
-        description: 'The phone number of the user',
-        example: '+254728762763',
-    })
-    @IsPhoneNumber()
-    phone: string;
+  @ApiProperty({
+    description: 'The billing email that will show on the invoice/receipt',
+    example: 'john.doe@example.com',
+    required: false,
+  })
+  @IsString()
+  billingEmail: string;
 
-    @ApiProperty({
-        description: 'The billing address that will show on the invoice/receipt',
-        example: 'P.O Box 12345 00400 Kiambu',
-        required: false,
-    })
-    @IsString()
-    billingAddress: string;
-
-    @ApiProperty({
-        description: 'The billing email that will show on the invoice/receipt',
-        example: 'john.doe@example.com',
-        required: false,
-    })
-    @IsString()
-    billingEmail: string;
-
-    @ApiProperty({
-        description: 'The organization/agency name that will show on the invoice/receipt',
-        example: 'Kodipoint Agency',
-        required: false,
-    })
-    @IsString()
-    organization: string;
+  @ApiProperty({
+    description:
+      'The organization/agency name that will show on the invoice/receipt',
+    example: 'Kodipoint Agency',
+    required: false,
+  })
+  @IsString()
+  organization: string;
 }

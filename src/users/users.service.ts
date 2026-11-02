@@ -1,204 +1,163 @@
 import {
-    BadRequestException,
-    ConflictException,
-    Injectable,
-    NotFoundException,
-    UnauthorizedException,
+  BadRequestException,
+  ConflictException,
+  Injectable,
+  NotFoundException,
+  UnauthorizedException,
 } from '@nestjs/common';
 import * as argon2 from 'argon2';
 
 import { DatabaseService } from '@/database/database.service';
 import { UpdateProfileDto } from './dto/update-profile.dto';
-import {Temporal} from "@js-temporal/polyfill";
+import { Temporal } from '@js-temporal/polyfill';
 
 @Injectable()
 export class UsersService {
-    constructor(
-        private readonly prisma: DatabaseService,
-    ) {}
+  constructor(private readonly prisma: DatabaseService) {}
 
-    /**
-     * Get the authenticated manager's profile.
-     */
-    async getProfile(managerId: string) {
-        const user =
-            await this.prisma.db.orm.public.User
-                .where({
-                    id: managerId,
-                })
-                .first();
+  /**
+   * Get the authenticated manager's profile.
+   */
+  async getProfile(managerId: string) {
+    const user = await this.prisma.db.orm.public.User.where({
+      id: managerId,
+    }).first();
 
-        if (!user) {
-            throw new NotFoundException(
-                'User profile not found',
-            );
-        }
-
-        return this.toSafeUser(user);
+    if (!user) {
+      throw new NotFoundException('User profile not found');
     }
 
-    /**
-     * Update the authenticated manager's profile.
-     */
-    async updateProfile(managerId: string, dto: UpdateProfileDto,) {
-        const currentUser =
-            await this.prisma.db.orm.public.User
-                .where({
-                    id: managerId,
-                })
-                .first();
+    return this.toSafeUser(user);
+  }
 
-        if (!currentUser) {
-            throw new NotFoundException(
-                'User profile not found',
-            );
-        }
+  /**
+   * Update the authenticated manager's profile.
+   */
+  async updateProfile(managerId: string, dto: UpdateProfileDto) {
+    const currentUser = await this.prisma.db.orm.public.User.where({
+      id: managerId,
+    }).first();
 
-        const updateData: Record<string, unknown> = {};
-
-        if (dto.email !== undefined) {
-            const email = dto.email
-                .trim()
-                .toLowerCase();
-
-            const existingUser =
-                await this.prisma.db.orm.public.User
-                    .where({
-                        email,
-                    })
-                    .first();
-
-            if (
-                existingUser &&
-                existingUser.id !== managerId
-            ) {
-                throw new ConflictException(
-                    'This email is already in use',
-                );
-            }
-
-            updateData.email = email;
-        }
-
-        if (dto.firstName !== undefined) {
-            updateData.firstName = dto.firstName.trim();
-        }
-
-        if (dto.lastName !== undefined) {
-            updateData.lastName = dto.lastName.trim();
-        }
-
-        if (dto.address !== undefined) {
-            updateData.address = dto.address.trim();
-        }
-
-        if (dto.phone !== undefined) {
-            updateData.phone = dto.phone.trim();
-        }
-
-        if (dto.billingAddress !== undefined) {
-            updateData.billingAddress = dto.billingAddress.trim();
-        }
-
-        if (dto.billingEmail !== undefined) {
-            updateData.billingEmail = dto.billingEmail.trim();
-        }
-
-        if (dto.organization !== undefined) {
-            updateData.organization = dto.organization.trim();
-        }
-
-        if (Object.keys(updateData).length === 0) {
-            return this.toSafeUser(currentUser);
-        }
-
-        const updatedUser =
-            await this.prisma.db.orm.public.User
-                .where({
-                    id: managerId,
-                })
-                .update(updateData);
-
-        if (!updatedUser) {
-            throw new NotFoundException(
-                'User profile not found',
-            );
-        }
-
-        return this.toSafeUser(updatedUser);
+    if (!currentUser) {
+      throw new NotFoundException('User profile not found');
     }
 
-    /**
-     * Change the authenticated manager's password.
-     */
-    async changePassword(managerId: string, currentPassword: string, newPassword: string,) {
-        const user =
-            await this.prisma.db.orm.public.User
-                .where({
-                    id: managerId,
-                })
-                .first();
+    const updateData: Record<string, unknown> = {};
 
-        if (!user) {
-            throw new NotFoundException(
-                'User profile not found',
-            );
-        }
+    if (dto.email !== undefined) {
+      const email = dto.email.trim().toLowerCase();
 
-        const passwordMatches =
-            await argon2.verify(
-                user.passwordHash,
-                currentPassword,
-            );
+      const existingUser = await this.prisma.db.orm.public.User.where({
+        email,
+      }).first();
 
-        if (!passwordMatches) {
-            throw new BadRequestException(
-                'Current password is incorrect',
-            );
-        }
+      if (existingUser && existingUser.id !== managerId) {
+        throw new ConflictException('This email is already in use');
+      }
 
-        const passwordHash = await argon2.hash(
-            newPassword,
-        );
-
-        const updatedUser =
-            await this.prisma.db.orm.public.User
-                .where({
-                    id: managerId,
-                })
-                .update({
-                    passwordHash,
-                    passwordUpdatedAt: Temporal.Now.instant(),
-                });
-
-        if (!updatedUser) {
-            throw new NotFoundException(
-                'User profile not found',
-            );
-        }
-
-        return this.toSafeUser(updatedUser);
+      updateData.email = email;
     }
 
-    /**
-     * Deactivate the authenticated manager account.
-     *
-     * Your current User model does not contain a status
-     * field, so this method is intentionally not included.
-     * Add a status field to the contract before enabling
-     * account deactivation.
-     */
-
-    private toSafeUser<
-        T extends {
-            passwordHash: string;
-        },
-    >(user: T) {
-        const {
-            passwordHash: _passwordHash,
-            ...safeUser
-        } = user;
-
-        return safeUser;
+    if (dto.firstName !== undefined) {
+      updateData.firstName = dto.firstName.trim();
     }
+
+    if (dto.lastName !== undefined) {
+      updateData.lastName = dto.lastName.trim();
+    }
+
+    if (dto.address !== undefined) {
+      updateData.address = dto.address.trim();
+    }
+
+    if (dto.phone !== undefined) {
+      updateData.phone = dto.phone.trim();
+    }
+
+    if (dto.billingAddress !== undefined) {
+      updateData.billingAddress = dto.billingAddress.trim();
+    }
+
+    if (dto.billingEmail !== undefined) {
+      updateData.billingEmail = dto.billingEmail.trim();
+    }
+
+    if (dto.organization !== undefined) {
+      updateData.organization = dto.organization.trim();
+    }
+
+    if (Object.keys(updateData).length === 0) {
+      return this.toSafeUser(currentUser);
+    }
+
+    const updatedUser = await this.prisma.db.orm.public.User.where({
+      id: managerId,
+    }).update(updateData);
+
+    if (!updatedUser) {
+      throw new NotFoundException('User profile not found');
+    }
+
+    return this.toSafeUser(updatedUser);
+  }
+
+  /**
+   * Change the authenticated manager's password.
+   */
+  async changePassword(
+    managerId: string,
+    currentPassword: string,
+    newPassword: string,
+  ) {
+    const user = await this.prisma.db.orm.public.User.where({
+      id: managerId,
+    }).first();
+
+    if (!user) {
+      throw new NotFoundException('User profile not found');
+    }
+
+    const passwordMatches = await argon2.verify(
+      user.passwordHash,
+      currentPassword,
+    );
+
+    if (!passwordMatches) {
+      throw new BadRequestException('Current password is incorrect');
+    }
+
+    const passwordHash = await argon2.hash(newPassword);
+
+    const updatedUser = await this.prisma.db.orm.public.User.where({
+      id: managerId,
+    }).update({
+      passwordHash,
+      passwordUpdatedAt: Temporal.Now.instant(),
+    });
+
+    if (!updatedUser) {
+      throw new NotFoundException('User profile not found');
+    }
+
+    return this.toSafeUser(updatedUser);
+  }
+
+  /**
+   * Deactivate the authenticated manager account.
+   *
+   * Your current User model does not contain a status
+   * field, so this method is intentionally not included.
+   * Add a status field to the contract before enabling
+   * account deactivation.
+   */
+
+  private toSafeUser<
+    T extends {
+      passwordHash: string;
+    },
+  >(user: T) {
+    const { passwordHash: _passwordHash, ...safeUser } = user;
+
+    return safeUser;
+  }
 }

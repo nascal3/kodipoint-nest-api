@@ -1,116 +1,89 @@
 import {
-    ArgumentsHost,
-    Catch,
-    ExceptionFilter,
-    HttpException,
-    HttpStatus,
-    Logger,
+  ArgumentsHost,
+  Catch,
+  ExceptionFilter,
+  HttpException,
+  HttpStatus,
+  Logger,
 } from '@nestjs/common';
 import { Request, Response } from 'express';
 
 type ErrorResponse = {
-    message?: string | string[];
-    error?: string;
-    statusCode?: number;
-    details?: string;
+  message?: string | string[];
+  error?: string;
+  statusCode?: number;
+  details?: string;
 };
 
 @Catch()
-export class HttpExceptionFilter
-    implements ExceptionFilter
-{
-    private readonly logger = new Logger(
-        HttpExceptionFilter.name,
-    );
+export class HttpExceptionFilter implements ExceptionFilter {
+  private readonly logger = new Logger(HttpExceptionFilter.name);
 
-    catch(
-        exception: unknown,
-        host: ArgumentsHost,
-    ): void {
-        const context = host.switchToHttp();
-        const response = context.getResponse<Response>();
-        const request = context.getRequest<Request>();
+  catch(exception: unknown, host: ArgumentsHost): void {
+    const context = host.switchToHttp();
+    const response = context.getResponse<Response>();
+    const request = context.getRequest<Request>();
 
-        const isHttpException =
-            exception instanceof HttpException;
+    const isHttpException = exception instanceof HttpException;
 
-        const status = isHttpException
-            ? exception.getStatus()
-            : HttpStatus.INTERNAL_SERVER_ERROR;
+    const status = isHttpException
+      ? exception.getStatus()
+      : HttpStatus.INTERNAL_SERVER_ERROR;
 
-        const exceptionResponse: unknown =
-            isHttpException
-                ? exception.getResponse()
-                : null;
+    const exceptionResponse: unknown = isHttpException
+      ? exception.getResponse()
+      : null;
 
-        const normalized =
-            this.normalizeErrorResponse(
-                exceptionResponse,
-            );
+    const normalized = this.normalizeErrorResponse(exceptionResponse);
 
-        if (status >= 500) {
-            this.logger.error(
-                `${request.method} ${request.url}`,
-                exception instanceof Error
-                    ? exception.stack
-                    : String(exception),
-            );
-        }
-
-        response.status(status).json({
-            success: false,
-            statusCode: status,
-            timestamp: new Date().toISOString(),
-            // path: request.url,
-            // method: request.method,
-            message: normalized.message,
-            ...(normalized.error
-                ? { error: normalized.error }
-                : {}),
-            ...(normalized.details
-                ? { details: normalized.details }
-                : process.env.NODE_ENV === 'development' && exception instanceof Error
-                ? { details: exception.message }
-                : {}),
-        });
+    if (status >= 500) {
+      this.logger.error(
+        `${request.method} ${request.url}`,
+        exception instanceof Error ? exception.stack : String(exception),
+      );
     }
 
-    private normalizeErrorResponse(
-        value: unknown,
-    ): {
-        message: string | string[];
-        error?: string;
-        details?: string;
-    } {
-        if (typeof value === 'string') {
-            return {
-                message: value,
-            };
-        }
+    response.status(status).json({
+      success: false,
+      statusCode: status,
+      timestamp: new Date().toISOString(),
+      // path: request.url,
+      // method: request.method,
+      message: normalized.message,
+      ...(normalized.error ? { error: normalized.error } : {}),
+      ...(normalized.details
+        ? { details: normalized.details }
+        : process.env.NODE_ENV === 'development' && exception instanceof Error
+          ? { details: exception.message }
+          : {}),
+    });
+  }
 
-        if (this.isErrorResponse(value)) {
-            return {
-                message: value.message ?? 'Request failed',
-                ...(value.error
-                    ? { error: value.error }
-                    : {}),
-                ...(value.details
-                    ? { details: value.details }
-                    : {}),
-            };
-        }
-
-        return {
-            message: 'Internal server error',
-        };
+  private normalizeErrorResponse(value: unknown): {
+    message: string | string[];
+    error?: string;
+    details?: string;
+  } {
+    if (typeof value === 'string') {
+      return {
+        message: value,
+      };
     }
 
-    private isErrorResponse(
-        value: unknown,
-    ): value is ErrorResponse {
-        return (
-            typeof value === 'object' &&
-            value !== null
-        );
+    if (this.isErrorResponse(value)) {
+      return {
+        message: value.message ?? 'Request failed',
+        ...(value.error ? { error: value.error } : {}),
+        ...(value.details ? { details: value.details } : {}),
+      };
     }
+
+    return {
+      message: 'Internal server error',
+    };
+  }
+
+  private isErrorResponse(value: unknown): value is ErrorResponse {
+    return typeof value === 'object' && value !== null;
+  }
 }
