@@ -1,7 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 
 import { DatabaseService } from '@/database/database.service';
-import { CreateTenantDto } from './dto/create-tenant.dto';
+import {CreateTenantDto, TenancyStatus} from './dto/create-tenant.dto';
 import { UpdateTenantDto } from './dto/update-tenant.dto';
 
 @Injectable()
@@ -18,7 +18,7 @@ export class TenantsService {
       address: dto.address,
       emergencyContactName: dto.emergencyContactName,
       emergencyContactPhone: dto.emergencyContactPhone,
-      status: 'ACTIVE',
+      status: TenancyStatus.ACTIVE,
     });
   }
 
@@ -57,7 +57,7 @@ export class TenantsService {
       id: tenantId,
       managerId,
     }).update({
-      status: 'INACTIVE',
+      status: TenancyStatus.ENDED,
     });
   }
 }

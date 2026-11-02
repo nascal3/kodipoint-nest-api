@@ -76,13 +76,26 @@ export class InvoicesService {
       }
 
       /*
-       * 4. Load active service charges for the property.
+       * 4. Load active service charges assigned to the tenancy's unit.
        */
-      const charges = await tx.orm.public.PropertyCharge.where({
-        managerId,
-        propertyId: property.id,
-        isActive: true,
-      }).all();
+      const unitCharges = tenancy.propertyUnitId
+        ? await tx.orm.public.PropertyUnitCharge.where({
+            propertyUnitId: tenancy.propertyUnitId,
+          }).all()
+        : [];
+      const charges =
+        unitCharges.length > 0
+          ? await tx.orm.public.PropertyCharge.where((charge) =>
+              and(
+                charge.managerId.eq(managerId),
+                charge.propertyId.eq(property.id),
+                charge.isActive.eq(true),
+                charge.id.in(
+                  unitCharges.map((unitCharge) => unitCharge.propertyChargeId),
+                ),
+              ),
+            ).all()
+          : [];
 
       /*
        * 5. Build the normal invoice lines.

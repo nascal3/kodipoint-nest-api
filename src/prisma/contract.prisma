@@ -135,6 +135,7 @@ model PropertyCharge {
   property Property @relation(fields: [propertyId], references: [id])
 
   invoiceItems InvoiceItem[]
+  unitCharges  PropertyUnitCharge[]
 
   @@index([managerId])
   @@index([propertyId])
@@ -148,15 +149,21 @@ enum BillingFrequency {
   BI_ANNUALLY
   ANNUALLY
 }
+enum PropertyUnitStatus {
+  AVAILABLE
+  OCCUPIED
+  MAINTENANCE
+  ARCHIVED
+}
 model PropertyUnit {
-  id               Uuid    @id @default(uuid())
-  managerId        Uuid    @map("manager_id")
-  propertyId       Uuid    @map("property_id")
-  unitNumber       String  @map("unit_number")
-  bedroomCount     Int     @map("bedroom_count")
-  status           String  @default("AVAILABLE")
-  marketRent       Decimal @map("market_rent")
-  billingFrequency BillingFrequency @default(MONTHLY) @map("billing_frequency")
+  id               Uuid               @id @default(uuid())
+  managerId        Uuid               @map("manager_id")
+  propertyId       Uuid               @map("property_id")
+  unitNumber       String             @map("unit_number")
+  bedroomCount     Int                @map("bedroom_count")
+  status           PropertyUnitStatus @default(AVAILABLE)
+  marketRent       Decimal            @map("market_rent")
+  billingFrequency BillingFrequency   @default(MONTHLY) @map("billing_frequency")
 
   createdAt temporal.createdAt() @map("created_at")
   updatedAt temporal.updatedAt() @map("updated_at")
@@ -164,12 +171,25 @@ model PropertyUnit {
   manager  User     @relation(fields: [managerId], references: [id])
   property Property @relation(fields: [propertyId], references: [id])
 
-  tenancies Tenancy[]
+  tenancies   Tenancy[]
+  unitCharges PropertyUnitCharge[]
 
   @@index([managerId])
   @@index([propertyId])
   @@index([propertyId, status])
   @@map("property_units")
+}
+
+model PropertyUnitCharge {
+  propertyUnitId   Uuid @map("property_unit_id")
+  propertyChargeId Uuid @map("property_charge_id")
+
+  propertyUnit   PropertyUnit   @relation(fields: [propertyUnitId], references: [id])
+  propertyCharge PropertyCharge @relation(fields: [propertyChargeId], references: [id])
+
+  @@id([propertyUnitId, propertyChargeId])
+  @@index([propertyChargeId])
+  @@map("property_unit_charges")
 }
 
 enum TenantStatus {

@@ -34,7 +34,7 @@ import type {
 } from '@prisma/orm-postgres/contract/types';
 
 export type StorageHash =
-  StorageHashBase<'0172c8fa3f6e66d75a6e52a0259fb7fbd5aa69a627b665538363d67966de3b44'>;
+  StorageHashBase<'139770cb8d5db1c459f63df44d800bf2bf2b9f2a27425a7417c26031190f75d0'>;
 export type ExecutionHash =
   ExecutionHashBase<'8e9c983ff78a07252f8d86c07b2c152fd109aba234b96c8b51748afacf5a1756'>;
 export type ProfileHash =
@@ -369,11 +369,15 @@ export type FieldOutputTypes = {
       readonly propertyId: CodecTypes['pg/uuid@1']['output'];
       readonly unitNumber: CodecTypes['pg/text@1']['output'];
       readonly bedroomCount: CodecTypes['pg/int4@1']['output'];
-      readonly status: CodecTypes['pg/text@1']['output'];
+      readonly status: 'AVAILABLE' | 'OCCUPIED' | 'MAINTENANCE' | 'ARCHIVED';
       readonly marketRent: CodecTypes['pg/numeric@1']['output'];
       readonly billingFrequency: 'MONTHLY' | 'QUARTERLY' | 'BI_ANNUALLY' | 'ANNUALLY';
       readonly createdAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
       readonly updatedAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
+    };
+    readonly PropertyUnitCharge: {
+      readonly propertyUnitId: CodecTypes['pg/uuid@1']['output'];
+      readonly propertyChargeId: CodecTypes['pg/uuid@1']['output'];
     };
     readonly Receipt: {
       readonly id: CodecTypes['pg/uuid@1']['output'];
@@ -562,11 +566,15 @@ export type FieldInputTypes = {
       readonly propertyId: CodecTypes['pg/uuid@1']['input'];
       readonly unitNumber: CodecTypes['pg/text@1']['input'];
       readonly bedroomCount: CodecTypes['pg/int4@1']['input'];
-      readonly status: CodecTypes['pg/text@1']['input'];
+      readonly status: 'AVAILABLE' | 'OCCUPIED' | 'MAINTENANCE' | 'ARCHIVED';
       readonly marketRent: CodecTypes['pg/numeric@1']['input'];
       readonly billingFrequency: 'MONTHLY' | 'QUARTERLY' | 'BI_ANNUALLY' | 'ANNUALLY';
       readonly createdAt: CodecTypes['pg/timestamptz-temporal@1']['input'];
       readonly updatedAt: CodecTypes['pg/timestamptz-temporal@1']['input'];
+    };
+    readonly PropertyUnitCharge: {
+      readonly propertyUnitId: CodecTypes['pg/uuid@1']['input'];
+      readonly propertyChargeId: CodecTypes['pg/uuid@1']['input'];
     };
     readonly Receipt: {
       readonly id: CodecTypes['pg/uuid@1']['input'];
@@ -749,6 +757,10 @@ export type StorageColumnTypes = {
       readonly property_id: CodecTypes['pg/uuid@1']['output'];
       readonly updated_at: CodecTypes['pg/timestamptz-temporal@1']['output'];
     };
+    readonly property_unit_charges: {
+      readonly property_charge_id: CodecTypes['pg/uuid@1']['output'];
+      readonly property_unit_id: CodecTypes['pg/uuid@1']['output'];
+    };
     readonly property_units: {
       readonly bedroom_count: CodecTypes['pg/int4@1']['output'];
       readonly billing_frequency: 'MONTHLY' | 'QUARTERLY' | 'BI_ANNUALLY' | 'ANNUALLY';
@@ -757,7 +769,7 @@ export type StorageColumnTypes = {
       readonly manager_id: CodecTypes['pg/uuid@1']['output'];
       readonly market_rent: CodecTypes['pg/numeric@1']['output'];
       readonly property_id: CodecTypes['pg/uuid@1']['output'];
-      readonly status: CodecTypes['pg/text@1']['output'];
+      readonly status: 'AVAILABLE' | 'OCCUPIED' | 'MAINTENANCE' | 'ARCHIVED';
       readonly unit_number: CodecTypes['pg/text@1']['output'];
       readonly updated_at: CodecTypes['pg/timestamptz-temporal@1']['output'];
     };
@@ -942,6 +954,10 @@ export type StorageColumnInputTypes = {
       readonly property_id: CodecTypes['pg/uuid@1']['input'];
       readonly updated_at: CodecTypes['pg/timestamptz-temporal@1']['input'];
     };
+    readonly property_unit_charges: {
+      readonly property_charge_id: CodecTypes['pg/uuid@1']['input'];
+      readonly property_unit_id: CodecTypes['pg/uuid@1']['input'];
+    };
     readonly property_units: {
       readonly bedroom_count: CodecTypes['pg/int4@1']['input'];
       readonly billing_frequency: 'MONTHLY' | 'QUARTERLY' | 'BI_ANNUALLY' | 'ANNUALLY';
@@ -950,7 +966,7 @@ export type StorageColumnInputTypes = {
       readonly manager_id: CodecTypes['pg/uuid@1']['input'];
       readonly market_rent: CodecTypes['pg/numeric@1']['input'];
       readonly property_id: CodecTypes['pg/uuid@1']['input'];
-      readonly status: CodecTypes['pg/text@1']['input'];
+      readonly status: 'AVAILABLE' | 'OCCUPIED' | 'MAINTENANCE' | 'ARCHIVED';
       readonly unit_number: CodecTypes['pg/text@1']['input'];
       readonly updated_at: CodecTypes['pg/timestamptz-temporal@1']['input'];
     };
@@ -1127,7 +1143,8 @@ export namespace Models {
     invoiceItems: public_InvoiceItem[];
     manager: public_User;
     property: public_Property;
-    readonly [RelationKeys]?: 'invoiceItems' | 'manager' | 'property';
+    unitCharges: public_PropertyUnitCharge[];
+    readonly [RelationKeys]?: 'invoiceItems' | 'manager' | 'property' | 'unitCharges';
   };
   export type public_PropertyUnit = {
     id: CodecTypes['pg/uuid@1']['output'];
@@ -1135,7 +1152,7 @@ export namespace Models {
     propertyId: CodecTypes['pg/uuid@1']['output'];
     unitNumber: CodecTypes['pg/text@1']['output'];
     bedroomCount: CodecTypes['pg/int4@1']['output'];
-    status: CodecTypes['pg/text@1']['output'];
+    status: 'AVAILABLE' | 'OCCUPIED' | 'MAINTENANCE' | 'ARCHIVED';
     marketRent: CodecTypes['pg/numeric@1']['output'];
     billingFrequency: 'MONTHLY' | 'QUARTERLY' | 'BI_ANNUALLY' | 'ANNUALLY';
     createdAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
@@ -1143,7 +1160,15 @@ export namespace Models {
     manager: public_User;
     property: public_Property;
     tenancies: public_Tenancy[];
-    readonly [RelationKeys]?: 'manager' | 'property' | 'tenancies';
+    unitCharges: public_PropertyUnitCharge[];
+    readonly [RelationKeys]?: 'manager' | 'property' | 'tenancies' | 'unitCharges';
+  };
+  export type public_PropertyUnitCharge = {
+    propertyUnitId: CodecTypes['pg/uuid@1']['output'];
+    propertyChargeId: CodecTypes['pg/uuid@1']['output'];
+    propertyCharge: public_PropertyCharge;
+    propertyUnit: public_PropertyUnit;
+    readonly [RelationKeys]?: 'propertyCharge' | 'propertyUnit';
   };
   export type public_Tenant = {
     id: CodecTypes['pg/uuid@1']['output'];
@@ -1320,6 +1345,7 @@ export declare const models: {
     Property: Models.public_Property;
     PropertyCharge: Models.public_PropertyCharge;
     PropertyUnit: Models.public_PropertyUnit;
+    PropertyUnitCharge: Models.public_PropertyUnitCharge;
     Tenant: Models.public_Tenant;
     Tenancy: Models.public_Tenancy;
     Invoice: Models.public_Invoice;
@@ -2412,6 +2438,62 @@ type ContractBase = Omit<
                 },
               ];
             };
+            readonly property_unit_charges: {
+              columns: {
+                readonly property_unit_id: {
+                  readonly nativeType: 'uuid';
+                  readonly codecId: 'pg/uuid@1';
+                  readonly nullable: false;
+                };
+                readonly property_charge_id: {
+                  readonly nativeType: 'uuid';
+                  readonly codecId: 'pg/uuid@1';
+                  readonly nullable: false;
+                };
+              };
+              primaryKey: { readonly columns: readonly ['property_unit_id', 'property_charge_id'] };
+              uniques: readonly [];
+              indexes: readonly [
+                {
+                  readonly name: 'property_unit_charges_property_charge_id_idx_aad71636';
+                  readonly prefix: 'property_unit_charges_property_charge_id_idx';
+                  readonly columns: readonly ['property_charge_id'];
+                  readonly unique: false;
+                },
+                {
+                  readonly name: 'property_unit_charges_property_unit_id_idx_2895e80f';
+                  readonly prefix: 'property_unit_charges_property_unit_id_idx';
+                  readonly columns: readonly ['property_unit_id'];
+                  readonly unique: false;
+                },
+              ];
+              foreignKeys: readonly [
+                {
+                  readonly source: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'property_unit_charges';
+                    readonly columns: readonly ['property_unit_id'];
+                  };
+                  readonly target: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'property_units';
+                    readonly columns: readonly ['id'];
+                  };
+                },
+                {
+                  readonly source: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'property_unit_charges';
+                    readonly columns: readonly ['property_charge_id'];
+                  };
+                  readonly target: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'property_charges';
+                    readonly columns: readonly ['id'];
+                  };
+                },
+              ];
+            };
             readonly property_units: {
               columns: {
                 readonly id: {
@@ -2981,6 +3063,10 @@ type ContractBase = Omit<
               readonly kind: 'valueSet';
               readonly values: readonly ['ACTIVE', 'INACTIVE', 'MAINTENANCE', 'ARCHIVED'];
             };
+            readonly PropertyUnitStatus: {
+              readonly kind: 'valueSet';
+              readonly values: readonly ['AVAILABLE', 'OCCUPIED', 'MAINTENANCE', 'ARCHIVED'];
+            };
             readonly TenancyStatus: {
               readonly kind: 'valueSet';
               readonly values: readonly ['ACTIVE', 'ENDED'];
@@ -3019,6 +3105,10 @@ type ContractBase = Omit<
     readonly property_units: {
       readonly namespace: 'public' & NamespaceId;
       readonly model: 'PropertyUnit';
+    };
+    readonly property_unit_charges: {
+      readonly namespace: 'public' & NamespaceId;
+      readonly model: 'PropertyUnitCharge';
     };
     readonly tenants: { readonly namespace: 'public' & NamespaceId; readonly model: 'Tenant' };
     readonly tenancies: { readonly namespace: 'public' & NamespaceId; readonly model: 'Tenancy' };
@@ -4121,6 +4211,17 @@ type ContractBase = Omit<
                   readonly targetFields: readonly ['id'];
                 };
               };
+              readonly unitCharges: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'PropertyUnitCharge';
+                };
+                readonly cardinality: '1:N';
+                readonly on: {
+                  readonly localFields: readonly ['id'];
+                  readonly targetFields: readonly ['propertyChargeId'];
+                };
+              };
             };
             readonly storage: {
               readonly table: 'property_charges';
@@ -4220,6 +4321,17 @@ type ContractBase = Omit<
                   readonly targetFields: readonly ['propertyUnitId'];
                 };
               };
+              readonly unitCharges: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'PropertyUnitCharge';
+                };
+                readonly cardinality: '1:N';
+                readonly on: {
+                  readonly localFields: readonly ['id'];
+                  readonly targetFields: readonly ['propertyUnitId'];
+                };
+              };
             };
             readonly storage: {
               readonly table: 'property_units';
@@ -4235,6 +4347,52 @@ type ContractBase = Omit<
                 readonly billingFrequency: { readonly column: 'billing_frequency' };
                 readonly createdAt: { readonly column: 'created_at' };
                 readonly updatedAt: { readonly column: 'updated_at' };
+              };
+            };
+          };
+          readonly PropertyUnitCharge: {
+            readonly fields: {
+              readonly propertyUnitId: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/uuid@1' };
+              };
+              readonly propertyChargeId: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/uuid@1' };
+              };
+            };
+            readonly relations: {
+              readonly propertyCharge: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'PropertyCharge';
+                };
+                readonly cardinality: 'N:1';
+                readonly nullable: false;
+                readonly on: {
+                  readonly localFields: readonly ['propertyChargeId'];
+                  readonly targetFields: readonly ['id'];
+                };
+              };
+              readonly propertyUnit: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'PropertyUnit';
+                };
+                readonly cardinality: 'N:1';
+                readonly nullable: false;
+                readonly on: {
+                  readonly localFields: readonly ['propertyUnitId'];
+                  readonly targetFields: readonly ['id'];
+                };
+              };
+            };
+            readonly storage: {
+              readonly table: 'property_unit_charges';
+              readonly namespaceId: 'public';
+              readonly fields: {
+                readonly propertyUnitId: { readonly column: 'property_unit_id' };
+                readonly propertyChargeId: { readonly column: 'property_charge_id' };
               };
             };
           };
@@ -4825,6 +4983,15 @@ type ContractBase = Omit<
               { readonly name: 'QUARTERLY'; readonly value: 'QUARTERLY' },
               { readonly name: 'BI_ANNUALLY'; readonly value: 'BI_ANNUALLY' },
               { readonly name: 'ANNUALLY'; readonly value: 'ANNUALLY' },
+            ];
+          };
+          readonly PropertyUnitStatus: {
+            readonly codecId: 'pg/text@1';
+            readonly members: readonly [
+              { readonly name: 'AVAILABLE'; readonly value: 'AVAILABLE' },
+              { readonly name: 'OCCUPIED'; readonly value: 'OCCUPIED' },
+              { readonly name: 'MAINTENANCE'; readonly value: 'MAINTENANCE' },
+              { readonly name: 'ARCHIVED'; readonly value: 'ARCHIVED' },
             ];
           };
           readonly TenantStatus: {

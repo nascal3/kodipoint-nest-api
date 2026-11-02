@@ -48,6 +48,10 @@
       "model": "PropertyCharge",
       "namespace": "public"
     },
+    "property_unit_charges": {
+      "model": "PropertyUnitCharge",
+      "namespace": "public"
+    },
     "property_units": {
       "model": "PropertyUnit",
       "namespace": "public"
@@ -154,6 +158,27 @@
               {
                 "name": "INACTIVE",
                 "value": "INACTIVE"
+              },
+              {
+                "name": "MAINTENANCE",
+                "value": "MAINTENANCE"
+              },
+              {
+                "name": "ARCHIVED",
+                "value": "ARCHIVED"
+              }
+            ]
+          },
+          "PropertyUnitStatus": {
+            "codecId": "pg/text@1",
+            "members": [
+              {
+                "name": "AVAILABLE",
+                "value": "AVAILABLE"
+              },
+              {
+                "name": "OCCUPIED",
+                "value": "OCCUPIED"
               },
               {
                 "name": "MAINTENANCE",
@@ -1891,6 +1916,21 @@
                   "model": "Property",
                   "namespace": "public"
                 }
+              },
+              "unitCharges": {
+                "cardinality": "1:N",
+                "on": {
+                  "localFields": [
+                    "id"
+                  ],
+                  "targetFields": [
+                    "propertyChargeId"
+                  ]
+                },
+                "to": {
+                  "model": "PropertyUnitCharge",
+                  "namespace": "public"
+                }
               }
             },
             "storage": {
@@ -1989,6 +2029,12 @@
                 "type": {
                   "codecId": "pg/text@1",
                   "kind": "scalar"
+                },
+                "valueSet": {
+                  "entityKind": "enum",
+                  "entityName": "PropertyUnitStatus",
+                  "namespaceId": "public",
+                  "plane": "domain"
                 }
               },
               "unitNumber": {
@@ -2053,6 +2099,21 @@
                   "model": "Tenancy",
                   "namespace": "public"
                 }
+              },
+              "unitCharges": {
+                "cardinality": "1:N",
+                "on": {
+                  "localFields": [
+                    "id"
+                  ],
+                  "targetFields": [
+                    "propertyUnitId"
+                  ]
+                },
+                "to": {
+                  "model": "PropertyUnitCharge",
+                  "namespace": "public"
+                }
               }
             },
             "storage": {
@@ -2090,6 +2151,70 @@
               },
               "namespaceId": "public",
               "table": "property_units"
+            }
+          },
+          "PropertyUnitCharge": {
+            "fields": {
+              "propertyChargeId": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/uuid@1",
+                  "kind": "scalar"
+                }
+              },
+              "propertyUnitId": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/uuid@1",
+                  "kind": "scalar"
+                }
+              }
+            },
+            "relations": {
+              "propertyCharge": {
+                "cardinality": "N:1",
+                "nullable": false,
+                "on": {
+                  "localFields": [
+                    "propertyChargeId"
+                  ],
+                  "targetFields": [
+                    "id"
+                  ]
+                },
+                "to": {
+                  "model": "PropertyCharge",
+                  "namespace": "public"
+                }
+              },
+              "propertyUnit": {
+                "cardinality": "N:1",
+                "nullable": false,
+                "on": {
+                  "localFields": [
+                    "propertyUnitId"
+                  ],
+                  "targetFields": [
+                    "id"
+                  ]
+                },
+                "to": {
+                  "model": "PropertyUnit",
+                  "namespace": "public"
+                }
+              }
+            },
+            "storage": {
+              "fields": {
+                "propertyChargeId": {
+                  "column": "property_charge_id"
+                },
+                "propertyUnitId": {
+                  "column": "property_unit_id"
+                }
+              },
+              "namespaceId": "public",
+              "table": "property_unit_charges"
             }
           },
           "Receipt": {
@@ -4334,12 +4459,90 @@
               },
               "uniques": []
             },
+            "property_unit_charges": {
+              "columns": {
+                "property_charge_id": {
+                  "codecId": "pg/uuid@1",
+                  "nativeType": "uuid",
+                  "nullable": false
+                },
+                "property_unit_id": {
+                  "codecId": "pg/uuid@1",
+                  "nativeType": "uuid",
+                  "nullable": false
+                }
+              },
+              "foreignKeys": [
+                {
+                  "source": {
+                    "columns": [
+                      "property_unit_id"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "property_unit_charges"
+                  },
+                  "target": {
+                    "columns": [
+                      "id"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "property_units"
+                  }
+                },
+                {
+                  "source": {
+                    "columns": [
+                      "property_charge_id"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "property_unit_charges"
+                  },
+                  "target": {
+                    "columns": [
+                      "id"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "property_charges"
+                  }
+                }
+              ],
+              "indexes": [
+                {
+                  "columns": [
+                    "property_charge_id"
+                  ],
+                  "name": "property_unit_charges_property_charge_id_idx_aad71636",
+                  "prefix": "property_unit_charges_property_charge_id_idx",
+                  "unique": false
+                },
+                {
+                  "columns": [
+                    "property_unit_id"
+                  ],
+                  "name": "property_unit_charges_property_unit_id_idx_2895e80f",
+                  "prefix": "property_unit_charges_property_unit_id_idx",
+                  "unique": false
+                }
+              ],
+              "primaryKey": {
+                "columns": [
+                  "property_unit_id",
+                  "property_charge_id"
+                ]
+              },
+              "uniques": []
+            },
             "property_units": {
               "checks": [
                 {
                   "expression": "\"billing_frequency\" IN ('MONTHLY', 'QUARTERLY', 'BI_ANNUALLY', 'ANNUALLY')",
                   "name": "property_units_billing_frequency_check_3a66bf05",
                   "prefix": "property_units_billing_frequency_check"
+                },
+                {
+                  "expression": "\"status\" IN ('AVAILABLE', 'OCCUPIED', 'MAINTENANCE', 'ARCHIVED')",
+                  "name": "property_units_status_check_d1e1aab6",
+                  "prefix": "property_units_status_check"
                 }
               ],
               "columns": {
@@ -4399,7 +4602,13 @@
                     "value": "AVAILABLE"
                   },
                   "nativeType": "text",
-                  "nullable": false
+                  "nullable": false,
+                  "valueSet": {
+                    "entityKind": "valueSet",
+                    "entityName": "PropertyUnitStatus",
+                    "namespaceId": "public",
+                    "plane": "storage"
+                  }
                 },
                 "unit_number": {
                   "codecId": "pg/text@1",
@@ -5080,6 +5289,15 @@
                 "ARCHIVED"
               ]
             },
+            "PropertyUnitStatus": {
+              "kind": "valueSet",
+              "values": [
+                "AVAILABLE",
+                "OCCUPIED",
+                "MAINTENANCE",
+                "ARCHIVED"
+              ]
+            },
             "TenancyStatus": {
               "kind": "valueSet",
               "values": [
@@ -5108,7 +5326,7 @@
         "kind": "postgres-schema"
       }
     },
-    "storageHash": "0172c8fa3f6e66d75a6e52a0259fb7fbd5aa69a627b665538363d67966de3b44"
+    "storageHash": "139770cb8d5db1c459f63df44d800bf2bf2b9f2a27425a7417c26031190f75d0"
   },
   "execution": {
     "executionHash": "8e9c983ff78a07252f8d86c07b2c152fd109aba234b96c8b51748afacf5a1756",
