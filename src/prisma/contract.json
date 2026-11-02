@@ -48,6 +48,10 @@
       "model": "PropertyCharge",
       "namespace": "public"
     },
+    "property_units": {
+      "model": "PropertyUnit",
+      "namespace": "public"
+    },
     "receipts": {
       "model": "Receipt",
       "namespace": "public"
@@ -1533,6 +1537,21 @@
                   "namespace": "public"
                 }
               },
+              "propertyUnits": {
+                "cardinality": "1:N",
+                "on": {
+                  "localFields": [
+                    "id"
+                  ],
+                  "targetFields": [
+                    "propertyId"
+                  ]
+                },
+                "to": {
+                  "model": "PropertyUnit",
+                  "namespace": "public"
+                }
+              },
               "tenancies": {
                 "cardinality": "1:N",
                 "on": {
@@ -1763,6 +1782,155 @@
               "table": "property_charges"
             }
           },
+          "PropertyUnit": {
+            "fields": {
+              "bedroomCount": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              },
+              "createdAt": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/timestamptz-temporal@1",
+                  "kind": "scalar"
+                }
+              },
+              "id": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/uuid@1",
+                  "kind": "scalar"
+                }
+              },
+              "managerId": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/uuid@1",
+                  "kind": "scalar"
+                }
+              },
+              "marketRent": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/numeric@1",
+                  "kind": "scalar"
+                }
+              },
+              "propertyId": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/uuid@1",
+                  "kind": "scalar"
+                }
+              },
+              "status": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "unitNumber": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "updatedAt": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/timestamptz-temporal@1",
+                  "kind": "scalar"
+                }
+              }
+            },
+            "relations": {
+              "manager": {
+                "cardinality": "N:1",
+                "nullable": false,
+                "on": {
+                  "localFields": [
+                    "managerId"
+                  ],
+                  "targetFields": [
+                    "id"
+                  ]
+                },
+                "to": {
+                  "model": "User",
+                  "namespace": "public"
+                }
+              },
+              "property": {
+                "cardinality": "N:1",
+                "nullable": false,
+                "on": {
+                  "localFields": [
+                    "propertyId"
+                  ],
+                  "targetFields": [
+                    "id"
+                  ]
+                },
+                "to": {
+                  "model": "Property",
+                  "namespace": "public"
+                }
+              },
+              "tenancies": {
+                "cardinality": "1:N",
+                "on": {
+                  "localFields": [
+                    "id"
+                  ],
+                  "targetFields": [
+                    "propertyUnitId"
+                  ]
+                },
+                "to": {
+                  "model": "Tenancy",
+                  "namespace": "public"
+                }
+              }
+            },
+            "storage": {
+              "fields": {
+                "bedroomCount": {
+                  "column": "bedroom_count"
+                },
+                "createdAt": {
+                  "column": "created_at"
+                },
+                "id": {
+                  "column": "id"
+                },
+                "managerId": {
+                  "column": "manager_id"
+                },
+                "marketRent": {
+                  "column": "market_rent"
+                },
+                "propertyId": {
+                  "column": "property_id"
+                },
+                "status": {
+                  "column": "status"
+                },
+                "unitNumber": {
+                  "column": "unit_number"
+                },
+                "updatedAt": {
+                  "column": "updated_at"
+                }
+              },
+              "namespaceId": "public",
+              "table": "property_units"
+            }
+          },
           "Receipt": {
             "fields": {
               "createdAt": {
@@ -1935,6 +2103,13 @@
                   "kind": "scalar"
                 }
               },
+              "propertyUnitId": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/uuid@1",
+                  "kind": "scalar"
+                }
+              },
               "startDate": {
                 "nullable": false,
                 "type": {
@@ -2034,6 +2209,22 @@
                   "model": "Tenant",
                   "namespace": "public"
                 }
+              },
+              "unit": {
+                "cardinality": "N:1",
+                "nullable": true,
+                "on": {
+                  "localFields": [
+                    "propertyUnitId"
+                  ],
+                  "targetFields": [
+                    "id"
+                  ]
+                },
+                "to": {
+                  "model": "PropertyUnit",
+                  "namespace": "public"
+                }
               }
             },
             "storage": {
@@ -2061,6 +2252,9 @@
                 },
                 "propertyUnit": {
                   "column": "property_unit"
+                },
+                "propertyUnitId": {
+                  "column": "property_unit_id"
                 },
                 "startDate": {
                   "column": "start_date"
@@ -2486,6 +2680,21 @@
                 },
                 "to": {
                   "model": "PropertyCharge",
+                  "namespace": "public"
+                }
+              },
+              "propertyUnits": {
+                "cardinality": "1:N",
+                "on": {
+                  "localFields": [
+                    "id"
+                  ],
+                  "targetFields": [
+                    "managerId"
+                  ]
+                },
+                "to": {
+                  "model": "PropertyUnit",
                   "namespace": "public"
                 }
               },
@@ -3912,6 +4121,130 @@
               },
               "uniques": []
             },
+            "property_units": {
+              "columns": {
+                "bedroom_count": {
+                  "codecId": "pg/int4@1",
+                  "nativeType": "int4",
+                  "nullable": false
+                },
+                "created_at": {
+                  "codecId": "pg/timestamptz-temporal@1",
+                  "default": {
+                    "expression": "now()",
+                    "kind": "function"
+                  },
+                  "nativeType": "timestamptz",
+                  "nullable": false
+                },
+                "id": {
+                  "codecId": "pg/uuid@1",
+                  "nativeType": "uuid",
+                  "nullable": false
+                },
+                "manager_id": {
+                  "codecId": "pg/uuid@1",
+                  "nativeType": "uuid",
+                  "nullable": false
+                },
+                "market_rent": {
+                  "codecId": "pg/numeric@1",
+                  "nativeType": "numeric",
+                  "nullable": false
+                },
+                "property_id": {
+                  "codecId": "pg/uuid@1",
+                  "nativeType": "uuid",
+                  "nullable": false
+                },
+                "status": {
+                  "codecId": "pg/text@1",
+                  "default": {
+                    "kind": "literal",
+                    "value": "AVAILABLE"
+                  },
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "unit_number": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "updated_at": {
+                  "codecId": "pg/timestamptz-temporal@1",
+                  "nativeType": "timestamptz",
+                  "nullable": false
+                }
+              },
+              "foreignKeys": [
+                {
+                  "source": {
+                    "columns": [
+                      "manager_id"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "property_units"
+                  },
+                  "target": {
+                    "columns": [
+                      "id"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "users"
+                  }
+                },
+                {
+                  "source": {
+                    "columns": [
+                      "property_id"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "property_units"
+                  },
+                  "target": {
+                    "columns": [
+                      "id"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "properties"
+                  }
+                }
+              ],
+              "indexes": [
+                {
+                  "columns": [
+                    "manager_id"
+                  ],
+                  "name": "property_units_manager_id_idx_c3dee277",
+                  "prefix": "property_units_manager_id_idx",
+                  "unique": false
+                },
+                {
+                  "columns": [
+                    "property_id"
+                  ],
+                  "name": "property_units_property_id_idx_9fa9619b",
+                  "prefix": "property_units_property_id_idx",
+                  "unique": false
+                },
+                {
+                  "columns": [
+                    "property_id",
+                    "status"
+                  ],
+                  "name": "property_units_property_id_status_idx_7a5ca777",
+                  "prefix": "property_units_property_id_status_idx",
+                  "unique": false
+                }
+              ],
+              "primaryKey": {
+                "columns": [
+                  "id"
+                ]
+              },
+              "uniques": []
+            },
             "receipts": {
               "columns": {
                 "created_at": {
@@ -4062,6 +4395,11 @@
                   "nativeType": "text",
                   "nullable": false
                 },
+                "property_unit_id": {
+                  "codecId": "pg/uuid@1",
+                  "nativeType": "uuid",
+                  "nullable": true
+                },
                 "start_date": {
                   "codecId": "pg/date-temporal@1",
                   "nativeType": "date",
@@ -4128,6 +4466,22 @@
                 {
                   "source": {
                     "columns": [
+                      "property_unit_id"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "tenancies"
+                  },
+                  "target": {
+                    "columns": [
+                      "id"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "property_units"
+                  }
+                },
+                {
+                  "source": {
+                    "columns": [
                       "tenant_id"
                     ],
                     "namespaceId": "public",
@@ -4166,6 +4520,14 @@
                   ],
                   "name": "tenancies_property_id_status_idx_7a5ca777",
                   "prefix": "tenancies_property_id_status_idx",
+                  "unique": false
+                },
+                {
+                  "columns": [
+                    "property_unit_id"
+                  ],
+                  "name": "tenancies_property_unit_id_idx_2895e80f",
+                  "prefix": "tenancies_property_unit_id_idx",
                   "unique": false
                 },
                 {
@@ -4410,10 +4772,10 @@
         "kind": "postgres-schema"
       }
     },
-    "storageHash": "cac8b725e9d5c79c554f897cfcf4c2efcff1b5528fbb428b8c90276df29c098d"
+    "storageHash": "683ff032f29fc4035f9b8f750addee45bd044bb8f7b0941f02c45ca6f9ec1e9b"
   },
   "execution": {
-    "executionHash": "3db1dbd3842b77550230aefd088aafb47f6752ea886083b704f4355835d85fbc",
+    "executionHash": "8e9c983ff78a07252f8d86c07b2c152fd109aba234b96c8b51748afacf5a1756",
     "mutations": {
       "defaults": [
         {
@@ -4640,6 +5002,32 @@
             "column": "updated_at",
             "namespace": "public",
             "table": "property_charges"
+          }
+        },
+        {
+          "onCreate": {
+            "id": "uuidv4",
+            "kind": "generator"
+          },
+          "ref": {
+            "column": "id",
+            "namespace": "public",
+            "table": "property_units"
+          }
+        },
+        {
+          "onCreate": {
+            "id": "instantNow",
+            "kind": "generator"
+          },
+          "onUpdate": {
+            "id": "instantNow",
+            "kind": "generator"
+          },
+          "ref": {
+            "column": "updated_at",
+            "namespace": "public",
+            "table": "property_units"
           }
         },
         {

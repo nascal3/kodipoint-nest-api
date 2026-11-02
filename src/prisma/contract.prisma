@@ -20,6 +20,7 @@ model User {
 
   properties      Property[]
   propertyCharges PropertyCharge[]
+  propertyUnits   PropertyUnit[]
   tenants         Tenant[]
   tenancies       Tenancy[]
   invoices        Invoice[]
@@ -97,6 +98,7 @@ model Property {
   country Country  @relation(fields: [countryId], references: [id])
 
   propertyCharges PropertyCharge[]
+  propertyUnits   PropertyUnit[]
   tenancies       Tenancy[]
   invoices        Invoice[]
   payments        Payment[]
@@ -129,6 +131,29 @@ model PropertyCharge {
   @@map("property_charges")
 }
 
+model PropertyUnit {
+  id            Uuid    @id @default(uuid())
+  managerId     Uuid    @map("manager_id")
+  propertyId    Uuid    @map("property_id")
+  unitNumber    String  @map("unit_number")
+  bedroomCount  Int     @map("bedroom_count")
+  status        String  @default("AVAILABLE")
+  marketRent    Decimal @map("market_rent")
+
+  createdAt temporal.createdAt() @map("created_at")
+  updatedAt temporal.updatedAt() @map("updated_at")
+
+  manager  User     @relation(fields: [managerId], references: [id])
+  property Property @relation(fields: [propertyId], references: [id])
+
+  tenancies Tenancy[]
+
+  @@index([managerId])
+  @@index([propertyId])
+  @@index([propertyId, status])
+  @@map("property_units")
+}
+
 model Tenant {
   id                    Uuid    @id @default(uuid())
   managerId             Uuid    @map("manager_id")
@@ -155,30 +180,33 @@ model Tenant {
 }
 
 model Tenancy {
-  id           Uuid      @id @default(uuid())
-  managerId    Uuid      @map("manager_id")
-  propertyId   Uuid      @map("property_id")
-  propertyUnit String    @map("property_unit")
-  tenantId     Uuid      @map("tenant_id")
-  startDate    Date      @map("start_date")
-  endDate      Date?     @map("end_date")
-  monthlyRent  Decimal   @map("monthly_rent")
-  status       String    @default("ACTIVE")
-  assignedAt   DateTime  @map("assigned_at")
-  unassignedAt DateTime? @map("unassigned_at")
+  id            Uuid      @id @default(uuid())
+  managerId     Uuid      @map("manager_id")
+  propertyId    Uuid      @map("property_id")
+  propertyUnit  String    @map("property_unit")
+  propertyUnitId Uuid?    @map("property_unit_id")
+  tenantId      Uuid      @map("tenant_id")
+  startDate     Date      @map("start_date")
+  endDate       Date?     @map("end_date")
+  monthlyRent   Decimal   @map("monthly_rent")
+  status        String    @default("ACTIVE")
+  assignedAt    DateTime  @map("assigned_at")
+  unassignedAt  DateTime? @map("unassigned_at")
 
   createdAt temporal.createdAt() @map("created_at")
   updatedAt temporal.updatedAt() @map("updated_at")
 
-  manager  User     @relation(fields: [managerId], references: [id])
-  property Property @relation(fields: [propertyId], references: [id])
-  tenant   Tenant   @relation(fields: [tenantId], references: [id])
+  manager       User         @relation(fields: [managerId], references: [id])
+  property      Property     @relation(fields: [propertyId], references: [id])
+  unit          PropertyUnit? @relation(fields: [propertyUnitId], references: [id])
+  tenant        Tenant       @relation(fields: [tenantId], references: [id])
 
   invoices Invoice[]
 
   @@index([managerId])
   @@index([propertyId, status])
   @@index([tenantId, status])
+  @@index([propertyUnitId])
   @@map("tenancies")
 }
 
