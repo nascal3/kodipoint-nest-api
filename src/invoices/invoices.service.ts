@@ -13,7 +13,7 @@ import { UpdateInvoiceDto } from './dto/update-invoice.dto';
 import { SendInvoiceDto, InvoiceDeliveryChannel } from './dto/send-invoice.dto';
 import Decimal from 'decimal.js';
 import { Temporal } from '@js-temporal/polyfill';
-import { and } from '@prisma/orm-postgres/orm-client';
+import { and, or } from '@prisma/orm-postgres/orm-client';
 
 @Injectable()
 export class InvoicesService {
@@ -76,12 +76,20 @@ export class InvoicesService {
       }
 
       /*
-       * 4. Load active service charges assigned to the tenancy's unit.
+       * 4. Load service charges assigned to the tenancy's unit that were effective at the invoice date.
        */
-      const unitCharges = tenancy.propertyUnitId
-        ? await tx.orm.public.PropertyUnitCharge.where({
-            propertyUnitId: tenancy.propertyUnitId,
-          }).all()
+      const propertyUnitId = tenancy.propertyUnitId;
+      const unitCharges = propertyUnitId
+        ? await tx.orm.public.PropertyUnitCharge.where((charge) =>
+            and(
+              charge.propertyUnitId.eq(propertyUnitId),
+              charge.validFrom.lte(issueDate),
+              or(
+                charge.validTo.isNull(),
+                charge.validTo.gt(issueDate),
+              ),
+            ),
+          ).all()
         : [];
       const propertyCharges =
         unitCharges.length > 0

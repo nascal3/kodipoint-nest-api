@@ -183,13 +183,15 @@ model PropertyUnitCharge {
   propertyUnitId   Uuid     @map("property_unit_id")
   propertyChargeId Uuid     @map("property_charge_id")
   customAmount     Decimal? @map("custom_amount")
+  validFrom        DateTime @map("valid_from")
+  validTo          DateTime? @map("valid_to")
 
   propertyUnit   PropertyUnit   @relation(fields: [propertyUnitId], references: [id])
   propertyCharge PropertyCharge @relation(fields: [propertyChargeId], references: [id])
 
-  @@id([propertyUnitId, propertyChargeId])
-  @@index([propertyUnitId])
-  @@index([propertyChargeId])
+  @@id([propertyUnitId, propertyChargeId, validFrom])
+  @@index([propertyUnitId, validFrom], map: "unit_charge_valid_from_idx")
+  @@index([propertyChargeId, validFrom], map: "charge_valid_from_idx")
   @@map("property_unit_charges")
 }
 

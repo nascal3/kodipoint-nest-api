@@ -20,6 +20,7 @@ import { CurrentUser } from '@/common/decorators/current-user.decorator';
 import { PropertyUnitsService } from './property-units.service';
 import { CreatePropertyUnitDto } from './dto/create-property-unit.dto';
 import { UpdatePropertyUnitDto } from './dto/update-property-unit.dto';
+import { UpdatePropertyUnitChargeRateDto } from './dto/update-property-unit-charge-rate.dto';
 import { ListPropertyUnitsDto } from './dto/list-property-units.dto';
 import * as authenticatedUserType from '../common/types/authenticated-user.type';
 import { JwtAuthGuard } from '@/common/guards/jwt-auth.guard';
@@ -74,6 +75,24 @@ export class PropertyUnitsController {
     @Body() dto: UpdatePropertyUnitDto,
   ) {
     return this.propertyUnitsService.update(user.id, unitId, dto);
+  }
+
+  @Patch(':id/charges/:propertyChargeId/rate')
+  @ApiOperation({
+    summary: 'Set a new effective-dated rate for a property unit charge',
+  })
+  updateChargeRate(
+    @CurrentUser() user: authenticatedUserType.AuthenticatedUser,
+    @Param('id') unitId: string,
+    @Param('propertyChargeId') propertyChargeId: string,
+    @Body() dto: UpdatePropertyUnitChargeRateDto,
+  ) {
+    return this.propertyUnitsService.updateChargeRate(
+      user.id,
+      unitId,
+      propertyChargeId,
+      dto,
+    );
   }
 
   @Delete(':id')

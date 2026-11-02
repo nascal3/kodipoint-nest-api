@@ -8,6 +8,7 @@ import { and } from '@prisma/orm-postgres/orm-client';
 import { DatabaseService } from '@/database/database.service';
 import { CreatePropertyUnitDto } from './dto/create-property-unit.dto';
 import { UpdatePropertyUnitDto } from './dto/update-property-unit.dto';
+import { UpdatePropertyUnitChargeRateDto } from './dto/update-property-unit-charge-rate.dto';
 import { ListPropertyUnitsDto } from './dto/list-property-units.dto';
 
 export interface PaginationMeta {
@@ -57,12 +58,14 @@ export class PropertyUnitsService {
     });
 
     if (propertyCharges.length > 0) {
+      const now = new Date();
       await Promise.all(
         propertyCharges.map((charge) =>
           this.prisma.db.orm.public.PropertyUnitCharge.create({
             propertyUnitId: unit.id,
             propertyChargeId: charge.propertyChargeId,
             customAmount: charge.amount?.toString() ?? null,
+            validFrom: now,
           }),
         ),
       );
@@ -146,7 +149,10 @@ export class PropertyUnitsService {
 
     const unitCharges =
       await this.prisma.db.orm.public.PropertyUnitCharge.where((charge) =>
-        charge.propertyUnitId.in(unitIds),
+        and(
+          charge.propertyUnitId.in(unitIds),
+          charge.validTo.isNull(),
+        ),
       ).all();
 
     const chargesByUnitId = unitCharges.reduce(
@@ -266,10 +272,19 @@ export class PropertyUnitsService {
     });
 
     if (shouldUpdateCharges) {
-      await this.prisma.db.orm.public.PropertyUnitCharge.where({
-        propertyUnitId: unitId,
-      }).delete();
+      const now = new Date();
 
+      // Set validTo on currently active charges
+      await this.prisma.db.orm.public.PropertyUnitCharge.where((charge) =>
+        and(
+          charge.propertyUnitId.eq(unitId),
+          charge.validTo.isNull(),
+        ),
+      ).update({
+        validTo: now,
+      });
+
+      // Create new charge versions
       if (propertyCharges.length > 0) {
         await Promise.all(
           propertyCharges.map((charge) =>
@@ -277,6 +292,7 @@ export class PropertyUnitsService {
               propertyUnitId: unitId,
               propertyChargeId: charge.propertyChargeId,
               customAmount: charge.amount?.toString() ?? null,
+              validFrom: now,
             }),
           ),
         );
@@ -287,6 +303,83 @@ export class PropertyUnitsService {
       ...updatedUnit,
       charges: await this.getUnitChargeDetails(unitId),
     };
+  }
+
+  async updateChargeRate(
+    managerId: string,
+    unitId: string,
+    propertyChargeId: string,
+    dto: UpdatePropertyUnitChargeRateDto,
+  ) {
+    const effectiveFrom = new Date(dto.effectiveFrom);
+    if (Number.isNaN(effectiveFrom.getTime())) {
+      throw new BadRequestException('Invalid effective-from date');
+    }
+
+    return this.prisma.db.transaction(async (tx) => {
+      const unit = await tx.orm.public.PropertyUnit.where({
+        id: unitId,
+        managerId,
+      }).first();
+
+      if (!unit) {
+        throw new NotFoundException('Property unit not found');
+      }
+
+      const propertyCharge = await tx.orm.public.PropertyCharge.where({
+        id: propertyChargeId,
+        propertyId: unit.propertyId,
+        managerId,
+      }).first();
+
+      if (!propertyCharge) {
+        throw new NotFoundException(
+          'Property charge not found for this property',
+        );
+      }
+
+      const rateHistory = await tx.orm.public.PropertyUnitCharge.where({
+        propertyUnitId: unitId,
+        propertyChargeId,
+      }).all();
+      const effectiveTime = effectiveFrom.getTime();
+      const currentRate = rateHistory.find(
+        (rate) =>
+          rate.validFrom.getTime() <= effectiveTime &&
+          (rate.validTo === null || rate.validTo.getTime() > effectiveTime),
+      );
+
+      if (currentRate?.validFrom.getTime() === effectiveTime) {
+        throw new BadRequestException(
+          'A rate already exists with this effective-from date',
+        );
+      }
+
+      const nextRate = rateHistory
+        .filter((rate) => rate.validFrom.getTime() > effectiveTime)
+        .sort(
+          (left, right) =>
+            left.validFrom.getTime() - right.validFrom.getTime(),
+        )[0];
+
+      if (currentRate) {
+        await tx.orm.public.PropertyUnitCharge.where({
+          propertyUnitId: unitId,
+          propertyChargeId,
+          validFrom: currentRate.validFrom,
+        }).update({
+          validTo: effectiveFrom,
+        });
+      }
+
+      return tx.orm.public.PropertyUnitCharge.create({
+        propertyUnitId: unitId,
+        propertyChargeId,
+        customAmount: dto.amount.toString(),
+        validFrom: effectiveFrom,
+        validTo: nextRate?.validFrom ?? null,
+      });
+    });
   }
 
   async archive(managerId: string, unitId: string) {
@@ -348,9 +441,12 @@ export class PropertyUnitsService {
 
   private async getUnitChargeDetails(unitId: string) {
     const unitCharges =
-      await this.prisma.db.orm.public.PropertyUnitCharge.where({
-        propertyUnitId: unitId,
-      }).all();
+      await this.prisma.db.orm.public.PropertyUnitCharge.where((charge) =>
+        and(
+          charge.propertyUnitId.eq(unitId),
+          charge.validTo.isNull(),
+        ),
+      ).all();
     const chargeIds = unitCharges.map(
       (unitCharge) => unitCharge.propertyChargeId,
     );

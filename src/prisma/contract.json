@@ -2175,6 +2175,20 @@
                   "codecId": "pg/uuid@1",
                   "kind": "scalar"
                 }
+              },
+              "validFrom": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/timestamptz-temporal@1",
+                  "kind": "scalar"
+                }
+              },
+              "validTo": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/timestamptz-temporal@1",
+                  "kind": "scalar"
+                }
               }
             },
             "relations": {
@@ -2221,6 +2235,12 @@
                 },
                 "propertyUnitId": {
                   "column": "property_unit_id"
+                },
+                "validFrom": {
+                  "column": "valid_from"
+                },
+                "validTo": {
+                  "column": "valid_to"
                 }
               },
               "namespaceId": "public",
@@ -4491,6 +4511,16 @@
                   "codecId": "pg/uuid@1",
                   "nativeType": "uuid",
                   "nullable": false
+                },
+                "valid_from": {
+                  "codecId": "pg/timestamptz-temporal@1",
+                  "nativeType": "timestamptz",
+                  "nullable": false
+                },
+                "valid_to": {
+                  "codecId": "pg/timestamptz-temporal@1",
+                  "nativeType": "timestamptz",
+                  "nullable": true
                 }
               },
               "foreignKeys": [
@@ -4530,6 +4560,14 @@
               "indexes": [
                 {
                   "columns": [
+                    "property_charge_id",
+                    "valid_from"
+                  ],
+                  "name": "charge_valid_from_idx",
+                  "unique": false
+                },
+                {
+                  "columns": [
                     "property_charge_id"
                   ],
                   "name": "property_unit_charges_property_charge_id_idx_aad71636",
@@ -4543,12 +4581,21 @@
                   "name": "property_unit_charges_property_unit_id_idx_2895e80f",
                   "prefix": "property_unit_charges_property_unit_id_idx",
                   "unique": false
+                },
+                {
+                  "columns": [
+                    "property_unit_id",
+                    "valid_from"
+                  ],
+                  "name": "unit_charge_valid_from_idx",
+                  "unique": false
                 }
               ],
               "primaryKey": {
                 "columns": [
                   "property_unit_id",
-                  "property_charge_id"
+                  "property_charge_id",
+                  "valid_from"
                 ]
               },
               "uniques": []
@@ -5347,7 +5394,7 @@
         "kind": "postgres-schema"
       }
     },
-    "storageHash": "9fac4aa1fb1fb3b9f0290663b8daaa1a701b2c0dc421d62caf0de398e9ee52df"
+    "storageHash": "a951a0e44bde757d448198d144cdd4aa569eb28b154e6a07d741e9d37415abcf"
   },
   "execution": {
     "executionHash": "8e9c983ff78a07252f8d86c07b2c152fd109aba234b96c8b51748afacf5a1756",

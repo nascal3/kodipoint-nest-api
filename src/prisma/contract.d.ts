@@ -34,7 +34,7 @@ import type {
 } from '@prisma/orm-postgres/contract/types';
 
 export type StorageHash =
-  StorageHashBase<'9fac4aa1fb1fb3b9f0290663b8daaa1a701b2c0dc421d62caf0de398e9ee52df'>;
+  StorageHashBase<'a951a0e44bde757d448198d144cdd4aa569eb28b154e6a07d741e9d37415abcf'>;
 export type ExecutionHash =
   ExecutionHashBase<'8e9c983ff78a07252f8d86c07b2c152fd109aba234b96c8b51748afacf5a1756'>;
 export type ProfileHash =
@@ -379,6 +379,8 @@ export type FieldOutputTypes = {
       readonly propertyUnitId: CodecTypes['pg/uuid@1']['output'];
       readonly propertyChargeId: CodecTypes['pg/uuid@1']['output'];
       readonly customAmount: CodecTypes['pg/numeric@1']['output'] | null;
+      readonly validFrom: CodecTypes['pg/timestamptz-temporal@1']['output'];
+      readonly validTo: CodecTypes['pg/timestamptz-temporal@1']['output'] | null;
     };
     readonly Receipt: {
       readonly id: CodecTypes['pg/uuid@1']['output'];
@@ -577,6 +579,8 @@ export type FieldInputTypes = {
       readonly propertyUnitId: CodecTypes['pg/uuid@1']['input'];
       readonly propertyChargeId: CodecTypes['pg/uuid@1']['input'];
       readonly customAmount: CodecTypes['pg/numeric@1']['input'] | null;
+      readonly validFrom: CodecTypes['pg/timestamptz-temporal@1']['input'];
+      readonly validTo: CodecTypes['pg/timestamptz-temporal@1']['input'] | null;
     };
     readonly Receipt: {
       readonly id: CodecTypes['pg/uuid@1']['input'];
@@ -763,6 +767,8 @@ export type StorageColumnTypes = {
       readonly custom_amount: CodecTypes['pg/numeric@1']['output'] | null;
       readonly property_charge_id: CodecTypes['pg/uuid@1']['output'];
       readonly property_unit_id: CodecTypes['pg/uuid@1']['output'];
+      readonly valid_from: CodecTypes['pg/timestamptz-temporal@1']['output'];
+      readonly valid_to: CodecTypes['pg/timestamptz-temporal@1']['output'] | null;
     };
     readonly property_units: {
       readonly bedroom_count: CodecTypes['pg/int4@1']['output'];
@@ -961,6 +967,8 @@ export type StorageColumnInputTypes = {
       readonly custom_amount: CodecTypes['pg/numeric@1']['input'] | null;
       readonly property_charge_id: CodecTypes['pg/uuid@1']['input'];
       readonly property_unit_id: CodecTypes['pg/uuid@1']['input'];
+      readonly valid_from: CodecTypes['pg/timestamptz-temporal@1']['input'];
+      readonly valid_to: CodecTypes['pg/timestamptz-temporal@1']['input'] | null;
     };
     readonly property_units: {
       readonly bedroom_count: CodecTypes['pg/int4@1']['input'];
@@ -1171,6 +1179,8 @@ export namespace Models {
     propertyUnitId: CodecTypes['pg/uuid@1']['output'];
     propertyChargeId: CodecTypes['pg/uuid@1']['output'];
     customAmount: CodecTypes['pg/numeric@1']['output'] | null;
+    validFrom: CodecTypes['pg/timestamptz-temporal@1']['output'];
+    validTo: CodecTypes['pg/timestamptz-temporal@1']['output'] | null;
     propertyCharge: public_PropertyCharge;
     propertyUnit: public_PropertyUnit;
     readonly [RelationKeys]?: 'propertyCharge' | 'propertyUnit';
@@ -2460,10 +2470,32 @@ type ContractBase = Omit<
                   readonly codecId: 'pg/numeric@1';
                   readonly nullable: true;
                 };
+                readonly valid_from: {
+                  readonly nativeType: 'timestamptz';
+                  readonly codecId: 'pg/timestamptz-temporal@1';
+                  readonly nullable: false;
+                };
+                readonly valid_to: {
+                  readonly nativeType: 'timestamptz';
+                  readonly codecId: 'pg/timestamptz-temporal@1';
+                  readonly nullable: true;
+                };
               };
-              primaryKey: { readonly columns: readonly ['property_unit_id', 'property_charge_id'] };
+              primaryKey: {
+                readonly columns: readonly ['property_unit_id', 'property_charge_id', 'valid_from'];
+              };
               uniques: readonly [];
               indexes: readonly [
+                {
+                  readonly name: 'unit_charge_valid_from_idx';
+                  readonly columns: readonly ['property_unit_id', 'valid_from'];
+                  readonly unique: false;
+                },
+                {
+                  readonly name: 'charge_valid_from_idx';
+                  readonly columns: readonly ['property_charge_id', 'valid_from'];
+                  readonly unique: false;
+                },
                 {
                   readonly name: 'property_unit_charges_property_unit_id_idx_2895e80f';
                   readonly prefix: 'property_unit_charges_property_unit_id_idx';
@@ -4374,6 +4406,20 @@ type ContractBase = Omit<
                 readonly nullable: true;
                 readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/numeric@1' };
               };
+              readonly validFrom: {
+                readonly nullable: false;
+                readonly type: {
+                  readonly kind: 'scalar';
+                  readonly codecId: 'pg/timestamptz-temporal@1';
+                };
+              };
+              readonly validTo: {
+                readonly nullable: true;
+                readonly type: {
+                  readonly kind: 'scalar';
+                  readonly codecId: 'pg/timestamptz-temporal@1';
+                };
+              };
             };
             readonly relations: {
               readonly propertyCharge: {
@@ -4408,6 +4454,8 @@ type ContractBase = Omit<
                 readonly propertyUnitId: { readonly column: 'property_unit_id' };
                 readonly propertyChargeId: { readonly column: 'property_charge_id' };
                 readonly customAmount: { readonly column: 'custom_amount' };
+                readonly validFrom: { readonly column: 'valid_from' };
+                readonly validTo: { readonly column: 'valid_to' };
               };
             };
           };
