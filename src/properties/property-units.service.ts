@@ -33,7 +33,9 @@ export class PropertyUnitsService {
       throw new NotFoundException('Property not found');
     }
 
-    return this.prisma.db.orm.public.PropertyUnit.create({
+    const { propertyChargeIds, ...unitData } = dto;
+
+    const unit = await this.prisma.db.orm.public.PropertyUnit.create({
       managerId,
       propertyId: dto.propertyId,
       unitNumber: dto.unitNumber,
@@ -42,6 +44,30 @@ export class PropertyUnitsService {
       marketRent: dto.marketRent.toString(),
       billingFrequency: dto.billingFrequency,
     });
+
+    if (propertyChargeIds && propertyChargeIds.length > 0) {
+      const charges = await this.prisma.db.orm.public.PropertyCharge.where({
+        id: { in: propertyChargeIds },
+        propertyId: dto.propertyId,
+      }).all();
+
+      if (charges.length !== propertyChargeIds.length) {
+        throw new NotFoundException(
+          'One or more property charges not found or do not belong to this property',
+        );
+      }
+
+      await Promise.all(
+        propertyChargeIds.map((chargeId) =>
+          this.prisma.db.orm.public.PropertyUnitCharge.create({
+            propertyUnitId: unit.id,
+            propertyChargeId: chargeId,
+          }),
+        ),
+      );
+    }
+
+    return unit;
   }
 
   async findAll(
@@ -145,9 +171,9 @@ export class PropertyUnitsService {
   }
 
   async update(managerId: string, unitId: string, dto: UpdatePropertyUnitDto) {
-    await this.findOne(managerId, unitId);
+    const unit = await this.findOne(managerId, unitId);
 
-    const { marketRent, propertyId, ...rest } = dto;
+    const { marketRent, propertyId, propertyChargeIds, ...rest } = dto;
 
     if (propertyId !== undefined) {
       const property = await this.prisma.db.orm.public.Property.where({
@@ -160,7 +186,7 @@ export class PropertyUnitsService {
       }
     }
 
-    return this.prisma.db.orm.public.PropertyUnit.where({
+    const updatedUnit = await this.prisma.db.orm.public.PropertyUnit.where({
       id: unitId,
       managerId,
     }).update({
@@ -168,6 +194,38 @@ export class PropertyUnitsService {
       ...(propertyId !== undefined && { propertyId }),
       ...(marketRent !== undefined && { marketRent: marketRent.toString() }),
     });
+
+    if (propertyChargeIds !== undefined) {
+      const targetPropertyId = propertyId ?? unit.propertyId;
+
+      await this.prisma.db.orm.public.PropertyUnitCharge.where({
+        propertyUnitId: unitId,
+      }).delete();
+
+      if (propertyChargeIds.length > 0) {
+        const charges = await this.prisma.db.orm.public.PropertyCharge.where({
+          id: { in: propertyChargeIds },
+          propertyId: targetPropertyId,
+        }).all();
+
+        if (charges.length !== propertyChargeIds.length) {
+          throw new NotFoundException(
+            'One or more property charges not found or do not belong to this property',
+          );
+        }
+
+        await Promise.all(
+          propertyChargeIds.map((chargeId) =>
+            this.prisma.db.orm.public.PropertyUnitCharge.create({
+              propertyUnitId: unitId,
+              propertyChargeId: chargeId,
+            }),
+          ),
+        );
+      }
+    }
+
+    return updatedUnit;
   }
 
   async archive(managerId: string, unitId: string) {

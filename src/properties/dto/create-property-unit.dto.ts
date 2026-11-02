@@ -1,5 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import {
+  IsArray,
   IsEnum,
   IsInt,
   IsNumber,
@@ -70,4 +71,15 @@ export class CreatePropertyUnitDto {
   })
   @IsEnum(BillingFrequency)
   billingFrequency: BillingFrequency;
+
+  @ApiProperty({
+    description: 'Array of property charge IDs to associate with this unit',
+    example: ['550e8400-e29b-41d4-a716-446655440000'],
+    required: false,
+    type: [String],
+  })
+  @IsOptional()
+  @IsArray()
+  @IsUUID('4', { each: true })
+  propertyChargeIds?: string[];
 }
