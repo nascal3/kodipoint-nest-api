@@ -72,6 +72,143 @@
   "domain": {
     "namespaces": {
       "public": {
+        "enum": {
+          "BillingFrequency": {
+            "codecId": "pg/text@1",
+            "members": [
+              {
+                "name": "MONTHLY",
+                "value": "MONTHLY"
+              },
+              {
+                "name": "QUARTERLY",
+                "value": "QUARTERLY"
+              },
+              {
+                "name": "BI_ANNUALLY",
+                "value": "BI_ANNUALLY"
+              },
+              {
+                "name": "ANNUALLY",
+                "value": "ANNUALLY"
+              }
+            ]
+          },
+          "InvoiceStatus": {
+            "codecId": "pg/text@1",
+            "members": [
+              {
+                "name": "DRAFT",
+                "value": "DRAFT"
+              },
+              {
+                "name": "ISSUED",
+                "value": "ISSUED"
+              },
+              {
+                "name": "PARTIALLY_PAID",
+                "value": "PARTIALLY_PAID"
+              },
+              {
+                "name": "PAID",
+                "value": "PAID"
+              },
+              {
+                "name": "OVERDUE",
+                "value": "OVERDUE"
+              },
+              {
+                "name": "CANCELLED",
+                "value": "CANCELLED"
+              }
+            ]
+          },
+          "PaymentStatus": {
+            "codecId": "pg/text@1",
+            "members": [
+              {
+                "name": "PENDING",
+                "value": "PENDING"
+              },
+              {
+                "name": "SUCCESSFUL",
+                "value": "SUCCESSFUL"
+              },
+              {
+                "name": "REVERSED",
+                "value": "REVERSED"
+              },
+              {
+                "name": "FAILED",
+                "value": "FAILED"
+              }
+            ]
+          },
+          "PropertyStatus": {
+            "codecId": "pg/text@1",
+            "members": [
+              {
+                "name": "ACTIVE",
+                "value": "ACTIVE"
+              },
+              {
+                "name": "INACTIVE",
+                "value": "INACTIVE"
+              },
+              {
+                "name": "MAINTENANCE",
+                "value": "MAINTENANCE"
+              },
+              {
+                "name": "ARCHIVED",
+                "value": "ARCHIVED"
+              }
+            ]
+          },
+          "TenancyStatus": {
+            "codecId": "pg/text@1",
+            "members": [
+              {
+                "name": "ACTIVE",
+                "value": "ACTIVE"
+              },
+              {
+                "name": "ENDED",
+                "value": "ENDED"
+              }
+            ]
+          },
+          "TenantStatus": {
+            "codecId": "pg/text@1",
+            "members": [
+              {
+                "name": "ACTIVE",
+                "value": "ACTIVE"
+              },
+              {
+                "name": "ENDED",
+                "value": "ENDED"
+              }
+            ]
+          },
+          "UserStatus": {
+            "codecId": "pg/text@1",
+            "members": [
+              {
+                "name": "ACTIVE",
+                "value": "ACTIVE"
+              },
+              {
+                "name": "INACTIVE",
+                "value": "INACTIVE"
+              },
+              {
+                "name": "BANNED",
+                "value": "BANNED"
+              }
+            ]
+          }
+        },
         "models": {
           "City": {
             "fields": {
@@ -381,6 +518,12 @@
                 "type": {
                   "codecId": "pg/text@1",
                   "kind": "scalar"
+                },
+                "valueSet": {
+                  "entityKind": "enum",
+                  "entityName": "InvoiceStatus",
+                  "namespaceId": "public",
+                  "plane": "domain"
                 }
               },
               "subtotal": {
@@ -1044,6 +1187,12 @@
                 "type": {
                   "codecId": "pg/text@1",
                   "kind": "scalar"
+                },
+                "valueSet": {
+                  "entityKind": "enum",
+                  "entityName": "PaymentStatus",
+                  "namespaceId": "public",
+                  "plane": "domain"
                 }
               },
               "tenantId": {
@@ -1442,6 +1591,12 @@
                 "type": {
                   "codecId": "pg/text@1",
                   "kind": "scalar"
+                },
+                "valueSet": {
+                  "entityKind": "enum",
+                  "entityName": "PropertyStatus",
+                  "namespaceId": "public",
+                  "plane": "domain"
                 }
               },
               "unitCount": {
@@ -1632,13 +1787,6 @@
                   "kind": "scalar"
                 }
               },
-              "billingFrequency": {
-                "nullable": false,
-                "type": {
-                  "codecId": "pg/text@1",
-                  "kind": "scalar"
-                }
-              },
               "createdAt": {
                 "nullable": false,
                 "type": {
@@ -1750,9 +1898,6 @@
                 "amount": {
                   "column": "amount"
                 },
-                "billingFrequency": {
-                  "column": "billing_frequency"
-                },
                 "createdAt": {
                   "column": "created_at"
                 },
@@ -1789,6 +1934,19 @@
                 "type": {
                   "codecId": "pg/int4@1",
                   "kind": "scalar"
+                }
+              },
+              "billingFrequency": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                },
+                "valueSet": {
+                  "entityKind": "enum",
+                  "entityName": "BillingFrequency",
+                  "namespaceId": "public",
+                  "plane": "domain"
                 }
               },
               "createdAt": {
@@ -1901,6 +2059,9 @@
               "fields": {
                 "bedroomCount": {
                   "column": "bedroom_count"
+                },
+                "billingFrequency": {
+                  "column": "billing_frequency"
                 },
                 "createdAt": {
                   "column": "created_at"
@@ -2122,6 +2283,12 @@
                 "type": {
                   "codecId": "pg/text@1",
                   "kind": "scalar"
+                },
+                "valueSet": {
+                  "entityKind": "enum",
+                  "entityName": "TenancyStatus",
+                  "namespaceId": "public",
+                  "plane": "domain"
                 }
               },
               "tenantId": {
@@ -2353,6 +2520,12 @@
                 "type": {
                   "codecId": "pg/text@1",
                   "kind": "scalar"
+                },
+                "valueSet": {
+                  "entityKind": "enum",
+                  "entityName": "TenantStatus",
+                  "namespaceId": "public",
+                  "plane": "domain"
                 }
               },
               "updatedAt": {
@@ -2567,6 +2740,12 @@
                 "type": {
                   "codecId": "pg/text@1",
                   "kind": "scalar"
+                },
+                "valueSet": {
+                  "entityKind": "enum",
+                  "entityName": "UserStatus",
+                  "namespaceId": "public",
+                  "plane": "domain"
                 }
               },
               "updatedAt": {
@@ -3233,6 +3412,13 @@
               "uniques": []
             },
             "invoices": {
+              "checks": [
+                {
+                  "expression": "\"status\" IN ('DRAFT', 'ISSUED', 'PARTIALLY_PAID', 'PAID', 'OVERDUE', 'CANCELLED')",
+                  "name": "invoices_status_check_2eafa38f",
+                  "prefix": "invoices_status_check"
+                }
+              ],
               "columns": {
                 "amount_paid": {
                   "codecId": "pg/numeric@1",
@@ -3291,7 +3477,13 @@
                 "status": {
                   "codecId": "pg/text@1",
                   "nativeType": "text",
-                  "nullable": false
+                  "nullable": false,
+                  "valueSet": {
+                    "entityKind": "valueSet",
+                    "entityName": "InvoiceStatus",
+                    "namespaceId": "public",
+                    "plane": "storage"
+                  }
                 },
                 "subtotal": {
                   "codecId": "pg/numeric@1",
@@ -3659,6 +3851,13 @@
               "uniques": []
             },
             "payments": {
+              "checks": [
+                {
+                  "expression": "\"status\" IN ('PENDING', 'SUCCESSFUL', 'REVERSED', 'FAILED')",
+                  "name": "payments_status_check_c6b33104",
+                  "prefix": "payments_status_check"
+                }
+              ],
               "columns": {
                 "amount": {
                   "codecId": "pg/numeric@1",
@@ -3717,7 +3916,13 @@
                 "status": {
                   "codecId": "pg/text@1",
                   "nativeType": "text",
-                  "nullable": false
+                  "nullable": false,
+                  "valueSet": {
+                    "entityKind": "valueSet",
+                    "entityName": "PaymentStatus",
+                    "namespaceId": "public",
+                    "plane": "storage"
+                  }
                 },
                 "tenant_id": {
                   "codecId": "pg/uuid@1",
@@ -3848,6 +4053,13 @@
               "uniques": []
             },
             "properties": {
+              "checks": [
+                {
+                  "expression": "\"status\" IN ('ACTIVE', 'INACTIVE', 'MAINTENANCE', 'ARCHIVED')",
+                  "name": "properties_status_check_1bcc6c54",
+                  "prefix": "properties_status_check"
+                }
+              ],
               "columns": {
                 "address_line_1": {
                   "codecId": "pg/text@1",
@@ -3929,7 +4141,13 @@
                     "value": "ACTIVE"
                   },
                   "nativeType": "text",
-                  "nullable": false
+                  "nullable": false,
+                  "valueSet": {
+                    "entityKind": "valueSet",
+                    "entityName": "PropertyStatus",
+                    "namespaceId": "public",
+                    "plane": "storage"
+                  }
                 },
                 "unit_count": {
                   "codecId": "pg/int4@1",
@@ -4010,11 +4228,6 @@
                 "amount": {
                   "codecId": "pg/numeric@1",
                   "nativeType": "numeric",
-                  "nullable": false
-                },
-                "billing_frequency": {
-                  "codecId": "pg/text@1",
-                  "nativeType": "text",
                   "nullable": false
                 },
                 "created_at": {
@@ -4122,11 +4335,33 @@
               "uniques": []
             },
             "property_units": {
+              "checks": [
+                {
+                  "expression": "\"billing_frequency\" IN ('MONTHLY', 'QUARTERLY', 'BI_ANNUALLY', 'ANNUALLY')",
+                  "name": "property_units_billing_frequency_check_3a66bf05",
+                  "prefix": "property_units_billing_frequency_check"
+                }
+              ],
               "columns": {
                 "bedroom_count": {
                   "codecId": "pg/int4@1",
                   "nativeType": "int4",
                   "nullable": false
+                },
+                "billing_frequency": {
+                  "codecId": "pg/text@1",
+                  "default": {
+                    "kind": "literal",
+                    "value": "MONTHLY"
+                  },
+                  "nativeType": "text",
+                  "nullable": false,
+                  "valueSet": {
+                    "entityKind": "valueSet",
+                    "entityName": "BillingFrequency",
+                    "namespaceId": "public",
+                    "plane": "storage"
+                  }
                 },
                 "created_at": {
                   "codecId": "pg/timestamptz-temporal@1",
@@ -4350,6 +4585,13 @@
               ]
             },
             "tenancies": {
+              "checks": [
+                {
+                  "expression": "\"status\" IN ('ACTIVE', 'ENDED')",
+                  "name": "tenancies_status_check_4654e3fb",
+                  "prefix": "tenancies_status_check"
+                }
+              ],
               "columns": {
                 "assigned_at": {
                   "codecId": "pg/timestamptz-temporal@1",
@@ -4412,7 +4654,13 @@
                     "value": "ACTIVE"
                   },
                   "nativeType": "text",
-                  "nullable": false
+                  "nullable": false,
+                  "valueSet": {
+                    "entityKind": "valueSet",
+                    "entityName": "TenancyStatus",
+                    "namespaceId": "public",
+                    "plane": "storage"
+                  }
                 },
                 "tenant_id": {
                   "codecId": "pg/uuid@1",
@@ -4556,6 +4804,13 @@
               "uniques": []
             },
             "tenants": {
+              "checks": [
+                {
+                  "expression": "\"status\" IN ('ACTIVE', 'ENDED')",
+                  "name": "tenants_status_check_4654e3fb",
+                  "prefix": "tenants_status_check"
+                }
+              ],
               "columns": {
                 "address": {
                   "codecId": "pg/text@1",
@@ -4618,7 +4873,13 @@
                     "value": "ACTIVE"
                   },
                   "nativeType": "text",
-                  "nullable": false
+                  "nullable": false,
+                  "valueSet": {
+                    "entityKind": "valueSet",
+                    "entityName": "TenantStatus",
+                    "namespaceId": "public",
+                    "plane": "storage"
+                  }
                 },
                 "updated_at": {
                   "codecId": "pg/timestamptz-temporal@1",
@@ -4662,6 +4923,13 @@
               "uniques": []
             },
             "users": {
+              "checks": [
+                {
+                  "expression": "\"status\" IN ('ACTIVE', 'INACTIVE', 'BANNED')",
+                  "name": "users_status_check_a50a312b",
+                  "prefix": "users_status_check"
+                }
+              ],
               "columns": {
                 "address": {
                   "codecId": "pg/text@1",
@@ -4743,7 +5011,13 @@
                     "value": "ACTIVE"
                   },
                   "nativeType": "text",
-                  "nullable": false
+                  "nullable": false,
+                  "valueSet": {
+                    "entityKind": "valueSet",
+                    "entityName": "UserStatus",
+                    "namespaceId": "public",
+                    "plane": "storage"
+                  }
                 },
                 "updated_at": {
                   "codecId": "pg/timestamptz-temporal@1",
@@ -4766,13 +5040,75 @@
                 }
               ]
             }
+          },
+          "valueSet": {
+            "BillingFrequency": {
+              "kind": "valueSet",
+              "values": [
+                "MONTHLY",
+                "QUARTERLY",
+                "BI_ANNUALLY",
+                "ANNUALLY"
+              ]
+            },
+            "InvoiceStatus": {
+              "kind": "valueSet",
+              "values": [
+                "DRAFT",
+                "ISSUED",
+                "PARTIALLY_PAID",
+                "PAID",
+                "OVERDUE",
+                "CANCELLED"
+              ]
+            },
+            "PaymentStatus": {
+              "kind": "valueSet",
+              "values": [
+                "PENDING",
+                "SUCCESSFUL",
+                "REVERSED",
+                "FAILED"
+              ]
+            },
+            "PropertyStatus": {
+              "kind": "valueSet",
+              "values": [
+                "ACTIVE",
+                "INACTIVE",
+                "MAINTENANCE",
+                "ARCHIVED"
+              ]
+            },
+            "TenancyStatus": {
+              "kind": "valueSet",
+              "values": [
+                "ACTIVE",
+                "ENDED"
+              ]
+            },
+            "TenantStatus": {
+              "kind": "valueSet",
+              "values": [
+                "ACTIVE",
+                "ENDED"
+              ]
+            },
+            "UserStatus": {
+              "kind": "valueSet",
+              "values": [
+                "ACTIVE",
+                "INACTIVE",
+                "BANNED"
+              ]
+            }
           }
         },
         "id": "public",
         "kind": "postgres-schema"
       }
     },
-    "storageHash": "11294cd0084f2bb87434afd6296d9c65de211a931ced7d3541e96d562e05b503"
+    "storageHash": "0172c8fa3f6e66d75a6e52a0259fb7fbd5aa69a627b665538363d67966de3b44"
   },
   "execution": {
     "executionHash": "8e9c983ff78a07252f8d86c07b2c152fd109aba234b96c8b51748afacf5a1756",

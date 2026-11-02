@@ -1,5 +1,10 @@
 // use prisma-8
 
+enum UserStatus {
+  ACTIVE
+  INACTIVE
+  BANNED
+}
 model User {
   id                Uuid   @id @default(uuid())
   email             String @unique
@@ -9,7 +14,7 @@ model User {
   address           String
   phone             String
   role              String @default("administrator")
-  status            String @default("ACTIVE")
+  status            UserStatus @default(ACTIVE)
   organization      String?
   billingEmail      String? @map("billing_email")
   billingAddress    String? @map("billing_address")
@@ -75,6 +80,12 @@ model City {
   @@map("cities")
 }
 
+enum PropertyStatus {
+  ACTIVE
+  INACTIVE
+  MAINTENANCE
+  ARCHIVED
+}
 model Property {
   id           Uuid    @id @default(uuid())
   managerId    Uuid    @map("manager_id")
@@ -89,7 +100,7 @@ model Property {
   currency     String  @default("KES")
   monthlyRent  Decimal @map("monthly_rent")
   unitCount    Int     @default(0) @map("unit_count")
-  status       String  @default("ACTIVE")
+  status       PropertyStatus  @default(ACTIVE)
 
   createdAt temporal.createdAt() @map("created_at")
   updatedAt temporal.updatedAt() @map("updated_at")
@@ -115,7 +126,6 @@ model PropertyCharge {
   name             String
   description      String?
   amount           Decimal
-  billingFrequency String  @map("billing_frequency")
   isActive         Boolean @map("is_active")
 
   createdAt temporal.createdAt() @map("created_at")
@@ -131,14 +141,22 @@ model PropertyCharge {
   @@map("property_charges")
 }
 
+
+enum BillingFrequency {
+  MONTHLY
+  QUARTERLY
+  BI_ANNUALLY
+  ANNUALLY
+}
 model PropertyUnit {
-  id            Uuid    @id @default(uuid())
-  managerId     Uuid    @map("manager_id")
-  propertyId    Uuid    @map("property_id")
-  unitNumber    String  @map("unit_number")
-  bedroomCount  Int     @map("bedroom_count")
-  status        String  @default("AVAILABLE")
-  marketRent    Decimal @map("market_rent")
+  id               Uuid    @id @default(uuid())
+  managerId        Uuid    @map("manager_id")
+  propertyId       Uuid    @map("property_id")
+  unitNumber       String  @map("unit_number")
+  bedroomCount     Int     @map("bedroom_count")
+  status           String  @default("AVAILABLE")
+  marketRent       Decimal @map("market_rent")
+  billingFrequency BillingFrequency @default(MONTHLY) @map("billing_frequency")
 
   createdAt temporal.createdAt() @map("created_at")
   updatedAt temporal.updatedAt() @map("updated_at")
@@ -154,6 +172,10 @@ model PropertyUnit {
   @@map("property_units")
 }
 
+enum TenantStatus {
+  ACTIVE
+  ENDED
+}
 model Tenant {
   id                    Uuid    @id @default(uuid())
   managerId             Uuid    @map("manager_id")
@@ -164,7 +186,7 @@ model Tenant {
   address               String?
   emergencyContactName  String? @map("emergency_contact_name")
   emergencyContactPhone String? @map("emergency_contact_phone")
-  status                String @default("ACTIVE")
+  status                TenantStatus  @default(ACTIVE)
 
   createdAt temporal.createdAt() @map("created_at")
   updatedAt temporal.updatedAt() @map("updated_at")
@@ -179,27 +201,31 @@ model Tenant {
   @@map("tenants")
 }
 
+enum TenancyStatus {
+  ACTIVE
+  ENDED
+}
 model Tenancy {
-  id            Uuid      @id @default(uuid())
-  managerId     Uuid      @map("manager_id")
-  propertyId    Uuid      @map("property_id")
-  propertyUnit  String    @map("property_unit")
-  propertyUnitId Uuid?    @map("property_unit_id")
-  tenantId      Uuid      @map("tenant_id")
-  startDate     Date      @map("start_date")
-  endDate       Date?     @map("end_date")
-  monthlyRent   Decimal   @map("monthly_rent")
-  status        String    @default("ACTIVE")
-  assignedAt    DateTime  @map("assigned_at")
-  unassignedAt  DateTime? @map("unassigned_at")
+  id            Uuid             @id @default(uuid())
+  managerId     Uuid             @map("manager_id")
+  propertyId    Uuid             @map("property_id")
+  propertyUnit  String           @map("property_unit")
+  propertyUnitId Uuid?           @map("property_unit_id")
+  tenantId      Uuid             @map("tenant_id")
+  startDate     Date             @map("start_date")
+  endDate       Date?            @map("end_date")
+  monthlyRent   Decimal          @map("monthly_rent")
+  status        TenancyStatus    @default(ACTIVE)
+  assignedAt    DateTime         @map("assigned_at")
+  unassignedAt  DateTime?        @map("unassigned_at")
 
   createdAt temporal.createdAt() @map("created_at")
   updatedAt temporal.updatedAt() @map("updated_at")
 
-  manager       User         @relation(fields: [managerId], references: [id])
-  property      Property     @relation(fields: [propertyId], references: [id])
+  manager       User          @relation(fields: [managerId], references: [id])
+  property      Property      @relation(fields: [propertyId], references: [id])
   unit          PropertyUnit? @relation(fields: [propertyUnitId], references: [id])
-  tenant        Tenant       @relation(fields: [tenantId], references: [id])
+  tenant        Tenant        @relation(fields: [tenantId], references: [id])
 
   invoices Invoice[]
 
@@ -210,6 +236,14 @@ model Tenancy {
   @@map("tenancies")
 }
 
+enum InvoiceStatus {
+  DRAFT
+  ISSUED
+  PARTIALLY_PAID
+  PAID
+  OVERDUE
+  CANCELLED
+}
 model Invoice {
   id            Uuid    @id @default(uuid())
   managerId     Uuid    @map("manager_id")
@@ -223,7 +257,7 @@ model Invoice {
   totalAmount   Decimal @map("total_amount")
   amountPaid    Decimal @map("amount_paid")
   balanceDue    Decimal @map("balance_due")
-  status        String
+  status        InvoiceStatus
   notes         String?
 
   createdAt temporal.createdAt() @map("created_at")
@@ -270,6 +304,12 @@ model InvoiceItem {
   @@map("invoice_items")
 }
 
+enum PaymentStatus {
+  PENDING
+  SUCCESSFUL
+  REVERSED
+  FAILED
+}
 model Payment {
   id              Uuid    @id @default(uuid())
   managerId       Uuid    @map("manager_id")
@@ -281,7 +321,7 @@ model Payment {
   paymentMethod   String  @map("payment_method")
   referenceNumber String? @map("reference_number")
   notes           String?
-  status          String
+  status          PaymentStatus
 
   createdAt temporal.createdAt() @map("created_at")
   updatedAt temporal.updatedAt() @map("updated_at")
