@@ -1,4 +1,5 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
+import { and } from '@prisma/orm-postgres/orm-client';
 
 import { DatabaseService } from '@/database/database.service';
 import { CreatePropertyUnitDto } from './dto/create-property-unit.dto';
@@ -33,7 +34,7 @@ export class PropertyUnitsService {
       throw new NotFoundException('Property not found');
     }
 
-    const { propertyChargeIds, ...unitData } = dto;
+    const { propertyChargeIds } = dto;
 
     const unit = await this.prisma.db.orm.public.PropertyUnit.create({
       managerId,
@@ -46,10 +47,13 @@ export class PropertyUnitsService {
     });
 
     if (propertyChargeIds && propertyChargeIds.length > 0) {
-      const charges = await this.prisma.db.orm.public.PropertyCharge.where({
-        id: { in: propertyChargeIds },
-        propertyId: dto.propertyId,
-      }).all();
+      const charges = await this.prisma.db.orm.public.PropertyCharge.where(
+        (charge) =>
+          and(
+            charge.id.in(propertyChargeIds),
+            charge.propertyId.eq(dto.propertyId),
+          ),
+      ).all();
 
       if (charges.length !== propertyChargeIds.length) {
         throw new NotFoundException(
@@ -203,10 +207,13 @@ export class PropertyUnitsService {
       }).delete();
 
       if (propertyChargeIds.length > 0) {
-        const charges = await this.prisma.db.orm.public.PropertyCharge.where({
-          id: { in: propertyChargeIds },
-          propertyId: targetPropertyId,
-        }).all();
+        const charges = await this.prisma.db.orm.public.PropertyCharge.where(
+          (charge) =>
+            and(
+              charge.id.in(propertyChargeIds),
+              charge.propertyId.eq(targetPropertyId),
+            ),
+        ).all();
 
         if (charges.length !== propertyChargeIds.length) {
           throw new NotFoundException(
