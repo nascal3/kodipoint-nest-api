@@ -142,7 +142,6 @@ model PropertyCharge {
   @@map("property_charges")
 }
 
-
 enum BillingFrequency {
   MONTHLY
   QUARTERLY
