@@ -429,12 +429,16 @@ export class PropertyUnitsService {
 
     const propertyCharges =
       await this.prisma.db.orm.public.PropertyCharge.where((charge) =>
-        and(charge.id.in(chargeIds), charge.propertyId.eq(propertyId)),
+        and(
+          charge.id.in(chargeIds),
+          charge.propertyId.eq(propertyId),
+          charge.isActive.eq(true),
+        ),
       ).all();
 
     if (propertyCharges.length !== chargeIds.length) {
       throw new NotFoundException(
-        'One or more property charges not found or do not belong to this property',
+        'One or more property charges not found, do not belong to this property, or are not active',
       );
     }
   }
