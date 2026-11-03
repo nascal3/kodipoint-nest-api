@@ -44,6 +44,16 @@ export class PropertyUnitsService {
       throw new NotFoundException('Property not found');
     }
 
+    const existingUnit = await this.prisma.db.orm.public.PropertyUnit.where({
+      unitNumber: dto.unitNumber,
+    }).first();
+
+    if (existingUnit) {
+      throw new BadRequestException(
+        'A property unit with this unit number already exists',
+      );
+    }
+
     const propertyCharges = this.getPropertyCharges(dto);
     await this.validatePropertyCharges(propertyCharges, dto.propertyId);
 
