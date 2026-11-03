@@ -1,0 +1,125 @@
+[
+  {
+    "id": "dropConstraint.invoice_items.invoice_items_property_charge_id_fkey",
+    "label": "Drop constraint \"invoice_items_property_charge_id_fkey\" on \"invoice_items\"",
+    "operationClass": "destructive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "invoice_items_property_charge_id_fkey",
+        "table": "invoice_items"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"invoice_items_property_charge_id_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "invoice_items_property_charge_id_fkey",
+          "public",
+          "\"public\".\"invoice_items\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "drop constraint \"invoice_items_property_charge_id_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"invoice_items\" DROP CONSTRAINT \"invoice_items_property_charge_id_fkey\""
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"invoice_items_property_charge_id_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "invoice_items_property_charge_id_fkey",
+          "public",
+          "\"public\".\"invoice_items\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "dropIndex.invoice_items.invoice_items_property_charge_id_idx_aad71636",
+    "label": "Drop index \"invoice_items_property_charge_id_idx_aad71636\"",
+    "operationClass": "destructive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "invoice_items_property_charge_id_idx_aad71636",
+        "table": "invoice_items"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"invoice_items_property_charge_id_idx_aad71636\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"invoice_items_property_charge_id_idx_aad71636\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "drop index \"invoice_items_property_charge_id_idx_aad71636\"",
+        "sql": "DROP INDEX \"public\".\"invoice_items_property_charge_id_idx_aad71636\"",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"invoice_items_property_charge_id_idx_aad71636\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"invoice_items_property_charge_id_idx_aad71636\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "dropColumn.invoice_items.property_charge_id",
+    "label": "Drop column \"property_charge_id\" from \"invoice_items\"",
+    "operationClass": "destructive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "property_charge_id",
+        "table": "invoice_items"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"property_charge_id\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "invoice_items",
+          "property_charge_id"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "drop column \"property_charge_id\"",
+        "sql": "ALTER TABLE \"public\".\"invoice_items\" DROP COLUMN \"property_charge_id\""
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"property_charge_id\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "invoice_items",
+          "property_charge_id"
+        ]
+      }
+    ]
+  }
+]

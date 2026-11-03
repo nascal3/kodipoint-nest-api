@@ -1,0 +1,209 @@
+[
+  {
+    "id": "column.public.invoice_items.unit_charge_property_charge_id",
+    "label": "Add column \"unit_charge_property_charge_id\" to \"invoice_items\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "unit_charge_property_charge_id",
+        "table": "invoice_items"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"unit_charge_property_charge_id\" is missing",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "invoice_items",
+          "unit_charge_property_charge_id"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add column \"unit_charge_property_charge_id\"",
+        "sql": "ALTER TABLE \"public\".\"invoice_items\" ADD COLUMN \"unit_charge_property_charge_id\" uuid"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"unit_charge_property_charge_id\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "invoice_items",
+          "unit_charge_property_charge_id"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "column.public.invoice_items.unit_charge_property_unit_id",
+    "label": "Add column \"unit_charge_property_unit_id\" to \"invoice_items\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "unit_charge_property_unit_id",
+        "table": "invoice_items"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"unit_charge_property_unit_id\" is missing",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "invoice_items",
+          "unit_charge_property_unit_id"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add column \"unit_charge_property_unit_id\"",
+        "sql": "ALTER TABLE \"public\".\"invoice_items\" ADD COLUMN \"unit_charge_property_unit_id\" uuid"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"unit_charge_property_unit_id\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "invoice_items",
+          "unit_charge_property_unit_id"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "column.public.invoice_items.unit_charge_valid_from",
+    "label": "Add column \"unit_charge_valid_from\" to \"invoice_items\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "unit_charge_valid_from",
+        "table": "invoice_items"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"unit_charge_valid_from\" is missing",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "invoice_items",
+          "unit_charge_valid_from"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add column \"unit_charge_valid_from\"",
+        "sql": "ALTER TABLE \"public\".\"invoice_items\" ADD COLUMN \"unit_charge_valid_from\" timestamptz"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"unit_charge_valid_from\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "invoice_items",
+          "unit_charge_valid_from"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.invoice_items.invoice_items_unit_charge_idx",
+    "label": "Create index \"invoice_items_unit_charge_idx\" on \"invoice_items\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "invoice_items_unit_charge_idx",
+        "table": "invoice_items"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"invoice_items_unit_charge_idx\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"invoice_items_unit_charge_idx\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"invoice_items_unit_charge_idx\"",
+        "sql": "CREATE INDEX \"invoice_items_unit_charge_idx\" ON \"public\".\"invoice_items\" (\"unit_charge_property_unit_id\", \"unit_charge_property_charge_id\", \"unit_charge_valid_from\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"invoice_items_unit_charge_idx\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"invoice_items_unit_charge_idx\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.invoice_items.invoice_items_unit_charge_property_unit_id_unit_charge_property_charge_id_unit_charge_valid_from_fkey",
+    "label": "Add foreign key \"invoice_items_unit_charge_property_unit_id_unit_charge_property_charge_id_unit_charge_valid_from_fkey\" on \"invoice_items\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "invoice_items_unit_charge_property_unit_id_unit_charge_property_charge_id_unit_charge_valid_from_fkey",
+        "table": "invoice_items"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"invoice_items_unit_charge_property_unit_id_unit_charge_property_charge_id_unit_charge_valid_from_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "invoice_items_unit_charge_property_unit_id_unit_charge_property_charge_id_unit_charge_valid_from_fkey",
+          "public",
+          "\"public\".\"invoice_items\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"invoice_items_unit_charge_property_unit_id_unit_charge_property_charge_id_unit_charge_valid_from_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"invoice_items\"\nADD CONSTRAINT \"invoice_items_unit_charge_property_unit_id_unit_charge_property_charge_id_unit_charge_valid_from_fkey\"\nFOREIGN KEY (\"unit_charge_property_unit_id\", \"unit_charge_property_charge_id\", \"unit_charge_valid_from\")\nREFERENCES \"public\".\"property_unit_charges\" (\"property_unit_id\", \"property_charge_id\", \"valid_from\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"invoice_items_unit_charge_property_unit_id_unit_charge_property_charge_id_unit_charge_valid_from_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "invoice_items_unit_charge_property_unit_id_unit_charge_property_charge_id_unit_charge_valid_from_fkey",
+          "public",
+          "\"public\".\"invoice_items\""
+        ]
+      }
+    ]
+  }
+]
