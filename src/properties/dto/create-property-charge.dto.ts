@@ -1,4 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
+import { Type } from 'class-transformer';
 import {
   IsBoolean,
   IsNumber,
@@ -36,6 +37,7 @@ export class CreatePropertyChargeDto {
     description: 'The amount of the charge',
     example: 500,
   })
+  @Type(() => Number)
   @IsNumber()
   @Min(0)
   amount: number;
