@@ -18,7 +18,7 @@ import {
 
 import { CurrentUser } from '@/common/decorators/current-user.decorator';
 import { PropertyChargesService } from './property-charges.service';
-import { CreatePropertyChargeDto } from './dto/create-property-charge.dto';
+import { CreatePropertyChargesDto } from './dto/create-property-charges.dto';
 import { UpdatePropertyChargeDto } from './dto/update-property-charge.dto';
 import { ListPropertyChargesDto } from './dto/list-property-charges.dto';
 import * as authenticatedUserType from '../common/types/authenticated-user.type';
@@ -35,12 +35,12 @@ export class PropertyChargesController {
   constructor(private readonly propertyChargesService: PropertyChargesService) {}
 
   @Post()
-  @ApiOperation({ summary: 'Create a new property charge' })
+  @ApiOperation({ summary: 'Create one or more property charges' })
   create(
     @CurrentUser() user: authenticatedUserType.AuthenticatedUser,
-    @Body() dto: CreatePropertyChargeDto,
+    @Body() dto: CreatePropertyChargesDto,
   ) {
-    return this.propertyChargesService.create(user.id, dto);
+    return this.propertyChargesService.createMany(user.id, dto);
   }
 
   @Get()

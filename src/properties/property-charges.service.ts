@@ -3,6 +3,7 @@ import { and } from '@prisma/orm-postgres/orm-client';
 
 import { DatabaseService } from '@/database/database.service';
 import { CreatePropertyChargeDto } from './dto/create-property-charge.dto';
+import { CreatePropertyChargesDto } from './dto/create-property-charges.dto';
 import { UpdatePropertyChargeDto } from './dto/update-property-charge.dto';
 import { ListPropertyChargesDto } from './dto/list-property-charges.dto';
 
@@ -53,6 +54,35 @@ export class PropertyChargesService {
       amount: dto.amount.toString(),
       isActive: dto.isActive,
     });
+  }
+
+  async createMany(managerId: string, dto: CreatePropertyChargesDto) {
+    const results = await Promise.allSettled(
+      dto.charges.map((chargeDto) => this.create(managerId, chargeDto))
+    );
+
+    const created: any[] = [];
+    const errors: Array<{ index: number; charge: any; error: string }> = [];
+
+    results.forEach((result, index) => {
+      if (result.status === 'fulfilled') {
+        created.push(result.value);
+      } else {
+        errors.push({
+          index,
+          charge: dto.charges[index],
+          error: result.reason.message,
+        });
+      }
+    });
+
+    return {
+      created,
+      errors,
+      total: dto.charges.length,
+      successful: created.length,
+      failed: errors.length,
+    };
   }
 
   async findAll(
