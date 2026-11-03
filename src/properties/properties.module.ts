@@ -11,9 +11,9 @@ import { AuthModule } from '@/auth/auth.module';
 @Module({
   imports: [AuthModule],
   controllers: [
-    PropertiesController,
-    PropertyUnitsController,
     PropertyChargesController,
+    PropertyUnitsController,
+    PropertiesController,
   ],
   providers: [
     PropertiesService,
