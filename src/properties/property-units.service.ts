@@ -4,6 +4,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { and } from '@prisma/orm-postgres/orm-client';
+import { Temporal } from '@js-temporal/polyfill';
 
 import { DatabaseService } from '@/database/database.service';
 import { CreatePropertyUnitDto } from './dto/create-property-unit.dto';
@@ -68,7 +69,7 @@ export class PropertyUnitsService {
     });
 
     if (propertyCharges.length > 0) {
-      const now = new Date();
+      const now = Temporal.Now.instant();
       await Promise.all(
         propertyCharges.map((charge) =>
           this.prisma.db.orm.public.PropertyUnitCharge.create({
@@ -282,7 +283,7 @@ export class PropertyUnitsService {
     });
 
     if (shouldUpdateCharges) {
-      const now = new Date();
+      const now = Temporal.Now.instant();
 
       // Set validTo on currently active charges
       await this.prisma.db.orm.public.PropertyUnitCharge.where((charge) =>
@@ -321,10 +322,13 @@ export class PropertyUnitsService {
     propertyChargeId: string,
     dto: UpdatePropertyUnitChargeRateDto,
   ) {
-    const effectiveFrom = new Date(dto.effectiveFrom);
-    if (Number.isNaN(effectiveFrom.getTime())) {
+    const effectiveFromDate = new Date(dto.effectiveFrom);
+    if (Number.isNaN(effectiveFromDate.getTime())) {
       throw new BadRequestException('Invalid effective-from date');
     }
+    const effectiveFrom = Temporal.Instant.fromEpochMilliseconds(
+      effectiveFromDate.getTime(),
+    );
 
     return this.prisma.db.transaction(async (tx) => {
       const unit = await tx.orm.public.PropertyUnit.where({
@@ -352,24 +356,25 @@ export class PropertyUnitsService {
         propertyUnitId: unitId,
         propertyChargeId,
       }).all();
-      const effectiveTime = effectiveFrom.getTime();
+      const effectiveTime = effectiveFrom.epochMilliseconds;
       const currentRate = rateHistory.find(
         (rate) =>
-          rate.validFrom.getTime() <= effectiveTime &&
-          (rate.validTo === null || rate.validTo.getTime() > effectiveTime),
+          rate.validFrom.epochMilliseconds <= effectiveTime &&
+          (rate.validTo === null ||
+            rate.validTo.epochMilliseconds > effectiveTime),
       );
 
-      if (currentRate?.validFrom.getTime() === effectiveTime) {
+      if (currentRate?.validFrom.epochMilliseconds === effectiveTime) {
         throw new BadRequestException(
           'A rate already exists with this effective-from date',
         );
       }
 
       const nextRate = rateHistory
-        .filter((rate) => rate.validFrom.getTime() > effectiveTime)
+        .filter((rate) => rate.validFrom.epochMilliseconds > effectiveTime)
         .sort(
           (left, right) =>
-            left.validFrom.getTime() - right.validFrom.getTime(),
+            left.validFrom.epochMilliseconds - right.validFrom.epochMilliseconds,
         )[0];
 
       if (currentRate) {
