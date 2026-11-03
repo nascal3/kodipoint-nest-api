@@ -134,7 +134,6 @@ model PropertyCharge {
   manager  User     @relation(fields: [managerId], references: [id])
   property Property @relation(fields: [propertyId], references: [id])
 
-  invoiceItems InvoiceItem[]
   unitCharges  PropertyUnitCharge[]
 
   @@index([managerId])
@@ -188,6 +187,8 @@ model PropertyUnitCharge {
 
   propertyUnit   PropertyUnit   @relation(fields: [propertyUnitId], references: [id])
   propertyCharge PropertyCharge @relation(fields: [propertyChargeId], references: [id])
+
+  invoiceItems InvoiceItem[]
 
   @@id([propertyUnitId, propertyChargeId, validFrom])
   @@index([propertyUnitId, validFrom], map: "unit_charge_valid_from_idx")
@@ -308,22 +309,30 @@ model Invoice {
 }
 
 model InvoiceItem {
-  id               Uuid    @id @default(uuid())
-  invoiceId        Uuid    @map("invoice_id")
-  propertyChargeId Uuid?   @map("property_charge_id") // null for plain rent lines
-  description      String
-  quantity         Decimal
-  unitAmount       Decimal @map("unit_amount")
-  totalAmount      Decimal @map("total_amount")
+  id                       Uuid      @id @default(uuid())
+  invoiceId                Uuid      @map("invoice_id")
+  unitChargePropertyUnitId Uuid?     @map("unit_charge_property_unit_id")
+  unitChargePropertyChargeId Uuid?   @map("unit_charge_property_charge_id")
+  unitChargeValidFrom      DateTime? @map("unit_charge_valid_from")
+  description              String
+  quantity                 Decimal
+  unitAmount               Decimal   @map("unit_amount")
+  totalAmount              Decimal   @map("total_amount")
 
   createdAt temporal.createdAt() @map("created_at")
   updatedAt temporal.updatedAt() @map("updated_at")
 
-  invoice        Invoice         @relation(fields: [invoiceId], references: [id])
-  propertyCharge PropertyCharge? @relation(fields: [propertyChargeId], references: [id])
+  invoice           Invoice             @relation(fields: [invoiceId], references: [id])
+  propertyUnitCharge PropertyUnitCharge? @relation(
+    fields: [unitChargePropertyUnitId, unitChargePropertyChargeId, unitChargeValidFrom],
+    references: [propertyUnitId, propertyChargeId, validFrom]
+  )
 
   @@index([invoiceId])
-  @@index([propertyChargeId])
+  @@index(
+    [unitChargePropertyUnitId, unitChargePropertyChargeId, unitChargeValidFrom],
+    map: "invoice_items_unit_charge_idx"
+  )
   @@map("invoice_items")
 }
 

@@ -84,10 +84,7 @@ export class InvoicesService {
             and(
               charge.propertyUnitId.eq(propertyUnitId),
               charge.validFrom.lte(issueDate),
-              or(
-                charge.validTo.isNull(),
-                charge.validTo.gt(issueDate),
-              ),
+              or(charge.validTo.isNull(), charge.validTo.gt(issueDate)),
             ),
           ).all()
         : [];
@@ -104,22 +101,30 @@ export class InvoicesService {
               ),
             ).all()
           : [];
-      const unitChargeById = new Map(
-        unitCharges.map((unitCharge) => [
-          unitCharge.propertyChargeId,
-          unitCharge,
-        ]),
+      const propertyChargeById = new Map(
+        propertyCharges.map((charge) => [charge.id, charge]),
       );
-      const charges = propertyCharges.map((charge) => ({
-        ...charge,
-        amount: unitChargeById.get(charge.id)?.customAmount ?? charge.amount,
-      }));
+      const charges = unitCharges.flatMap((unitCharge) => {
+        const charge = propertyChargeById.get(unitCharge.propertyChargeId);
+
+        if (!charge) {
+          return [];
+        }
+
+        return [
+          {
+            unitCharge,
+            description: charge.description ?? charge.name,
+            amount: unitCharge.customAmount ?? charge.amount,
+          },
+        ];
+      });
 
       /*
        * 5. Build the normal invoice lines.
        */
       const invoiceItems: Array<{
-        propertyChargeId: string | null;
+        unitCharge?: (typeof unitCharges)[number];
         description: string;
         quantity: string;
         unitAmount: string;
@@ -129,7 +134,6 @@ export class InvoicesService {
       const rentAmount = new Decimal(String(tenancy.monthlyRent));
 
       invoiceItems.push({
-        propertyChargeId: null,
         description: 'Monthly rent',
         quantity: '1',
         unitAmount: rentAmount.toFixed(2),
@@ -144,8 +148,7 @@ export class InvoicesService {
         }
 
         invoiceItems.push({
-          propertyChargeId: charge.id,
-          description: charge.name,
+          description: charge.description,
           quantity: '1',
           unitAmount: chargeAmount.toFixed(2),
           totalAmount: chargeAmount.toFixed(2),
@@ -240,29 +243,11 @@ export class InvoicesService {
 
       if (balanceBroughtForward.greaterThan(0)) {
         invoiceItems.push({
-          propertyChargeId: null,
           description: 'Balance brought forward',
-          quantity: '',
+          quantity: '1',
           unitAmount: balanceBroughtForward.toFixed(2),
           totalAmount: balanceBroughtForward.toFixed(2),
         });
-      }
-
-      /*
-       * 8. Calculate the new invoice subtotal.
-       */
-      const subtotal = invoiceItems.reduce((total, item) => {
-        const quantity = new Decimal(String(item.quantity));
-
-        const unitAmount = new Decimal(String(item.unitAmount));
-
-        return total.plus(quantity.times(unitAmount));
-      }, new Decimal(0));
-
-      if (subtotal.lessThanOrEqualTo(0)) {
-        throw new BadRequestException(
-          'Invoice subtotal must be greater than zero',
-        );
       }
 
       /*
@@ -271,11 +256,11 @@ export class InvoicesService {
       const invoiceNumber = await this.generateInvoiceNumber();
 
       /*
-       * 10. Create the new invoice.
+       * 10. Create the new invoice as a draft while its line items are added.
        *
        * New invoices start with no payment allocations.
        */
-      const invoice = await tx.orm.public.Invoice.create({
+      const draftInvoice = await tx.orm.public.Invoice.create({
         managerId,
         propertyId: property.id,
         tenancyId: tenancy.id,
@@ -283,11 +268,11 @@ export class InvoicesService {
         invoiceNumber,
         issueDate,
         dueDate,
-        subtotal: subtotal.toFixed(2),
-        totalAmount: subtotal.toFixed(2),
+        subtotal: '0.00',
+        totalAmount: '0.00',
         amountPaid: '0.00',
-        balanceDue: subtotal.toFixed(2),
-        status: InvoiceStatus.ISSUED,
+        balanceDue: '0.00',
+        status: InvoiceStatus.DRAFT,
         notes: dto.notes,
       });
 
@@ -298,14 +283,41 @@ export class InvoicesService {
 
       for (const item of invoiceItems) {
         const createdItem = await tx.orm.public.InvoiceItem.create({
-          invoiceId: invoice.id,
-          propertyChargeId: item.propertyChargeId,
+          invoiceId: draftInvoice.id,
+          unitChargePropertyUnitId: item.unitCharge?.propertyUnitId,
+          unitChargePropertyChargeId: item.unitCharge?.propertyChargeId,
+          unitChargeValidFrom: item.unitCharge?.validFrom,
           description: item.description,
           quantity: item.quantity,
           unitAmount: item.unitAmount,
           totalAmount: item.totalAmount,
         });
         createdInvoiceItems.push(createdItem);
+      }
+
+      const subtotal = createdInvoiceItems.reduce(
+        (total, item) => total.plus(new Decimal(String(item.totalAmount))),
+        new Decimal(0),
+      );
+
+      if (subtotal.lessThanOrEqualTo(0)) {
+        throw new BadRequestException(
+          'Invoice subtotal must be greater than zero',
+        );
+      }
+
+      const invoice = await tx.orm.public.Invoice.where({
+        id: draftInvoice.id,
+        managerId,
+      }).update({
+        subtotal: subtotal.toFixed(2),
+        totalAmount: subtotal.toFixed(2),
+        balanceDue: subtotal.toFixed(2),
+        status: InvoiceStatus.ISSUED,
+      });
+
+      if (!invoice) {
+        throw new NotFoundException('Invoice not found after creation');
       }
 
       /*

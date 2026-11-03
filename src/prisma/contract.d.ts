@@ -34,7 +34,7 @@ import type {
 } from '@prisma/orm-postgres/contract/types';
 
 export type StorageHash =
-  StorageHashBase<'a951a0e44bde757d448198d144cdd4aa569eb28b154e6a07d741e9d37415abcf'>;
+  StorageHashBase<'696f11b962f1ec5ac1b698791c8fe0dec96cb0e693c8df400b066032f9687f42'>;
 export type ExecutionHash =
   ExecutionHashBase<'8e9c983ff78a07252f8d86c07b2c152fd109aba234b96c8b51748afacf5a1756'>;
 export type ProfileHash =
@@ -294,7 +294,9 @@ export type FieldOutputTypes = {
     readonly InvoiceItem: {
       readonly id: CodecTypes['pg/uuid@1']['output'];
       readonly invoiceId: CodecTypes['pg/uuid@1']['output'];
-      readonly propertyChargeId: CodecTypes['pg/uuid@1']['output'] | null;
+      readonly unitChargePropertyUnitId: CodecTypes['pg/uuid@1']['output'] | null;
+      readonly unitChargePropertyChargeId: CodecTypes['pg/uuid@1']['output'] | null;
+      readonly unitChargeValidFrom: CodecTypes['pg/timestamptz-temporal@1']['output'] | null;
       readonly description: CodecTypes['pg/text@1']['output'];
       readonly quantity: CodecTypes['pg/numeric@1']['output'];
       readonly unitAmount: CodecTypes['pg/numeric@1']['output'];
@@ -494,7 +496,9 @@ export type FieldInputTypes = {
     readonly InvoiceItem: {
       readonly id: CodecTypes['pg/uuid@1']['input'];
       readonly invoiceId: CodecTypes['pg/uuid@1']['input'];
-      readonly propertyChargeId: CodecTypes['pg/uuid@1']['input'] | null;
+      readonly unitChargePropertyUnitId: CodecTypes['pg/uuid@1']['input'] | null;
+      readonly unitChargePropertyChargeId: CodecTypes['pg/uuid@1']['input'] | null;
+      readonly unitChargeValidFrom: CodecTypes['pg/timestamptz-temporal@1']['input'] | null;
       readonly description: CodecTypes['pg/text@1']['input'];
       readonly quantity: CodecTypes['pg/numeric@1']['input'];
       readonly unitAmount: CodecTypes['pg/numeric@1']['input'];
@@ -678,10 +682,12 @@ export type StorageColumnTypes = {
       readonly description: CodecTypes['pg/text@1']['output'];
       readonly id: CodecTypes['pg/uuid@1']['output'];
       readonly invoice_id: CodecTypes['pg/uuid@1']['output'];
-      readonly property_charge_id: CodecTypes['pg/uuid@1']['output'] | null;
       readonly quantity: CodecTypes['pg/numeric@1']['output'];
       readonly total_amount: CodecTypes['pg/numeric@1']['output'];
       readonly unit_amount: CodecTypes['pg/numeric@1']['output'];
+      readonly unit_charge_property_charge_id: CodecTypes['pg/uuid@1']['output'] | null;
+      readonly unit_charge_property_unit_id: CodecTypes['pg/uuid@1']['output'] | null;
+      readonly unit_charge_valid_from: CodecTypes['pg/timestamptz-temporal@1']['output'] | null;
       readonly updated_at: CodecTypes['pg/timestamptz-temporal@1']['output'];
     };
     readonly invoices: {
@@ -878,10 +884,12 @@ export type StorageColumnInputTypes = {
       readonly description: CodecTypes['pg/text@1']['input'];
       readonly id: CodecTypes['pg/uuid@1']['input'];
       readonly invoice_id: CodecTypes['pg/uuid@1']['input'];
-      readonly property_charge_id: CodecTypes['pg/uuid@1']['input'] | null;
       readonly quantity: CodecTypes['pg/numeric@1']['input'];
       readonly total_amount: CodecTypes['pg/numeric@1']['input'];
       readonly unit_amount: CodecTypes['pg/numeric@1']['input'];
+      readonly unit_charge_property_charge_id: CodecTypes['pg/uuid@1']['input'] | null;
+      readonly unit_charge_property_unit_id: CodecTypes['pg/uuid@1']['input'] | null;
+      readonly unit_charge_valid_from: CodecTypes['pg/timestamptz-temporal@1']['input'] | null;
       readonly updated_at: CodecTypes['pg/timestamptz-temporal@1']['input'];
     };
     readonly invoices: {
@@ -1152,11 +1160,10 @@ export namespace Models {
     isActive: CodecTypes['pg/bool@1']['output'];
     createdAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
     updatedAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
-    invoiceItems: public_InvoiceItem[];
     manager: public_User;
     property: public_Property;
     unitCharges: public_PropertyUnitCharge[];
-    readonly [RelationKeys]?: 'invoiceItems' | 'manager' | 'property' | 'unitCharges';
+    readonly [RelationKeys]?: 'manager' | 'property' | 'unitCharges';
   };
   export type public_PropertyUnit = {
     id: CodecTypes['pg/uuid@1']['output'];
@@ -1181,9 +1188,10 @@ export namespace Models {
     customAmount: CodecTypes['pg/numeric@1']['output'] | null;
     validFrom: CodecTypes['pg/timestamptz-temporal@1']['output'];
     validTo: CodecTypes['pg/timestamptz-temporal@1']['output'] | null;
+    invoiceItems: public_InvoiceItem[];
     propertyCharge: public_PropertyCharge;
     propertyUnit: public_PropertyUnit;
-    readonly [RelationKeys]?: 'propertyCharge' | 'propertyUnit';
+    readonly [RelationKeys]?: 'invoiceItems' | 'propertyCharge' | 'propertyUnit';
   };
   export type public_Tenant = {
     id: CodecTypes['pg/uuid@1']['output'];
@@ -1266,7 +1274,9 @@ export namespace Models {
   export type public_InvoiceItem = {
     id: CodecTypes['pg/uuid@1']['output'];
     invoiceId: CodecTypes['pg/uuid@1']['output'];
-    propertyChargeId: CodecTypes['pg/uuid@1']['output'] | null;
+    unitChargePropertyUnitId: CodecTypes['pg/uuid@1']['output'] | null;
+    unitChargePropertyChargeId: CodecTypes['pg/uuid@1']['output'] | null;
+    unitChargeValidFrom: CodecTypes['pg/timestamptz-temporal@1']['output'] | null;
     description: CodecTypes['pg/text@1']['output'];
     quantity: CodecTypes['pg/numeric@1']['output'];
     unitAmount: CodecTypes['pg/numeric@1']['output'];
@@ -1274,8 +1284,8 @@ export namespace Models {
     createdAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
     updatedAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
     invoice: public_Invoice;
-    propertyCharge: public_PropertyCharge | null;
-    readonly [RelationKeys]?: 'invoice' | 'propertyCharge';
+    propertyUnitCharge: public_PropertyUnitCharge | null;
+    readonly [RelationKeys]?: 'invoice' | 'propertyUnitCharge';
   };
   export type public_Payment = {
     id: CodecTypes['pg/uuid@1']['output'];
@@ -1648,9 +1658,19 @@ type ContractBase = Omit<
                   readonly codecId: 'pg/uuid@1';
                   readonly nullable: false;
                 };
-                readonly property_charge_id: {
+                readonly unit_charge_property_unit_id: {
                   readonly nativeType: 'uuid';
                   readonly codecId: 'pg/uuid@1';
+                  readonly nullable: true;
+                };
+                readonly unit_charge_property_charge_id: {
+                  readonly nativeType: 'uuid';
+                  readonly codecId: 'pg/uuid@1';
+                  readonly nullable: true;
+                };
+                readonly unit_charge_valid_from: {
+                  readonly nativeType: 'timestamptz';
+                  readonly codecId: 'pg/timestamptz-temporal@1';
                   readonly nullable: true;
                 };
                 readonly description: {
@@ -1695,9 +1715,12 @@ type ContractBase = Omit<
                   readonly unique: false;
                 },
                 {
-                  readonly name: 'invoice_items_property_charge_id_idx_aad71636';
-                  readonly prefix: 'invoice_items_property_charge_id_idx';
-                  readonly columns: readonly ['property_charge_id'];
+                  readonly name: 'invoice_items_unit_charge_idx';
+                  readonly columns: readonly [
+                    'unit_charge_property_unit_id',
+                    'unit_charge_property_charge_id',
+                    'unit_charge_valid_from',
+                  ];
                   readonly unique: false;
                 },
               ];
@@ -1718,12 +1741,20 @@ type ContractBase = Omit<
                   readonly source: {
                     readonly namespaceId: 'public' & NamespaceId;
                     readonly tableName: 'invoice_items';
-                    readonly columns: readonly ['property_charge_id'];
+                    readonly columns: readonly [
+                      'unit_charge_property_unit_id',
+                      'unit_charge_property_charge_id',
+                      'unit_charge_valid_from',
+                    ];
                   };
                   readonly target: {
                     readonly namespaceId: 'public' & NamespaceId;
-                    readonly tableName: 'property_charges';
-                    readonly columns: readonly ['id'];
+                    readonly tableName: 'property_unit_charges';
+                    readonly columns: readonly [
+                      'property_unit_id',
+                      'property_charge_id',
+                      'valid_from',
+                    ];
                   };
                 },
               ];
@@ -3633,9 +3664,20 @@ type ContractBase = Omit<
                 readonly nullable: false;
                 readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/uuid@1' };
               };
-              readonly propertyChargeId: {
+              readonly unitChargePropertyUnitId: {
                 readonly nullable: true;
                 readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/uuid@1' };
+              };
+              readonly unitChargePropertyChargeId: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/uuid@1' };
+              };
+              readonly unitChargeValidFrom: {
+                readonly nullable: true;
+                readonly type: {
+                  readonly kind: 'scalar';
+                  readonly codecId: 'pg/timestamptz-temporal@1';
+                };
               };
               readonly description: {
                 readonly nullable: false;
@@ -3681,16 +3723,24 @@ type ContractBase = Omit<
                   readonly targetFields: readonly ['id'];
                 };
               };
-              readonly propertyCharge: {
+              readonly propertyUnitCharge: {
                 readonly to: {
                   readonly namespace: 'public' & NamespaceId;
-                  readonly model: 'PropertyCharge';
+                  readonly model: 'PropertyUnitCharge';
                 };
                 readonly cardinality: 'N:1';
                 readonly nullable: true;
                 readonly on: {
-                  readonly localFields: readonly ['propertyChargeId'];
-                  readonly targetFields: readonly ['id'];
+                  readonly localFields: readonly [
+                    'unitChargePropertyUnitId',
+                    'unitChargePropertyChargeId',
+                    'unitChargeValidFrom',
+                  ];
+                  readonly targetFields: readonly [
+                    'propertyUnitId',
+                    'propertyChargeId',
+                    'validFrom',
+                  ];
                 };
               };
             };
@@ -3700,7 +3750,13 @@ type ContractBase = Omit<
               readonly fields: {
                 readonly id: { readonly column: 'id' };
                 readonly invoiceId: { readonly column: 'invoice_id' };
-                readonly propertyChargeId: { readonly column: 'property_charge_id' };
+                readonly unitChargePropertyUnitId: {
+                  readonly column: 'unit_charge_property_unit_id';
+                };
+                readonly unitChargePropertyChargeId: {
+                  readonly column: 'unit_charge_property_charge_id';
+                };
+                readonly unitChargeValidFrom: { readonly column: 'unit_charge_valid_from' };
                 readonly description: { readonly column: 'description' };
                 readonly quantity: { readonly column: 'quantity' };
                 readonly unitAmount: { readonly column: 'unit_amount' };
@@ -4221,17 +4277,6 @@ type ContractBase = Omit<
               };
             };
             readonly relations: {
-              readonly invoiceItems: {
-                readonly to: {
-                  readonly namespace: 'public' & NamespaceId;
-                  readonly model: 'InvoiceItem';
-                };
-                readonly cardinality: '1:N';
-                readonly on: {
-                  readonly localFields: readonly ['id'];
-                  readonly targetFields: readonly ['propertyChargeId'];
-                };
-              };
               readonly manager: {
                 readonly to: { readonly namespace: 'public' & NamespaceId; readonly model: 'User' };
                 readonly cardinality: 'N:1';
@@ -4422,6 +4467,25 @@ type ContractBase = Omit<
               };
             };
             readonly relations: {
+              readonly invoiceItems: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'InvoiceItem';
+                };
+                readonly cardinality: '1:N';
+                readonly on: {
+                  readonly localFields: readonly [
+                    'propertyUnitId',
+                    'propertyChargeId',
+                    'validFrom',
+                  ];
+                  readonly targetFields: readonly [
+                    'unitChargePropertyUnitId',
+                    'unitChargePropertyChargeId',
+                    'unitChargeValidFrom',
+                  ];
+                };
+              };
               readonly propertyCharge: {
                 readonly to: {
                   readonly namespace: 'public' & NamespaceId;

@@ -953,13 +953,6 @@
                   "kind": "scalar"
                 }
               },
-              "propertyChargeId": {
-                "nullable": true,
-                "type": {
-                  "codecId": "pg/uuid@1",
-                  "kind": "scalar"
-                }
-              },
               "quantity": {
                 "nullable": false,
                 "type": {
@@ -978,6 +971,27 @@
                 "nullable": false,
                 "type": {
                   "codecId": "pg/numeric@1",
+                  "kind": "scalar"
+                }
+              },
+              "unitChargePropertyChargeId": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/uuid@1",
+                  "kind": "scalar"
+                }
+              },
+              "unitChargePropertyUnitId": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/uuid@1",
+                  "kind": "scalar"
+                }
+              },
+              "unitChargeValidFrom": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/timestamptz-temporal@1",
                   "kind": "scalar"
                 }
               },
@@ -1006,19 +1020,23 @@
                   "namespace": "public"
                 }
               },
-              "propertyCharge": {
+              "propertyUnitCharge": {
                 "cardinality": "N:1",
                 "nullable": true,
                 "on": {
                   "localFields": [
-                    "propertyChargeId"
+                    "unitChargePropertyUnitId",
+                    "unitChargePropertyChargeId",
+                    "unitChargeValidFrom"
                   ],
                   "targetFields": [
-                    "id"
+                    "propertyUnitId",
+                    "propertyChargeId",
+                    "validFrom"
                   ]
                 },
                 "to": {
-                  "model": "PropertyCharge",
+                  "model": "PropertyUnitCharge",
                   "namespace": "public"
                 }
               }
@@ -1037,9 +1055,6 @@
                 "invoiceId": {
                   "column": "invoice_id"
                 },
-                "propertyChargeId": {
-                  "column": "property_charge_id"
-                },
                 "quantity": {
                   "column": "quantity"
                 },
@@ -1048,6 +1063,15 @@
                 },
                 "unitAmount": {
                   "column": "unit_amount"
+                },
+                "unitChargePropertyChargeId": {
+                  "column": "unit_charge_property_charge_id"
+                },
+                "unitChargePropertyUnitId": {
+                  "column": "unit_charge_property_unit_id"
+                },
+                "unitChargeValidFrom": {
+                  "column": "unit_charge_valid_from"
                 },
                 "updatedAt": {
                   "column": "updated_at"
@@ -1870,21 +1894,6 @@
               }
             },
             "relations": {
-              "invoiceItems": {
-                "cardinality": "1:N",
-                "on": {
-                  "localFields": [
-                    "id"
-                  ],
-                  "targetFields": [
-                    "propertyChargeId"
-                  ]
-                },
-                "to": {
-                  "model": "InvoiceItem",
-                  "namespace": "public"
-                }
-              },
               "manager": {
                 "cardinality": "N:1",
                 "nullable": false,
@@ -2192,6 +2201,25 @@
               }
             },
             "relations": {
+              "invoiceItems": {
+                "cardinality": "1:N",
+                "on": {
+                  "localFields": [
+                    "propertyUnitId",
+                    "propertyChargeId",
+                    "validFrom"
+                  ],
+                  "targetFields": [
+                    "unitChargePropertyUnitId",
+                    "unitChargePropertyChargeId",
+                    "unitChargeValidFrom"
+                  ]
+                },
+                "to": {
+                  "model": "InvoiceItem",
+                  "namespace": "public"
+                }
+              },
               "propertyCharge": {
                 "cardinality": "N:1",
                 "nullable": false,
@@ -3481,11 +3509,6 @@
                   "nativeType": "uuid",
                   "nullable": false
                 },
-                "property_charge_id": {
-                  "codecId": "pg/uuid@1",
-                  "nativeType": "uuid",
-                  "nullable": true
-                },
                 "quantity": {
                   "codecId": "pg/numeric@1",
                   "nativeType": "numeric",
@@ -3500,6 +3523,21 @@
                   "codecId": "pg/numeric@1",
                   "nativeType": "numeric",
                   "nullable": false
+                },
+                "unit_charge_property_charge_id": {
+                  "codecId": "pg/uuid@1",
+                  "nativeType": "uuid",
+                  "nullable": true
+                },
+                "unit_charge_property_unit_id": {
+                  "codecId": "pg/uuid@1",
+                  "nativeType": "uuid",
+                  "nullable": true
+                },
+                "unit_charge_valid_from": {
+                  "codecId": "pg/timestamptz-temporal@1",
+                  "nativeType": "timestamptz",
+                  "nullable": true
                 },
                 "updated_at": {
                   "codecId": "pg/timestamptz-temporal@1",
@@ -3527,17 +3565,21 @@
                 {
                   "source": {
                     "columns": [
-                      "property_charge_id"
+                      "unit_charge_property_unit_id",
+                      "unit_charge_property_charge_id",
+                      "unit_charge_valid_from"
                     ],
                     "namespaceId": "public",
                     "tableName": "invoice_items"
                   },
                   "target": {
                     "columns": [
-                      "id"
+                      "property_unit_id",
+                      "property_charge_id",
+                      "valid_from"
                     ],
                     "namespaceId": "public",
-                    "tableName": "property_charges"
+                    "tableName": "property_unit_charges"
                   }
                 }
               ],
@@ -3552,10 +3594,11 @@
                 },
                 {
                   "columns": [
-                    "property_charge_id"
+                    "unit_charge_property_unit_id",
+                    "unit_charge_property_charge_id",
+                    "unit_charge_valid_from"
                   ],
-                  "name": "invoice_items_property_charge_id_idx_aad71636",
-                  "prefix": "invoice_items_property_charge_id_idx",
+                  "name": "invoice_items_unit_charge_idx",
                   "unique": false
                 }
               ],
@@ -5394,7 +5437,7 @@
         "kind": "postgres-schema"
       }
     },
-    "storageHash": "a951a0e44bde757d448198d144cdd4aa569eb28b154e6a07d741e9d37415abcf"
+    "storageHash": "696f11b962f1ec5ac1b698791c8fe0dec96cb0e693c8df400b066032f9687f42"
   },
   "execution": {
     "executionHash": "8e9c983ff78a07252f8d86c07b2c152fd109aba234b96c8b51748afacf5a1756",
