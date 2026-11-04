@@ -26,6 +26,12 @@ enum BillingFrequency {
   ANNUALLY = 'ANNUALLY',
 }
 
+enum PropertyUseType {
+  RESIDENTIAL = 'RESIDENTIAL',
+  COMMERCIAL = 'COMMERCIAL',
+  MIXED = 'MIXED',
+}
+
 class PropertyUnitChargeDto {
   @ApiProperty({
     description: 'The ID of the property charge to associate with this unit',
@@ -54,6 +60,14 @@ export class CreatePropertyUnitDto {
   })
   @IsUUID()
   propertyId: string;
+
+  @ApiProperty({
+    description: 'The type of use for the property unit',
+    example: PropertyUseType.RESIDENTIAL,
+    enum: PropertyUseType
+  })
+  @IsEnum(PropertyUseType)
+  propertyUseType: PropertyUseType;
 
   @ApiProperty({
     description: 'The unit number or identifier',

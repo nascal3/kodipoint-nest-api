@@ -17,6 +17,12 @@ enum BillingFrequency {
   ANNUALLY = 'ANNUALLY',
 }
 
+enum PropertyUseType {
+  RESIDENTIAL = 'RESIDENTIAL',
+  COMMERCIAL = 'COMMERCIAL',
+  MIXED = 'MIXED',
+}
+
 export class ListPropertyUnitsDto extends PaginationDto {
   @ApiProperty({
     required: false,
@@ -26,6 +32,16 @@ export class ListPropertyUnitsDto extends PaginationDto {
   @IsOptional()
   @IsUUID()
   propertyId?: string;
+
+  @ApiProperty({
+    required: false,
+    enum: PropertyUseType,
+    description: 'Filter by property unit use type',
+    example: PropertyUseType.RESIDENTIAL,
+  })
+  @IsOptional()
+  @IsEnum(PropertyUseType)
+  propertyUseType?: PropertyUseType;
 
   @ApiProperty({
     required: false,

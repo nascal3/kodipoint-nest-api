@@ -190,6 +190,23 @@
               }
             ]
           },
+          "PropertyUseType": {
+            "codecId": "pg/text@1",
+            "members": [
+              {
+                "name": "RESIDENTIAL",
+                "value": "RESIDENTIAL"
+              },
+              {
+                "name": "COMMERCIAL",
+                "value": "COMMERCIAL"
+              },
+              {
+                "name": "MIXED",
+                "value": "MIXED"
+              }
+            ]
+          },
           "TenancyStatus": {
             "codecId": "pg/text@1",
             "members": [
@@ -1628,6 +1645,19 @@
                   "kind": "scalar"
                 }
               },
+              "propertyUseType": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                },
+                "valueSet": {
+                  "entityKind": "enum",
+                  "entityName": "PropertyUseType",
+                  "namespaceId": "public",
+                  "plane": "domain"
+                }
+              },
               "state": {
                 "nullable": true,
                 "type": {
@@ -1809,6 +1839,9 @@
                 },
                 "postalCode": {
                   "column": "postal_code"
+                },
+                "propertyUseType": {
+                  "column": "property_use_type"
                 },
                 "state": {
                   "column": "state"
@@ -2033,6 +2066,19 @@
                   "kind": "scalar"
                 }
               },
+              "propertyUseType": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                },
+                "valueSet": {
+                  "entityKind": "enum",
+                  "entityName": "PropertyUseType",
+                  "namespaceId": "public",
+                  "plane": "domain"
+                }
+              },
               "status": {
                 "nullable": false,
                 "type": {
@@ -2147,6 +2193,9 @@
                 },
                 "propertyId": {
                   "column": "property_id"
+                },
+                "propertyUseType": {
+                  "column": "property_use_type"
                 },
                 "status": {
                   "column": "status"
@@ -4253,6 +4302,11 @@
             "properties": {
               "checks": [
                 {
+                  "expression": "\"property_use_type\" IN ('RESIDENTIAL', 'COMMERCIAL', 'MIXED')",
+                  "name": "properties_property_use_type_check_a1c2b734",
+                  "prefix": "properties_property_use_type_check"
+                },
+                {
                   "expression": "\"status\" IN ('ACTIVE', 'INACTIVE', 'MAINTENANCE', 'ARCHIVED')",
                   "name": "properties_status_check_1bcc6c54",
                   "prefix": "properties_status_check"
@@ -4326,6 +4380,21 @@
                   "codecId": "pg/text@1",
                   "nativeType": "text",
                   "nullable": true
+                },
+                "property_use_type": {
+                  "codecId": "pg/text@1",
+                  "default": {
+                    "kind": "literal",
+                    "value": "RESIDENTIAL"
+                  },
+                  "nativeType": "text",
+                  "nullable": false,
+                  "valueSet": {
+                    "entityKind": "valueSet",
+                    "entityName": "PropertyUseType",
+                    "namespaceId": "public",
+                    "plane": "storage"
+                  }
                 },
                 "state": {
                   "codecId": "pg/text@1",
@@ -4651,6 +4720,11 @@
                   "prefix": "property_units_billing_frequency_check"
                 },
                 {
+                  "expression": "\"property_use_type\" IN ('RESIDENTIAL', 'COMMERCIAL', 'MIXED')",
+                  "name": "property_units_property_use_type_check_a1c2b734",
+                  "prefix": "property_units_property_use_type_check"
+                },
+                {
                   "expression": "\"status\" IN ('AVAILABLE', 'OCCUPIED', 'MAINTENANCE', 'ARCHIVED')",
                   "name": "property_units_status_check_d1e1aab6",
                   "prefix": "property_units_status_check"
@@ -4705,6 +4779,21 @@
                   "codecId": "pg/uuid@1",
                   "nativeType": "uuid",
                   "nullable": false
+                },
+                "property_use_type": {
+                  "codecId": "pg/text@1",
+                  "default": {
+                    "kind": "literal",
+                    "value": "RESIDENTIAL"
+                  },
+                  "nativeType": "text",
+                  "nullable": false,
+                  "valueSet": {
+                    "entityKind": "valueSet",
+                    "entityName": "PropertyUseType",
+                    "namespaceId": "public",
+                    "plane": "storage"
+                  }
                 },
                 "status": {
                   "codecId": "pg/text@1",
@@ -5415,6 +5504,14 @@
                 "ARCHIVED"
               ]
             },
+            "PropertyUseType": {
+              "kind": "valueSet",
+              "values": [
+                "RESIDENTIAL",
+                "COMMERCIAL",
+                "MIXED"
+              ]
+            },
             "TenancyStatus": {
               "kind": "valueSet",
               "values": [
@@ -5443,7 +5540,7 @@
         "kind": "postgres-schema"
       }
     },
-    "storageHash": "4cc306ddfa34f3dce1f2c5de199a685c89342c21eccd0e0a954bc63f83693b98"
+    "storageHash": "3d4760a2a154651dde9768151cb9b5585af54246ecadf095f41a18ffe8e2dda2"
   },
   "execution": {
     "executionHash": "8e9c983ff78a07252f8d86c07b2c152fd109aba234b96c8b51748afacf5a1756",

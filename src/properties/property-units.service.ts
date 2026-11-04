@@ -61,6 +61,7 @@ export class PropertyUnitsService {
     const unit = await this.prisma.db.orm.public.PropertyUnit.create({
       managerId,
       propertyId: dto.propertyId,
+      propertyUseType: dto.propertyUseType,
       unitNumber: dto.unitNumber,
       bedroomCount: dto.bedroomCount,
       status: dto.status,
@@ -99,6 +100,7 @@ export class PropertyUnitsService {
       sortOrder = 'DESC',
       propertyId,
       status,
+      propertyUseType,
       billingFrequency,
       unitNumber,
     } = query;
@@ -114,6 +116,9 @@ export class PropertyUnitsService {
       }
       if (status) {
         unitsQuery = unitsQuery.where({ status });
+      }
+      if (propertyUseType) {
+        unitsQuery = unitsQuery.where({ propertyUseType });
       }
       if (billingFrequency) {
         unitsQuery = unitsQuery.where({ billingFrequency });

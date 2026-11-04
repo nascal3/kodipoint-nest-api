@@ -86,21 +86,27 @@ enum PropertyStatus {
   MAINTENANCE
   ARCHIVED
 }
+enum PropertyUseType {
+  RESIDENTIAL
+  COMMERCIAL
+  MIXED
+}
 model Property {
-  id           Uuid    @id @default(uuid())
-  managerId    Uuid    @map("manager_id")
-  name         String
-  addressLine1 String  @map("address_line_1")
-  addressLine2 String? @map("address_line_2")
-  city         String
-  state        String?
-  postalCode   String? @map("postal_code")
-  countryId    Uuid    @map("country_id")
-  description  String?
-  currency     String  @default("KES")
-  monthlyRent  Decimal @map("monthly_rent")
-  unitCount    Int     @default(0) @map("unit_count")
-  status       PropertyStatus  @default(ACTIVE)
+  id               Uuid            @id @default(uuid())
+  managerId        Uuid            @map("manager_id")
+  name             String
+  propertyUseType  PropertyUseType @default(RESIDENTIAL) @map("property_use_type")
+  addressLine1     String          @map("address_line_1")
+  addressLine2     String?         @map("address_line_2")
+  city             String
+  state            String?
+  postalCode       String?         @map("postal_code")
+  countryId        Uuid            @map("country_id")
+  description      String?
+  currency         String          @default("KES")
+  monthlyRent      Decimal         @map("monthly_rent")
+  unitCount        Int             @default(0) @map("unit_count")
+  status           PropertyStatus  @default(ACTIVE)
 
   createdAt temporal.createdAt() @map("created_at")
   updatedAt temporal.updatedAt() @map("updated_at")
@@ -157,6 +163,7 @@ model PropertyUnit {
   id               Uuid               @id @default(uuid())
   managerId        Uuid               @map("manager_id")
   propertyId       Uuid               @map("property_id")
+  propertyUseType  PropertyUseType    @default(RESIDENTIAL) @map("property_use_type")
   unitNumber       String             @unique @map("unit_number")
   bedroomCount     Int                @map("bedroom_count")
   status           PropertyUnitStatus @default(AVAILABLE)

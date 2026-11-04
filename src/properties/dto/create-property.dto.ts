@@ -4,6 +4,7 @@ import {
   IsOptional,
   IsString,
   IsInt,
+  IsEnum,
   Min,
   IsUUID,
 } from 'class-validator';
@@ -14,6 +15,12 @@ enum PropertyStatus {
   ARCHIVED = 'ARCHIVED',
 }
 
+enum PropertyUseType {
+  RESIDENTIAL = 'RESIDENTIAL',
+  COMMERCIAL = 'COMMERCIAL',
+  MIXED = 'MIXED',
+}
+
 export class CreatePropertyDto {
   @ApiProperty({
     description: 'The name of the property',
@@ -21,6 +28,14 @@ export class CreatePropertyDto {
   })
   @IsString()
   name: string;
+
+  @ApiProperty({
+    description: 'The type of use for the property',
+    example: PropertyUseType.RESIDENTIAL,
+    enum: PropertyUseType
+  })
+  @IsEnum(PropertyUseType)
+  propertyUseType: PropertyUseType;
 
   @ApiProperty({
     description: 'The first line of the property address',

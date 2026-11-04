@@ -9,6 +9,7 @@ export interface PropertyWithOccupancy {
   id: string;
   managerId: string;
   name: string;
+  propertyUseType: string;
   addressLine1: string;
   addressLine2: string | null;
   city: string;
@@ -59,6 +60,7 @@ export class PropertiesService {
     return this.prisma.db.orm.public.Property.create({
       managerId,
       name: dto.name,
+      propertyUseType: dto.propertyUseType,
       addressLine1: dto.addressLine1,
       addressLine2: dto.addressLine2,
       city: dto.city,
@@ -84,6 +86,7 @@ export class PropertiesService {
       sortOrder = 'DESC',
       country,
       status,
+      propertyUseType,
       name,
     } = query;
     const skip = (page - 1) * limit;
@@ -98,6 +101,9 @@ export class PropertiesService {
       }
       if (status) {
         propertiesQuery = propertiesQuery.where({ status });
+      }
+      if (propertyUseType) {
+        propertiesQuery = propertiesQuery.where({ propertyUseType });
       }
       if (name) {
         propertiesQuery = propertiesQuery.where((property) =>

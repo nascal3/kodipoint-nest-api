@@ -10,6 +10,12 @@ enum PropertyStatus {
   ARCHIVED = 'ARCHIVED',
 }
 
+enum PropertyUseType {
+  RESIDENTIAL = 'RESIDENTIAL',
+  COMMERCIAL = 'COMMERCIAL',
+  MIXED = 'MIXED',
+}
+
 export class ListPropertiesDto extends PaginationDto {
   @ApiProperty({
     required: false,
@@ -29,6 +35,16 @@ export class ListPropertiesDto extends PaginationDto {
   @IsOptional()
   @IsEnum(PropertyStatus)
   status?: PropertyStatus;
+
+  @ApiProperty({
+    required: false,
+    enum: PropertyUseType,
+    description: 'Filter by property use type',
+    example: PropertyUseType.RESIDENTIAL,
+  })
+  @IsOptional()
+  @IsEnum(PropertyUseType)
+  propertyUseType?: PropertyUseType;
 
   @ApiProperty({
     required: false,
