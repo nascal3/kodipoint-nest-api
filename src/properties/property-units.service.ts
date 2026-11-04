@@ -163,13 +163,20 @@ export class PropertyUnitsService {
 
     const unitIds = units.map((unit) => unit.id);
 
-    const unitCharges =
-      await this.prisma.db.orm.public.PropertyUnitCharge.where((charge) =>
+    const [unitCharges, activeTenancies] = await Promise.all([
+      this.prisma.db.orm.public.PropertyUnitCharge.where((charge) =>
         and(
           charge.propertyUnitId.in(unitIds),
           charge.validTo.isNull(),
         ),
-      ).all();
+      ).all(),
+      this.prisma.db.orm.public.Tenancy.where((tenancy) =>
+        and(
+          tenancy.propertyUnitId.in(unitIds),
+          tenancy.status.eq('ACTIVE'),
+        ),
+      ).all(),
+    ]);
 
     const chargesByUnitId = unitCharges.reduce(
       (acc, charge) => {
@@ -182,37 +189,64 @@ export class PropertyUnitsService {
       {} as Record<string, typeof unitCharges>,
     );
 
-    const unitsWithCharges = await Promise.all(
-      units.map(async (unit) => {
-        const unitChargeLinks = chargesByUnitId[unit.id] || [];
-        const chargeIds = unitChargeLinks.map(
-          (unitCharge) => unitCharge.propertyChargeId,
-        );
-        const charges =
-          chargeIds.length > 0
-            ? await this.prisma.db.orm.public.PropertyCharge.where((charge) =>
-                charge.id.in(chargeIds),
-              ).all()
-            : [];
-        const unitChargeById = new Map(
-          unitChargeLinks.map((unitCharge) => [
-            unitCharge.propertyChargeId,
-            unitCharge,
-          ]),
-        );
-        return {
-          ...unit,
-          charges: charges.map((charge) => {
-            const unitCharge = unitChargeById.get(charge.id);
-            return {
-              ...charge,
-              customAmount: unitCharge?.customAmount ?? null,
-              effectiveAmount: unitCharge?.customAmount ?? charge.amount,
-            };
-          }),
-        };
-      }),
+    const chargeIds = unitCharges.map(
+      (unitCharge) => unitCharge.propertyChargeId,
     );
+    const uniqueChargeIds = [...new Set(chargeIds)];
+    const tenantIds = activeTenancies.map((tenancy) => tenancy.tenantId);
+
+    const [charges, tenants] = await Promise.all([
+      uniqueChargeIds.length > 0
+        ? this.prisma.db.orm.public.PropertyCharge.where((charge) =>
+            charge.id.in(uniqueChargeIds),
+          ).all()
+        : Promise.resolve([]),
+      tenantIds.length > 0
+        ? this.prisma.db.orm.public.Tenant.where((tenant) =>
+            tenant.id.in(tenantIds),
+          ).all()
+        : Promise.resolve([]),
+    ]);
+
+    const chargeById = new Map(
+      charges.map((charge) => [charge.id, charge]),
+    );
+
+    const tenantById = new Map(
+      tenants.map((tenant) => [tenant.id, tenant]),
+    );
+
+    const activeTenancyByUnitId = new Map(
+      activeTenancies.map((tenancy) => [
+        tenancy.propertyUnitId,
+        tenantById.get(tenancy.tenantId),
+      ]),
+    );
+
+    const unitsWithCharges = units.map((unit) => {
+      const unitChargeLinks = chargesByUnitId[unit.id] || [];
+      const unitChargeById = new Map(
+        unitChargeLinks.map((unitCharge) => [
+          unitCharge.propertyChargeId,
+          unitCharge,
+        ]),
+      );
+      const activeTenant = activeTenancyByUnitId.get(unit.id);
+      return {
+        ...unit,
+        tenantName: activeTenant
+          ? `${activeTenant.firstName} ${activeTenant.lastName}`
+          : null,
+        charges: unitChargeLinks.map((unitCharge) => {
+          const charge = chargeById.get(unitCharge.propertyChargeId);
+          return {
+            ...charge,
+            customAmount: unitCharge.customAmount ?? null,
+            effectiveAmount: unitCharge.customAmount ?? charge?.amount,
+          };
+        }),
+      };
+    });
 
     const totalPages = Math.ceil(Number(totalCount.total) / limit);
 
@@ -239,8 +273,27 @@ export class PropertyUnitsService {
       throw new NotFoundException('Property unit not found');
     }
 
+    const activeTenancy =
+      await this.prisma.db.orm.public.Tenancy.where((tenancy) =>
+        and(
+          tenancy.propertyUnitId.eq(unitId),
+          tenancy.status.eq('ACTIVE'),
+        ),
+      ).first();
+
+    let tenantName = null;
+    if (activeTenancy) {
+      const tenant = await this.prisma.db.orm.public.Tenant.where({
+        id: activeTenancy.tenantId,
+      }).first();
+      if (tenant) {
+        tenantName = `${tenant.firstName} ${tenant.lastName}`;
+      }
+    }
+
     return {
       ...unit,
+      tenantName,
       charges: await this.getUnitChargeDetails(unit.id),
     };
   }
