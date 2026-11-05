@@ -76,9 +76,24 @@ export class InvoicesService {
       }
 
       /*
-       * 4. Load service charges assigned to the tenancy's unit that were effective at the invoice date.
+       * 4. Load the property unit to get the market rent.
        */
       const propertyUnitId = tenancy.propertyUnitId;
+      const propertyUnit = propertyUnitId
+        ? await tx.orm.public.PropertyUnit.where({
+            id: propertyUnitId,
+            managerId,
+            status: 'OCCUPIED',
+          }).first()
+        : null;
+
+      if (!propertyUnit) {
+        throw new NotFoundException('Property unit not found or not occupied');
+      }
+
+      /*
+       * 5. Load service charges assigned to the tenancy's unit that were effective at the invoice date.
+       */
       const unitCharges = propertyUnitId
         ? await tx.orm.public.PropertyUnitCharge.where((charge) =>
             and(
@@ -121,7 +136,7 @@ export class InvoicesService {
       });
 
       /*
-       * 5. Build the normal invoice lines.
+       * 6. Build the normal invoice lines.
        */
       const invoiceItems: Array<{
         unitCharge?: (typeof unitCharges)[number];
@@ -131,7 +146,7 @@ export class InvoicesService {
         totalAmount: string;
       }> = [];
 
-      const rentAmount = new Decimal(String(tenancy.monthlyRent));
+      const rentAmount = new Decimal(String(propertyUnit.marketRent));
 
       invoiceItems.push({
         description: 'Monthly rent',

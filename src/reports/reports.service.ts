@@ -564,32 +564,32 @@ export class ReportsService {
   }
 
   async getProjectedRentReport(managerId: string, dto: ProjectedRentReportDto) {
-    const tenancies = await this.prisma.db.orm.public.Tenancy.where((tenancy) =>
+    const propertyUnits = await this.prisma.db.orm.public.PropertyUnit.where((unit) =>
       and(
-        tenancy.managerId.eq(managerId),
-        tenancy.status.eq('ACTIVE'),
-        ...(dto.propertyId ? [tenancy.propertyId.eq(dto.propertyId)] : []),
+        unit.managerId.eq(managerId),
+        unit.status.eq('OCCUPIED'),
+        ...(dto.propertyId ? [unit.propertyId.eq(dto.propertyId)] : []),
       ),
     ).all();
 
-    const totalProjectedRent = tenancies.reduce(
-      (sum, tenancy) => sum.plus(new Decimal(String(tenancy.monthlyRent))),
+    const totalProjectedRent = propertyUnits.reduce(
+      (sum, unit) => sum.plus(new Decimal(String(unit.marketRent))),
       new Decimal(0),
     );
 
     const rentByProperty = new Map<string, Decimal>();
     const unitsByProperty = new Map<string, number>();
 
-    for (const tenancy of tenancies) {
+    for (const unit of propertyUnits) {
       const currentRent =
-        rentByProperty.get(tenancy.propertyId) || new Decimal(0);
+        rentByProperty.get(unit.propertyId) || new Decimal(0);
       rentByProperty.set(
-        tenancy.propertyId,
-        currentRent.plus(new Decimal(String(tenancy.monthlyRent))),
+        unit.propertyId,
+        currentRent.plus(new Decimal(String(unit.marketRent))),
       );
 
-      const currentUnits = unitsByProperty.get(tenancy.propertyId) || 0;
-      unitsByProperty.set(tenancy.propertyId, currentUnits + 1);
+      const currentUnits = unitsByProperty.get(unit.propertyId) || 0;
+      unitsByProperty.set(unit.propertyId, currentUnits + 1);
     }
 
     const propertyIds = Array.from(rentByProperty.keys());
@@ -642,8 +642,8 @@ export class ReportsService {
       summary: {
         totalProjectedRent: totalProjectedRent.toFixed(2),
         totalPotentialRent: totalPotentialRent.toFixed(2),
-        totalOccupiedUnits: tenancies.length,
-        totalVacantUnits: totalPropertyUnits - tenancies.length,
+        totalOccupiedUnits: propertyUnits.length,
+        totalVacantUnits: totalPropertyUnits - propertyUnits.length,
         totalProperties: properties.length,
       },
       properties: paginatedData.data,

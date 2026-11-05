@@ -152,6 +152,10 @@ export class PropertiesService {
       status: 'ACTIVE',
     }).all();
 
+    const propertyUnits = await this.prisma.db.orm.public.PropertyUnit.where({
+      managerId,
+    }).all();
+
     const propertiesWithOccupancy = properties.map((property) => {
       const propertyTenancies = activeTenancies.filter(
         (tenancy) => tenancy.propertyId === property.id,
@@ -161,8 +165,12 @@ export class PropertiesService {
         propertyTenancies.map((tenancy) => tenancy.propertyUnit),
       ).size;
 
-      const rents = propertyTenancies.map((tenancy) =>
-        Number(tenancy.monthlyRent),
+      const propertyUnitsFiltered = propertyUnits.filter(
+        (unit) => unit.propertyId === property.id && unit.status !== 'ARCHIVED',
+      );
+
+      const rents = propertyUnitsFiltered.map((unit) =>
+        Number(unit.marketRent),
       );
       const minRent = rents.length > 0 ? Math.min(...rents) : 0;
       const maxRent = rents.length > 0 ? Math.max(...rents) : 0;
