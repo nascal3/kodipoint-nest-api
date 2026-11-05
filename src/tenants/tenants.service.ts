@@ -64,14 +64,18 @@ export class TenantsService {
       tenants
         .include('tenancies', (tenancies) =>
           tenancies
-            .include('property', (property) => property.select('name'))
-            .include('unit', (unit) => unit.select('unitNumber', 'marketRent')),
+            .include('property', (property) => property.select('name', 'currency'))
+            .include('unit', (unit) =>
+              unit.select('unitNumber', 'marketRent', 'billingFrequency', 'bedroomCount'),
+            ),
         )
         .orderBy((tenant) => tenant.createdAt.desc())
         .offset(offset)
         .limit(limit)
         .all(),
-      tenants.count(),
+      tenants.aggregate((aggregate) => ({
+        total: aggregate.count(),
+      })),
     ]);
 
     return {
@@ -79,9 +83,9 @@ export class TenantsService {
       pagination: {
         page,
         limit,
-        totalCount: Number(total),
-        totalPages: Math.ceil(Number(total) / limit),
-        hasNextPage: page < Math.ceil(Number(total) / limit),
+        totalCount: Number(total.total),
+        totalPages: Math.ceil(Number(total.total) / limit),
+        hasNextPage: page < Math.ceil(Number(total.total) / limit),
         hasPreviousPage: page > 1,
       },
     };
