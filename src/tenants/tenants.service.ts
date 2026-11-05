@@ -6,6 +6,18 @@ import { CreateTenantDto, TenantStatus } from './dto/create-tenant.dto';
 import { ListTenantsDto } from './dto/list-tenants.dto';
 import { UpdateTenantDto } from './dto/update-tenant.dto';
 
+export interface TenantListResponse {
+  data: object[];
+  pagination: {
+    page: number;
+    limit: number;
+    totalCount: number;
+    totalPages: number;
+    hasNextPage: boolean;
+    hasPreviousPage: boolean;
+  };
+}
+
 @Injectable()
 export class TenantsService {
   constructor(private readonly prisma: DatabaseService) {}
@@ -25,8 +37,12 @@ export class TenantsService {
     });
   }
 
-  async findAll(managerId: string, query: ListTenantsDto) {
-    const { status, name } = query;
+  async findAll(
+    managerId: string,
+    query: ListTenantsDto,
+  ): Promise<TenantListResponse> {
+    const { status, name, page = 1, limit = 10 } = query;
+    const offset = (page - 1) * limit;
 
     let tenants = this.prisma.db.orm.public.Tenant.where({ managerId });
 
@@ -44,13 +60,31 @@ export class TenantsService {
       );
     }
 
-    return tenants
-      .include('tenancies', (tenancies) =>
-        tenancies
-          .include('property', (property) => property.select('name'))
-          .include('unit', (unit) => unit.select('unitNumber', 'marketRent')),
-      )
-      .all();
+    const [data, total] = await Promise.all([
+      tenants
+        .include('tenancies', (tenancies) =>
+          tenancies
+            .include('property', (property) => property.select('name'))
+            .include('unit', (unit) => unit.select('unitNumber', 'marketRent')),
+        )
+        .orderBy((tenant) => tenant.createdAt.desc())
+        .offset(offset)
+        .limit(limit)
+        .all(),
+      tenants.count(),
+    ]);
+
+    return {
+      data,
+      pagination: {
+        page,
+        limit,
+        totalCount: Number(total),
+        totalPages: Math.ceil(Number(total) / limit),
+        hasNextPage: page < Math.ceil(Number(total) / limit),
+        hasPreviousPage: page > 1,
+      },
+    };
   }
 
   async findOne(managerId: string, tenantId: string) {
