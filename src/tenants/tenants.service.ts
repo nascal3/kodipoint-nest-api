@@ -18,6 +18,7 @@ export class TenantsService {
       address: dto.address,
       emergencyContactName: dto.emergencyContactName,
       emergencyContactPhone: dto.emergencyContactPhone,
+      emergencyContactRelationship: dto.emergencyContactRelationship,
       status: TenancyStatus.ACTIVE,
     });
   }

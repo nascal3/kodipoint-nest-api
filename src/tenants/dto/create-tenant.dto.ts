@@ -54,18 +54,21 @@ export class CreateTenantDto {
   @ApiProperty({
     description: 'The name of the emergency contact',
     example: 'Jane Doe',
-    required: false,
   })
-  @IsOptional()
   @IsString()
-  emergencyContactName?: string;
+  emergencyContactName: string;
 
   @ApiProperty({
     description: 'The phone number of the emergency contact',
     example: '+254718763763',
-    required: false,
   })
-  @IsOptional()
   @IsPhoneNumber()
-  emergencyContactPhone?: string;
+  emergencyContactPhone: string;
+
+  @ApiProperty({
+    description: 'The relationship of the emergency contact to the tenant',
+    example: 'Spouse',
+  })
+  @IsString()
+  emergencyContactRelationship: string;
 }

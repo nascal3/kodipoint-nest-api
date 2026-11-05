@@ -3,6 +3,7 @@ import { IsDateString, IsString, IsNumber, IsUUID, Min } from 'class-validator';
 
 export enum TenancyStatus {
   ACTIVE = 'ACTIVE',
+  EXPIRING = 'EXPIRING',
   ENDED = 'ENDED',
 }
 
@@ -41,12 +42,4 @@ export class AssignTenantDto {
   })
   @IsDateString()
   startDate: string;
-
-  @ApiProperty({
-    description: 'The monthly rent for the tenancy',
-    example: 1000,
-  })
-  @IsNumber()
-  @Min(0)
-  monthlyRent?: number;
 }

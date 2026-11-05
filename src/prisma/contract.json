@@ -215,6 +215,10 @@
                 "value": "ACTIVE"
               },
               {
+                "name": "EXPIRING",
+                "value": "EXPIRING"
+              },
+              {
                 "name": "ENDED",
                 "value": "ENDED"
               }
@@ -2475,13 +2479,6 @@
                   "kind": "scalar"
                 }
               },
-              "monthlyRent": {
-                "nullable": false,
-                "type": {
-                  "codecId": "pg/numeric@1",
-                  "kind": "scalar"
-                }
-              },
               "propertyId": {
                 "nullable": false,
                 "type": {
@@ -2643,9 +2640,6 @@
                 "managerId": {
                   "column": "manager_id"
                 },
-                "monthlyRent": {
-                  "column": "monthly_rent"
-                },
                 "propertyId": {
                   "column": "property_id"
                 },
@@ -2699,14 +2693,21 @@
                 }
               },
               "emergencyContactName": {
-                "nullable": true,
+                "nullable": false,
                 "type": {
                   "codecId": "pg/text@1",
                   "kind": "scalar"
                 }
               },
               "emergencyContactPhone": {
-                "nullable": true,
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "emergencyContactRelationship": {
+                "nullable": false,
                 "type": {
                   "codecId": "pg/text@1",
                   "kind": "scalar"
@@ -2847,6 +2848,9 @@
                 },
                 "emergencyContactPhone": {
                   "column": "emergency_contact_phone"
+                },
+                "emergencyContactRelationship": {
+                  "column": "emergency_contact_relationship"
                 },
                 "firstName": {
                   "column": "first_name"
@@ -5002,8 +5006,8 @@
             "tenancies": {
               "checks": [
                 {
-                  "expression": "\"status\" IN ('ACTIVE', 'ENDED')",
-                  "name": "tenancies_status_check_4654e3fb",
+                  "expression": "\"status\" IN ('ACTIVE', 'EXPIRING', 'ENDED')",
+                  "name": "tenancies_status_check_76b147e1",
                   "prefix": "tenancies_status_check"
                 }
               ],
@@ -5035,11 +5039,6 @@
                 "manager_id": {
                   "codecId": "pg/uuid@1",
                   "nativeType": "uuid",
-                  "nullable": false
-                },
-                "monthly_rent": {
-                  "codecId": "pg/numeric@1",
-                  "nativeType": "numeric",
                   "nullable": false
                 },
                 "property_id": {
@@ -5249,12 +5248,17 @@
                 "emergency_contact_name": {
                   "codecId": "pg/text@1",
                   "nativeType": "text",
-                  "nullable": true
+                  "nullable": false
                 },
                 "emergency_contact_phone": {
                   "codecId": "pg/text@1",
                   "nativeType": "text",
-                  "nullable": true
+                  "nullable": false
+                },
+                "emergency_contact_relationship": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": false
                 },
                 "first_name": {
                   "codecId": "pg/text@1",
@@ -5516,6 +5520,7 @@
               "kind": "valueSet",
               "values": [
                 "ACTIVE",
+                "EXPIRING",
                 "ENDED"
               ]
             },
@@ -5540,7 +5545,7 @@
         "kind": "postgres-schema"
       }
     },
-    "storageHash": "3d4760a2a154651dde9768151cb9b5585af54246ecadf095f41a18ffe8e2dda2"
+    "storageHash": "8e7e6f8f8a8dfb1cd0750977aa2a26e9eb38a64a4b708f144700ad7ca73c0b63"
   },
   "execution": {
     "executionHash": "8e9c983ff78a07252f8d86c07b2c152fd109aba234b96c8b51748afacf5a1756",

@@ -66,7 +66,6 @@ export class TenanciesService {
       propertyUnit: dto.propertyUnit,
       tenantId: dto.tenantId,
       startDate: dto.startDate,
-      monthlyRent: dto.monthlyRent?.toString() ?? property.monthlyRent,
       status: TenancyStatus.ACTIVE,
       assignedAt: new Date(),
     });
@@ -83,11 +82,14 @@ export class TenanciesService {
       throw new NotFoundException('Active tenancy not found');
     }
 
+    const status = endDate > new Date()
+      ? TenancyStatus.EXPIRING : TenancyStatus.ENDED;
+
     return this.prisma.db.orm.public.Tenancy.where({
       id: tenancyId,
       managerId,
     }).update({
-      status: TenancyStatus.ENDED,
+      status,
       endDate,
       unassignedAt: new Date(),
     });

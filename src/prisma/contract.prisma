@@ -208,16 +208,17 @@ enum TenantStatus {
   ENDED
 }
 model Tenant {
-  id                    Uuid    @id @default(uuid())
-  managerId             Uuid    @map("manager_id")
-  firstName             String  @map("first_name")
-  lastName              String  @map("last_name")
-  email                 String
-  phone                 String
-  address               String?
-  emergencyContactName  String? @map("emergency_contact_name")
-  emergencyContactPhone String? @map("emergency_contact_phone")
-  status                TenantStatus  @default(ACTIVE)
+  id                           Uuid          @id @default(uuid())
+  managerId                    Uuid          @map("manager_id")
+  firstName                    String        @map("first_name")
+  lastName                     String        @map("last_name")
+  email                        String
+  phone                        String
+  address                      String?
+  emergencyContactName         String        @map("emergency_contact_name")
+  emergencyContactPhone        String        @map("emergency_contact_phone")
+  emergencyContactRelationship String        @map("emergency_contact_relationship")
+  status                       TenantStatus  @default(ACTIVE)
 
   createdAt temporal.createdAt() @map("created_at")
   updatedAt temporal.updatedAt() @map("updated_at")
@@ -234,6 +235,7 @@ model Tenant {
 
 enum TenancyStatus {
   ACTIVE
+  EXPIRING
   ENDED
 }
 model Tenancy {
@@ -245,7 +247,6 @@ model Tenancy {
   tenantId      Uuid             @map("tenant_id")
   startDate     Date             @map("start_date")
   endDate       Date?            @map("end_date")
-  monthlyRent   Decimal          @map("monthly_rent")
   status        TenancyStatus    @default(ACTIVE)
   assignedAt    DateTime         @map("assigned_at")
   unassignedAt  DateTime?        @map("unassigned_at")

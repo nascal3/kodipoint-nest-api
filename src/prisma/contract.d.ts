@@ -34,7 +34,7 @@ import type {
 } from '@prisma/orm-postgres/contract/types';
 
 export type StorageHash =
-  StorageHashBase<'3d4760a2a154651dde9768151cb9b5585af54246ecadf095f41a18ffe8e2dda2'>;
+  StorageHashBase<'8e7e6f8f8a8dfb1cd0750977aa2a26e9eb38a64a4b708f144700ad7ca73c0b63'>;
 export type ExecutionHash =
   ExecutionHashBase<'8e9c983ff78a07252f8d86c07b2c152fd109aba234b96c8b51748afacf5a1756'>;
 export type ProfileHash =
@@ -404,8 +404,7 @@ export type FieldOutputTypes = {
       readonly tenantId: CodecTypes['pg/uuid@1']['output'];
       readonly startDate: CodecTypes['pg/date-temporal@1']['output'];
       readonly endDate: CodecTypes['pg/date-temporal@1']['output'] | null;
-      readonly monthlyRent: CodecTypes['pg/numeric@1']['output'];
-      readonly status: 'ACTIVE' | 'ENDED';
+      readonly status: 'ACTIVE' | 'EXPIRING' | 'ENDED';
       readonly assignedAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
       readonly unassignedAt: CodecTypes['pg/timestamptz-temporal@1']['output'] | null;
       readonly createdAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
@@ -419,8 +418,9 @@ export type FieldOutputTypes = {
       readonly email: CodecTypes['pg/text@1']['output'];
       readonly phone: CodecTypes['pg/text@1']['output'];
       readonly address: CodecTypes['pg/text@1']['output'] | null;
-      readonly emergencyContactName: CodecTypes['pg/text@1']['output'] | null;
-      readonly emergencyContactPhone: CodecTypes['pg/text@1']['output'] | null;
+      readonly emergencyContactName: CodecTypes['pg/text@1']['output'];
+      readonly emergencyContactPhone: CodecTypes['pg/text@1']['output'];
+      readonly emergencyContactRelationship: CodecTypes['pg/text@1']['output'];
       readonly status: 'ACTIVE' | 'ENDED';
       readonly createdAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
       readonly updatedAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
@@ -608,8 +608,7 @@ export type FieldInputTypes = {
       readonly tenantId: CodecTypes['pg/uuid@1']['input'];
       readonly startDate: CodecTypes['pg/date-temporal@1']['input'];
       readonly endDate: CodecTypes['pg/date-temporal@1']['input'] | null;
-      readonly monthlyRent: CodecTypes['pg/numeric@1']['input'];
-      readonly status: 'ACTIVE' | 'ENDED';
+      readonly status: 'ACTIVE' | 'EXPIRING' | 'ENDED';
       readonly assignedAt: CodecTypes['pg/timestamptz-temporal@1']['input'];
       readonly unassignedAt: CodecTypes['pg/timestamptz-temporal@1']['input'] | null;
       readonly createdAt: CodecTypes['pg/timestamptz-temporal@1']['input'];
@@ -623,8 +622,9 @@ export type FieldInputTypes = {
       readonly email: CodecTypes['pg/text@1']['input'];
       readonly phone: CodecTypes['pg/text@1']['input'];
       readonly address: CodecTypes['pg/text@1']['input'] | null;
-      readonly emergencyContactName: CodecTypes['pg/text@1']['input'] | null;
-      readonly emergencyContactPhone: CodecTypes['pg/text@1']['input'] | null;
+      readonly emergencyContactName: CodecTypes['pg/text@1']['input'];
+      readonly emergencyContactPhone: CodecTypes['pg/text@1']['input'];
+      readonly emergencyContactRelationship: CodecTypes['pg/text@1']['input'];
       readonly status: 'ACTIVE' | 'ENDED';
       readonly createdAt: CodecTypes['pg/timestamptz-temporal@1']['input'];
       readonly updatedAt: CodecTypes['pg/timestamptz-temporal@1']['input'];
@@ -809,12 +809,11 @@ export type StorageColumnTypes = {
       readonly end_date: CodecTypes['pg/date-temporal@1']['output'] | null;
       readonly id: CodecTypes['pg/uuid@1']['output'];
       readonly manager_id: CodecTypes['pg/uuid@1']['output'];
-      readonly monthly_rent: CodecTypes['pg/numeric@1']['output'];
       readonly property_id: CodecTypes['pg/uuid@1']['output'];
       readonly property_unit: CodecTypes['pg/text@1']['output'];
       readonly property_unit_id: CodecTypes['pg/uuid@1']['output'] | null;
       readonly start_date: CodecTypes['pg/date-temporal@1']['output'];
-      readonly status: 'ACTIVE' | 'ENDED';
+      readonly status: 'ACTIVE' | 'EXPIRING' | 'ENDED';
       readonly tenant_id: CodecTypes['pg/uuid@1']['output'];
       readonly unassigned_at: CodecTypes['pg/timestamptz-temporal@1']['output'] | null;
       readonly updated_at: CodecTypes['pg/timestamptz-temporal@1']['output'];
@@ -823,8 +822,9 @@ export type StorageColumnTypes = {
       readonly address: CodecTypes['pg/text@1']['output'] | null;
       readonly created_at: CodecTypes['pg/timestamptz-temporal@1']['output'];
       readonly email: CodecTypes['pg/text@1']['output'];
-      readonly emergency_contact_name: CodecTypes['pg/text@1']['output'] | null;
-      readonly emergency_contact_phone: CodecTypes['pg/text@1']['output'] | null;
+      readonly emergency_contact_name: CodecTypes['pg/text@1']['output'];
+      readonly emergency_contact_phone: CodecTypes['pg/text@1']['output'];
+      readonly emergency_contact_relationship: CodecTypes['pg/text@1']['output'];
       readonly first_name: CodecTypes['pg/text@1']['output'];
       readonly id: CodecTypes['pg/uuid@1']['output'];
       readonly last_name: CodecTypes['pg/text@1']['output'];
@@ -1013,12 +1013,11 @@ export type StorageColumnInputTypes = {
       readonly end_date: CodecTypes['pg/date-temporal@1']['input'] | null;
       readonly id: CodecTypes['pg/uuid@1']['input'];
       readonly manager_id: CodecTypes['pg/uuid@1']['input'];
-      readonly monthly_rent: CodecTypes['pg/numeric@1']['input'];
       readonly property_id: CodecTypes['pg/uuid@1']['input'];
       readonly property_unit: CodecTypes['pg/text@1']['input'];
       readonly property_unit_id: CodecTypes['pg/uuid@1']['input'] | null;
       readonly start_date: CodecTypes['pg/date-temporal@1']['input'];
-      readonly status: 'ACTIVE' | 'ENDED';
+      readonly status: 'ACTIVE' | 'EXPIRING' | 'ENDED';
       readonly tenant_id: CodecTypes['pg/uuid@1']['input'];
       readonly unassigned_at: CodecTypes['pg/timestamptz-temporal@1']['input'] | null;
       readonly updated_at: CodecTypes['pg/timestamptz-temporal@1']['input'];
@@ -1027,8 +1026,9 @@ export type StorageColumnInputTypes = {
       readonly address: CodecTypes['pg/text@1']['input'] | null;
       readonly created_at: CodecTypes['pg/timestamptz-temporal@1']['input'];
       readonly email: CodecTypes['pg/text@1']['input'];
-      readonly emergency_contact_name: CodecTypes['pg/text@1']['input'] | null;
-      readonly emergency_contact_phone: CodecTypes['pg/text@1']['input'] | null;
+      readonly emergency_contact_name: CodecTypes['pg/text@1']['input'];
+      readonly emergency_contact_phone: CodecTypes['pg/text@1']['input'];
+      readonly emergency_contact_relationship: CodecTypes['pg/text@1']['input'];
       readonly first_name: CodecTypes['pg/text@1']['input'];
       readonly id: CodecTypes['pg/uuid@1']['input'];
       readonly last_name: CodecTypes['pg/text@1']['input'];
@@ -1211,8 +1211,9 @@ export namespace Models {
     email: CodecTypes['pg/text@1']['output'];
     phone: CodecTypes['pg/text@1']['output'];
     address: CodecTypes['pg/text@1']['output'] | null;
-    emergencyContactName: CodecTypes['pg/text@1']['output'] | null;
-    emergencyContactPhone: CodecTypes['pg/text@1']['output'] | null;
+    emergencyContactName: CodecTypes['pg/text@1']['output'];
+    emergencyContactPhone: CodecTypes['pg/text@1']['output'];
+    emergencyContactRelationship: CodecTypes['pg/text@1']['output'];
     status: 'ACTIVE' | 'ENDED';
     createdAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
     updatedAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
@@ -1231,8 +1232,7 @@ export namespace Models {
     tenantId: CodecTypes['pg/uuid@1']['output'];
     startDate: CodecTypes['pg/date-temporal@1']['output'];
     endDate: CodecTypes['pg/date-temporal@1']['output'] | null;
-    monthlyRent: CodecTypes['pg/numeric@1']['output'];
-    status: 'ACTIVE' | 'ENDED';
+    status: 'ACTIVE' | 'EXPIRING' | 'ENDED';
     assignedAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
     unassignedAt: CodecTypes['pg/timestamptz-temporal@1']['output'] | null;
     createdAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
@@ -2827,11 +2827,6 @@ type ContractBase = Omit<
                   readonly codecId: 'pg/date-temporal@1';
                   readonly nullable: true;
                 };
-                readonly monthly_rent: {
-                  readonly nativeType: 'numeric';
-                  readonly codecId: 'pg/numeric@1';
-                  readonly nullable: false;
-                };
                 readonly status: {
                   readonly nativeType: 'text';
                   readonly codecId: 'pg/text@1';
@@ -2994,12 +2989,17 @@ type ContractBase = Omit<
                 readonly emergency_contact_name: {
                   readonly nativeType: 'text';
                   readonly codecId: 'pg/text@1';
-                  readonly nullable: true;
+                  readonly nullable: false;
                 };
                 readonly emergency_contact_phone: {
                   readonly nativeType: 'text';
                   readonly codecId: 'pg/text@1';
-                  readonly nullable: true;
+                  readonly nullable: false;
+                };
+                readonly emergency_contact_relationship: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
                 };
                 readonly status: {
                   readonly nativeType: 'text';
@@ -3174,7 +3174,7 @@ type ContractBase = Omit<
             };
             readonly TenancyStatus: {
               readonly kind: 'valueSet';
-              readonly values: readonly ['ACTIVE', 'ENDED'];
+              readonly values: readonly ['ACTIVE', 'EXPIRING', 'ENDED'];
             };
             readonly TenantStatus: {
               readonly kind: 'valueSet';
@@ -4673,10 +4673,6 @@ type ContractBase = Omit<
                 readonly nullable: true;
                 readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/date-temporal@1' };
               };
-              readonly monthlyRent: {
-                readonly nullable: false;
-                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/numeric@1' };
-              };
               readonly status: {
                 readonly nullable: false;
                 readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
@@ -4780,7 +4776,6 @@ type ContractBase = Omit<
                 readonly tenantId: { readonly column: 'tenant_id' };
                 readonly startDate: { readonly column: 'start_date' };
                 readonly endDate: { readonly column: 'end_date' };
-                readonly monthlyRent: { readonly column: 'monthly_rent' };
                 readonly status: { readonly column: 'status' };
                 readonly assignedAt: { readonly column: 'assigned_at' };
                 readonly unassignedAt: { readonly column: 'unassigned_at' };
@@ -4820,11 +4815,15 @@ type ContractBase = Omit<
                 readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
               };
               readonly emergencyContactName: {
-                readonly nullable: true;
+                readonly nullable: false;
                 readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
               };
               readonly emergencyContactPhone: {
-                readonly nullable: true;
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly emergencyContactRelationship: {
+                readonly nullable: false;
                 readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
               };
               readonly status: {
@@ -4903,6 +4902,9 @@ type ContractBase = Omit<
                 readonly address: { readonly column: 'address' };
                 readonly emergencyContactName: { readonly column: 'emergency_contact_name' };
                 readonly emergencyContactPhone: { readonly column: 'emergency_contact_phone' };
+                readonly emergencyContactRelationship: {
+                  readonly column: 'emergency_contact_relationship';
+                };
                 readonly status: { readonly column: 'status' };
                 readonly createdAt: { readonly column: 'created_at' };
                 readonly updatedAt: { readonly column: 'updated_at' };
@@ -5182,6 +5184,7 @@ type ContractBase = Omit<
             readonly codecId: 'pg/text@1';
             readonly members: readonly [
               { readonly name: 'ACTIVE'; readonly value: 'ACTIVE' },
+              { readonly name: 'EXPIRING'; readonly value: 'EXPIRING' },
               { readonly name: 'ENDED'; readonly value: 'ENDED' },
             ];
           };
