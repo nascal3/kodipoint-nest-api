@@ -1,7 +1,9 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
+import { or } from '@prisma/orm-postgres/orm-client';
 
 import { DatabaseService } from '@/database/database.service';
 import { CreateTenantDto, TenantStatus } from './dto/create-tenant.dto';
+import { ListTenantsDto } from './dto/list-tenants.dto';
 import { UpdateTenantDto } from './dto/update-tenant.dto';
 
 @Injectable()
@@ -23,8 +25,32 @@ export class TenantsService {
     });
   }
 
-  async findAll(managerId: string) {
-    return this.prisma.db.orm.public.Tenant.where({ managerId }).all();
+  async findAll(managerId: string, query: ListTenantsDto) {
+    const { status, name } = query;
+
+    let tenants = this.prisma.db.orm.public.Tenant.where({ managerId });
+
+    if (status) {
+      tenants = tenants.where({ status });
+    }
+
+    if (name) {
+      tenants = tenants.where((tenant) =>
+        or(
+          tenant.firstName.ilike(`%${name}%`),
+          tenant.lastName.ilike(`%${name}%`),
+          tenant.phone.ilike(`%${name}%`),
+        ),
+      );
+    }
+
+    return tenants
+      .include('tenancies', (tenancies) =>
+        tenancies
+          .include('property', (property) => property.select('name'))
+          .include('unit', (unit) => unit.select('unitNumber', 'marketRent')),
+      )
+      .all();
   }
 
   async findOne(managerId: string, tenantId: string) {
