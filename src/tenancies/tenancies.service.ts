@@ -6,6 +6,7 @@ import {
 
 import { DatabaseService } from '@/database/database.service';
 import { AssignTenantDto, TenancyStatus } from './dto/assign-tenant.dto';
+import { TenantStatus } from '@/tenants/dto/create-tenant.dto';
 
 @Injectable()
 export class TenanciesService {
@@ -85,7 +86,11 @@ export class TenanciesService {
     const status = endDate > new Date()
       ? TenancyStatus.EXPIRING : TenancyStatus.ENDED;
 
-    return this.prisma.db.orm.public.Tenancy.where({
+    const tenantStatus = status === TenancyStatus.EXPIRING
+      ? TenantStatus.NOTICE
+      : TenantStatus.ENDED;
+
+    await this.prisma.db.orm.public.Tenancy.where({
       id: tenancyId,
       managerId,
     }).update({
@@ -93,5 +98,14 @@ export class TenanciesService {
       endDate,
       unassignedAt: new Date(),
     });
+
+    await this.prisma.db.orm.public.Tenant.where({
+      id: tenancy.tenantId,
+      managerId,
+    }).update({
+      status: tenantStatus,
+    });
+
+    return tenancy;
   }
 }

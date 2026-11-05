@@ -34,7 +34,7 @@ import type {
 } from '@prisma/orm-postgres/contract/types';
 
 export type StorageHash =
-  StorageHashBase<'8e7e6f8f8a8dfb1cd0750977aa2a26e9eb38a64a4b708f144700ad7ca73c0b63'>;
+  StorageHashBase<'9f877b2cc0b80809a6b65e6853653c7c4fa2886fe6a625b59a099dc76998f995'>;
 export type ExecutionHash =
   ExecutionHashBase<'8e9c983ff78a07252f8d86c07b2c152fd109aba234b96c8b51748afacf5a1756'>;
 export type ProfileHash =
@@ -421,7 +421,7 @@ export type FieldOutputTypes = {
       readonly emergencyContactName: CodecTypes['pg/text@1']['output'];
       readonly emergencyContactPhone: CodecTypes['pg/text@1']['output'];
       readonly emergencyContactRelationship: CodecTypes['pg/text@1']['output'];
-      readonly status: 'ACTIVE' | 'ENDED';
+      readonly status: 'ACTIVE' | 'NOTICE' | 'ENDED';
       readonly createdAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
       readonly updatedAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
     };
@@ -625,7 +625,7 @@ export type FieldInputTypes = {
       readonly emergencyContactName: CodecTypes['pg/text@1']['input'];
       readonly emergencyContactPhone: CodecTypes['pg/text@1']['input'];
       readonly emergencyContactRelationship: CodecTypes['pg/text@1']['input'];
-      readonly status: 'ACTIVE' | 'ENDED';
+      readonly status: 'ACTIVE' | 'NOTICE' | 'ENDED';
       readonly createdAt: CodecTypes['pg/timestamptz-temporal@1']['input'];
       readonly updatedAt: CodecTypes['pg/timestamptz-temporal@1']['input'];
     };
@@ -830,7 +830,7 @@ export type StorageColumnTypes = {
       readonly last_name: CodecTypes['pg/text@1']['output'];
       readonly manager_id: CodecTypes['pg/uuid@1']['output'];
       readonly phone: CodecTypes['pg/text@1']['output'];
-      readonly status: 'ACTIVE' | 'ENDED';
+      readonly status: 'ACTIVE' | 'NOTICE' | 'ENDED';
       readonly updated_at: CodecTypes['pg/timestamptz-temporal@1']['output'];
     };
     readonly users: {
@@ -1034,7 +1034,7 @@ export type StorageColumnInputTypes = {
       readonly last_name: CodecTypes['pg/text@1']['input'];
       readonly manager_id: CodecTypes['pg/uuid@1']['input'];
       readonly phone: CodecTypes['pg/text@1']['input'];
-      readonly status: 'ACTIVE' | 'ENDED';
+      readonly status: 'ACTIVE' | 'NOTICE' | 'ENDED';
       readonly updated_at: CodecTypes['pg/timestamptz-temporal@1']['input'];
     };
     readonly users: {
@@ -1214,7 +1214,7 @@ export namespace Models {
     emergencyContactName: CodecTypes['pg/text@1']['output'];
     emergencyContactPhone: CodecTypes['pg/text@1']['output'];
     emergencyContactRelationship: CodecTypes['pg/text@1']['output'];
-    status: 'ACTIVE' | 'ENDED';
+    status: 'ACTIVE' | 'NOTICE' | 'ENDED';
     createdAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
     updatedAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
     invoices: public_Invoice[];
@@ -3178,7 +3178,7 @@ type ContractBase = Omit<
             };
             readonly TenantStatus: {
               readonly kind: 'valueSet';
-              readonly values: readonly ['ACTIVE', 'ENDED'];
+              readonly values: readonly ['ACTIVE', 'NOTICE', 'ENDED'];
             };
             readonly UserStatus: {
               readonly kind: 'valueSet';
@@ -5177,6 +5177,7 @@ type ContractBase = Omit<
             readonly codecId: 'pg/text@1';
             readonly members: readonly [
               { readonly name: 'ACTIVE'; readonly value: 'ACTIVE' },
+              { readonly name: 'NOTICE'; readonly value: 'NOTICE' },
               { readonly name: 'ENDED'; readonly value: 'ENDED' },
             ];
           };

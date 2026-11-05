@@ -205,6 +205,7 @@ model PropertyUnitCharge {
 
 enum TenantStatus {
   ACTIVE
+  NOTICE
   ENDED
 }
 model Tenant {

@@ -1,8 +1,10 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsEmail, IsOptional, IsPhoneNumber, IsString } from 'class-validator';
+import {Optional} from "@nestjs/common";
 
-export enum TenancyStatus {
+export enum TenantStatus {
   ACTIVE = 'ACTIVE',
+  NOTICE = 'NOTICE',
   ENDED = 'ENDED',
 }
 
@@ -64,4 +66,12 @@ export class CreateTenantDto {
   })
   @IsString()
   emergencyContactRelationship: string;
+
+  @ApiProperty({
+    description: 'The status of the tenant',
+    example: 'ACTIVE | NOTICE | ENDED',
+  })
+  @IsString()
+  @Optional()
+  status?: TenantStatus;
 }

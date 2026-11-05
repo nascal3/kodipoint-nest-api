@@ -232,6 +232,10 @@
                 "value": "ACTIVE"
               },
               {
+                "name": "NOTICE",
+                "value": "NOTICE"
+              },
+              {
                 "name": "ENDED",
                 "value": "ENDED"
               }
@@ -5220,8 +5224,8 @@
             "tenants": {
               "checks": [
                 {
-                  "expression": "\"status\" IN ('ACTIVE', 'ENDED')",
-                  "name": "tenants_status_check_4654e3fb",
+                  "expression": "\"status\" IN ('ACTIVE', 'NOTICE', 'ENDED')",
+                  "name": "tenants_status_check_e49e6437",
                   "prefix": "tenants_status_check"
                 }
               ],
@@ -5528,6 +5532,7 @@
               "kind": "valueSet",
               "values": [
                 "ACTIVE",
+                "NOTICE",
                 "ENDED"
               ]
             },
@@ -5545,7 +5550,7 @@
         "kind": "postgres-schema"
       }
     },
-    "storageHash": "8e7e6f8f8a8dfb1cd0750977aa2a26e9eb38a64a4b708f144700ad7ca73c0b63"
+    "storageHash": "9f877b2cc0b80809a6b65e6853653c7c4fa2886fe6a625b59a099dc76998f995"
   },
   "execution": {
     "executionHash": "8e9c983ff78a07252f8d86c07b2c152fd109aba234b96c8b51748afacf5a1756",

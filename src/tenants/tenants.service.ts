@@ -1,7 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 
 import { DatabaseService } from '@/database/database.service';
-import {CreateTenantDto, TenancyStatus} from './dto/create-tenant.dto';
+import { CreateTenantDto, TenantStatus } from './dto/create-tenant.dto';
 import { UpdateTenantDto } from './dto/update-tenant.dto';
 
 @Injectable()
@@ -19,7 +19,7 @@ export class TenantsService {
       emergencyContactName: dto.emergencyContactName,
       emergencyContactPhone: dto.emergencyContactPhone,
       emergencyContactRelationship: dto.emergencyContactRelationship,
-      status: TenancyStatus.ACTIVE,
+      status: TenantStatus.ACTIVE,
     });
   }
 
@@ -43,12 +43,24 @@ export class TenantsService {
   async update(managerId: string, tenantId: string, dto: UpdateTenantDto) {
     await this.findOne(managerId, tenantId);
 
-    return this.prisma.db.orm.public.Tenant.where({
+    const updatedTenant = await this.prisma.db.orm.public.Tenant.where({
       id: tenantId,
       managerId,
     }).update({
       ...dto,
     });
+
+    if (dto.status === TenantStatus.NOTICE) {
+      await this.prisma.db.orm.public.Tenancy.where({
+        tenantId,
+        managerId,
+        status: 'ACTIVE',
+      }).update({
+        status: 'EXPIRING',
+      });
+    }
+
+    return updatedTenant;
   }
 
   async archive(managerId: string, tenantId: string) {
@@ -58,7 +70,7 @@ export class TenantsService {
       id: tenantId,
       managerId,
     }).update({
-      status: TenancyStatus.ENDED,
+      status: TenantStatus.ENDED,
     });
   }
 }
