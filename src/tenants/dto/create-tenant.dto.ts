@@ -45,13 +45,6 @@ export class CreateTenantDto {
   address?: string;
 
   @ApiProperty({
-    description: 'The status of the tenant',
-    example: TenancyStatus.ACTIVE,
-  })
-  @IsString()
-  status: TenancyStatus;
-
-  @ApiProperty({
     description: 'The name of the emergency contact',
     example: 'Jane Doe',
   })
