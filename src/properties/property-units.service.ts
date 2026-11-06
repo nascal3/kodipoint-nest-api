@@ -47,11 +47,13 @@ export class PropertyUnitsService {
 
     const existingUnit = await this.prisma.db.orm.public.PropertyUnit.where({
       unitNumber: dto.unitNumber,
+      propertyId: dto.propertyId,
+      managerId,
     }).first();
 
     if (existingUnit) {
       throw new BadRequestException(
-        'A property unit with this unit number already exists',
+        'A property unit with this unit number already exists in this property',
       );
     }
 
@@ -336,6 +338,21 @@ export class PropertyUnitsService {
     const targetPropertyId = propertyId ?? unit.propertyId;
     if (shouldUpdateCharges) {
       await this.validatePropertyCharges(propertyCharges, targetPropertyId);
+    }
+
+    const effectiveUnitNumber = dto.unitNumber ?? unit.unitNumber;
+    if (dto.unitNumber !== undefined || propertyId !== undefined) {
+      const existingUnit = await this.prisma.db.orm.public.PropertyUnit.where({
+        unitNumber: effectiveUnitNumber,
+        propertyId: targetPropertyId,
+        managerId,
+      }).first();
+
+      if (existingUnit && existingUnit.id !== unitId) {
+        throw new BadRequestException(
+          'A property unit with this unit number already exists in this property',
+        );
+      }
     }
 
     const updatedUnit = await this.prisma.db.orm.public.PropertyUnit.where({

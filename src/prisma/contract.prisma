@@ -165,7 +165,7 @@ model PropertyUnit {
   managerId        Uuid               @map("manager_id")
   propertyId       Uuid               @map("property_id")
   propertyUseType  PropertyUseType    @default(RESIDENTIAL) @map("property_use_type")
-  unitNumber       String             @unique @map("unit_number")
+  unitNumber       String             @map("unit_number")
   bedroomCount     Int                @map("bedroom_count")
   status           PropertyUnitStatus @default(AVAILABLE)
   marketRent       Decimal            @map("market_rent")
