@@ -45,6 +45,10 @@ export class PropertyUnitsService {
       throw new NotFoundException('Property not found');
     }
 
+    if (property.status === 'INACTIVE') {
+      throw new BadRequestException('Cannot create units for inactive properties');
+    }
+
     const existingUnit = await this.prisma.db.orm.public.PropertyUnit.where({
       unitNumber: dto.unitNumber,
       propertyId: dto.propertyId,
