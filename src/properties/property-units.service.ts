@@ -67,7 +67,7 @@ export class PropertyUnitsService {
     const unitStatus =
       property.status === 'MAINTENANCE'
         ? 'MAINTENANCE'
-        : property.status === 'INACTIVE'
+        : property.status === 'ARCHIVED'
           ? 'UNAVAILABLE'
           : dto.status;
 
