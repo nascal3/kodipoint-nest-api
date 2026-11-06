@@ -88,6 +88,28 @@ export class TenanciesService {
       throw new NotFoundException('Property not found');
     }
 
+    if (property.status !== 'ACTIVE') {
+      throw new ConflictException(
+        'Tenant can only be assigned to a property with ACTIVE status',
+      );
+    }
+
+    const propertyUnit = await this.prisma.db.orm.public.PropertyUnit.where({
+      propertyId: dto.propertyId,
+      unitNumber: dto.propertyUnit,
+      managerId,
+    }).first();
+
+    if (!propertyUnit) {
+      throw new NotFoundException('Property unit not found');
+    }
+
+    if (propertyUnit.status !== 'AVAILABLE') {
+      throw new ConflictException(
+        'Tenant can only be assigned to a unit with AVAILABLE status',
+      );
+    }
+
     const tenant = await this.prisma.db.orm.public.Tenant.where({
       id: dto.tenantId,
       managerId,
