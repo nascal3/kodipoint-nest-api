@@ -98,6 +98,19 @@
               }
             ]
           },
+          "IdentificationDoc": {
+            "codecId": "pg/text@1",
+            "members": [
+              {
+                "name": "NATIONAL_ID",
+                "value": "NATIONAL_ID"
+              },
+              {
+                "name": "PASSPORT",
+                "value": "PASSPORT"
+              }
+            ]
+          },
           "InvoiceStatus": {
             "codecId": "pg/text@1",
             "members": [
@@ -2735,6 +2748,26 @@
                   "kind": "scalar"
                 }
               },
+              "identificationDoc": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                },
+                "valueSet": {
+                  "entityKind": "enum",
+                  "entityName": "IdentificationDoc",
+                  "namespaceId": "public",
+                  "plane": "domain"
+                }
+              },
+              "identificationDocNumber": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
               "lastName": {
                 "nullable": false,
                 "type": {
@@ -2865,6 +2898,12 @@
                 },
                 "id": {
                   "column": "id"
+                },
+                "identificationDoc": {
+                  "column": "identificationDoc"
+                },
+                "identificationDocNumber": {
+                  "column": "identificationDocNumber"
                 },
                 "lastName": {
                   "column": "last_name"
@@ -5222,6 +5261,11 @@
             "tenants": {
               "checks": [
                 {
+                  "expression": "\"identificationDoc\" IN ('NATIONAL_ID', 'PASSPORT')",
+                  "name": "tenants_identificationDoc_check_422767a4",
+                  "prefix": "tenants_identificationDoc_check"
+                },
+                {
                   "expression": "\"status\" IN ('ACTIVE', 'NOTICE', 'ENDED')",
                   "name": "tenants_status_check_e49e6437",
                   "prefix": "tenants_status_check"
@@ -5270,6 +5314,26 @@
                 "id": {
                   "codecId": "pg/uuid@1",
                   "nativeType": "uuid",
+                  "nullable": false
+                },
+                "identificationDoc": {
+                  "codecId": "pg/text@1",
+                  "default": {
+                    "kind": "literal",
+                    "value": "NATIONAL_ID"
+                  },
+                  "nativeType": "text",
+                  "nullable": false,
+                  "valueSet": {
+                    "entityKind": "valueSet",
+                    "entityName": "IdentificationDoc",
+                    "namespaceId": "public",
+                    "plane": "storage"
+                  }
+                },
+                "identificationDocNumber": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
                   "nullable": false
                 },
                 "last_name": {
@@ -5472,6 +5536,13 @@
                 "ANNUALLY"
               ]
             },
+            "IdentificationDoc": {
+              "kind": "valueSet",
+              "values": [
+                "NATIONAL_ID",
+                "PASSPORT"
+              ]
+            },
             "InvoiceStatus": {
               "kind": "valueSet",
               "values": [
@@ -5549,7 +5620,7 @@
         "kind": "postgres-schema"
       }
     },
-    "storageHash": "4470512ea73fed657cd8dbf63eef95b08c171eae67b381bb05c8a08817201c1e"
+    "storageHash": "74a12ceccfe9d45024bafe21e83ea0ede910db628d056c146be65cfc5dae2f4a"
   },
   "execution": {
     "executionHash": "8e9c983ff78a07252f8d86c07b2c152fd109aba234b96c8b51748afacf5a1756",

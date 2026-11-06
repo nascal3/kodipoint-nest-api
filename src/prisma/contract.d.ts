@@ -34,7 +34,7 @@ import type {
 } from '@prisma/orm-postgres/contract/types';
 
 export type StorageHash =
-  StorageHashBase<'4470512ea73fed657cd8dbf63eef95b08c171eae67b381bb05c8a08817201c1e'>;
+  StorageHashBase<'74a12ceccfe9d45024bafe21e83ea0ede910db628d056c146be65cfc5dae2f4a'>;
 export type ExecutionHash =
   ExecutionHashBase<'8e9c983ff78a07252f8d86c07b2c152fd109aba234b96c8b51748afacf5a1756'>;
 export type ProfileHash =
@@ -416,6 +416,8 @@ export type FieldOutputTypes = {
       readonly firstName: CodecTypes['pg/text@1']['output'];
       readonly lastName: CodecTypes['pg/text@1']['output'];
       readonly email: CodecTypes['pg/text@1']['output'];
+      readonly identificationDoc: 'NATIONAL_ID' | 'PASSPORT';
+      readonly identificationDocNumber: CodecTypes['pg/text@1']['output'];
       readonly phone: CodecTypes['pg/text@1']['output'];
       readonly address: CodecTypes['pg/text@1']['output'] | null;
       readonly emergencyContactName: CodecTypes['pg/text@1']['output'];
@@ -620,6 +622,8 @@ export type FieldInputTypes = {
       readonly firstName: CodecTypes['pg/text@1']['input'];
       readonly lastName: CodecTypes['pg/text@1']['input'];
       readonly email: CodecTypes['pg/text@1']['input'];
+      readonly identificationDoc: 'NATIONAL_ID' | 'PASSPORT';
+      readonly identificationDocNumber: CodecTypes['pg/text@1']['input'];
       readonly phone: CodecTypes['pg/text@1']['input'];
       readonly address: CodecTypes['pg/text@1']['input'] | null;
       readonly emergencyContactName: CodecTypes['pg/text@1']['input'];
@@ -827,6 +831,8 @@ export type StorageColumnTypes = {
       readonly emergency_contact_relationship: CodecTypes['pg/text@1']['output'];
       readonly first_name: CodecTypes['pg/text@1']['output'];
       readonly id: CodecTypes['pg/uuid@1']['output'];
+      readonly identificationDoc: 'NATIONAL_ID' | 'PASSPORT';
+      readonly identificationDocNumber: CodecTypes['pg/text@1']['output'];
       readonly last_name: CodecTypes['pg/text@1']['output'];
       readonly manager_id: CodecTypes['pg/uuid@1']['output'];
       readonly phone: CodecTypes['pg/text@1']['output'];
@@ -1031,6 +1037,8 @@ export type StorageColumnInputTypes = {
       readonly emergency_contact_relationship: CodecTypes['pg/text@1']['input'];
       readonly first_name: CodecTypes['pg/text@1']['input'];
       readonly id: CodecTypes['pg/uuid@1']['input'];
+      readonly identificationDoc: 'NATIONAL_ID' | 'PASSPORT';
+      readonly identificationDocNumber: CodecTypes['pg/text@1']['input'];
       readonly last_name: CodecTypes['pg/text@1']['input'];
       readonly manager_id: CodecTypes['pg/uuid@1']['input'];
       readonly phone: CodecTypes['pg/text@1']['input'];
@@ -1209,6 +1217,8 @@ export namespace Models {
     firstName: CodecTypes['pg/text@1']['output'];
     lastName: CodecTypes['pg/text@1']['output'];
     email: CodecTypes['pg/text@1']['output'];
+    identificationDoc: 'NATIONAL_ID' | 'PASSPORT';
+    identificationDocNumber: CodecTypes['pg/text@1']['output'];
     phone: CodecTypes['pg/text@1']['output'];
     address: CodecTypes['pg/text@1']['output'] | null;
     emergencyContactName: CodecTypes['pg/text@1']['output'];
@@ -2976,6 +2986,20 @@ type ContractBase = Omit<
                   readonly codecId: 'pg/text@1';
                   readonly nullable: false;
                 };
+                readonly identificationDoc: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                  readonly default: {
+                    readonly kind: 'literal';
+                    readonly value: DefaultLiteralValue<'pg/text@1', 'NATIONAL_ID'>;
+                  };
+                };
+                readonly identificationDocNumber: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                };
                 readonly phone: {
                   readonly nativeType: 'text';
                   readonly codecId: 'pg/text@1';
@@ -3144,6 +3168,10 @@ type ContractBase = Omit<
             readonly BillingFrequency: {
               readonly kind: 'valueSet';
               readonly values: readonly ['MONTHLY', 'QUARTERLY', 'BI_ANNUALLY', 'ANNUALLY'];
+            };
+            readonly IdentificationDoc: {
+              readonly kind: 'valueSet';
+              readonly values: readonly ['NATIONAL_ID', 'PASSPORT'];
             };
             readonly InvoiceStatus: {
               readonly kind: 'valueSet';
@@ -4812,6 +4840,14 @@ type ContractBase = Omit<
                 readonly nullable: false;
                 readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
               };
+              readonly identificationDoc: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly identificationDocNumber: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
               readonly phone: {
                 readonly nullable: false;
                 readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
@@ -4904,6 +4940,8 @@ type ContractBase = Omit<
                 readonly firstName: { readonly column: 'first_name' };
                 readonly lastName: { readonly column: 'last_name' };
                 readonly email: { readonly column: 'email' };
+                readonly identificationDoc: { readonly column: 'identificationDoc' };
+                readonly identificationDocNumber: { readonly column: 'identificationDocNumber' };
                 readonly phone: { readonly column: 'phone' };
                 readonly address: { readonly column: 'address' };
                 readonly emergencyContactName: { readonly column: 'emergency_contact_name' };
@@ -5186,6 +5224,13 @@ type ContractBase = Omit<
               { readonly name: 'ACTIVE'; readonly value: 'ACTIVE' },
               { readonly name: 'NOTICE'; readonly value: 'NOTICE' },
               { readonly name: 'ENDED'; readonly value: 'ENDED' },
+            ];
+          };
+          readonly IdentificationDoc: {
+            readonly codecId: 'pg/text@1';
+            readonly members: readonly [
+              { readonly name: 'NATIONAL_ID'; readonly value: 'NATIONAL_ID' },
+              { readonly name: 'PASSPORT'; readonly value: 'PASSPORT' },
             ];
           };
           readonly TenancyStatus: {

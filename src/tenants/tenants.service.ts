@@ -2,7 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { or } from '@prisma/orm-postgres/orm-client';
 
 import { DatabaseService } from '@/database/database.service';
-import { CreateTenantDto, TenantStatus } from './dto/create-tenant.dto';
+import {CreateTenantDto, IdentificationDoc, TenantStatus} from './dto/create-tenant.dto';
 import { ListTenantsDto } from './dto/list-tenants.dto';
 import { UpdateTenantDto } from './dto/update-tenant.dto';
 
@@ -28,6 +28,8 @@ export class TenantsService {
       firstName: dto.firstName,
       lastName: dto.lastName,
       email: dto.email,
+      identificationDoc: dto.identificationDoc ?? IdentificationDoc.NATIONAL_ID,
+      identificationDocNumber: dto.identificationDocNumber,
       phone: dto.phone,
       address: dto.address,
       emergencyContactName: dto.emergencyContactName,

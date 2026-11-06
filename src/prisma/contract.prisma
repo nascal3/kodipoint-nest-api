@@ -209,18 +209,24 @@ enum TenantStatus {
   NOTICE
   ENDED
 }
+enum IdentificationDoc {
+  NATIONAL_ID
+  PASSPORT
+}
 model Tenant {
-  id                           Uuid          @id @default(uuid())
-  managerId                    Uuid          @map("manager_id")
-  firstName                    String        @map("first_name")
-  lastName                     String        @map("last_name")
+  id                           Uuid               @id @default(uuid())
+  managerId                    Uuid               @map("manager_id")
+  firstName                    String             @map("first_name")
+  lastName                     String             @map("last_name")
   email                        String
+  identificationDoc            IdentificationDoc  @default(NATIONAL_ID)
+  identificationDocNumber      String
   phone                        String
   address                      String?
-  emergencyContactName         String        @map("emergency_contact_name")
-  emergencyContactPhone        String        @map("emergency_contact_phone")
-  emergencyContactRelationship String        @map("emergency_contact_relationship")
-  status                       TenantStatus  @default(ACTIVE)
+  emergencyContactName         String             @map("emergency_contact_name")
+  emergencyContactPhone        String             @map("emergency_contact_phone")
+  emergencyContactRelationship String             @map("emergency_contact_relationship")
+  status                       TenantStatus       @default(ACTIVE)
 
   createdAt temporal.createdAt() @map("created_at")
   updatedAt temporal.updatedAt() @map("updated_at")

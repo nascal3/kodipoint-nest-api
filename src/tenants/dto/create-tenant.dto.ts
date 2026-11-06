@@ -1,11 +1,21 @@
-import { ApiProperty } from '@nestjs/swagger';
-import { IsEmail, IsOptional, IsPhoneNumber, IsString } from 'class-validator';
-import {Optional} from "@nestjs/common";
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import {
+  IsEmail,
+  IsEnum,
+  IsOptional,
+  IsPhoneNumber,
+  IsString,
+} from 'class-validator';
 
 export enum TenantStatus {
   ACTIVE = 'ACTIVE',
   NOTICE = 'NOTICE',
   ENDED = 'ENDED',
+}
+
+export enum IdentificationDoc {
+  NATIONAL_ID = 'NATIONAL_ID',
+  PASSPORT = 'PASSPORT',
 }
 
 export class CreateTenantDto {
@@ -29,6 +39,22 @@ export class CreateTenantDto {
   })
   @IsEmail()
   email: string;
+
+  @ApiProperty({
+    description: 'The type of identification document',
+    example: IdentificationDoc.NATIONAL_ID,
+    enum: IdentificationDoc,
+    default: IdentificationDoc.NATIONAL_ID,
+  })
+  @IsEnum(IdentificationDoc)
+  identificationDoc?: IdentificationDoc;
+
+  @ApiProperty({
+    description: 'The identification document number',
+    example: '12345678',
+  })
+  @IsString()
+  identificationDocNumber: string;
 
   @ApiProperty({
     description: 'The phone number of the tenant',
@@ -67,11 +93,12 @@ export class CreateTenantDto {
   @IsString()
   emergencyContactRelationship: string;
 
-  @ApiProperty({
+  @ApiPropertyOptional({
     description: 'The status of the tenant',
-    example: 'ACTIVE | NOTICE | ENDED',
+    enum: TenantStatus,
+    example: TenantStatus.ACTIVE,
   })
-  @IsString()
-  @Optional()
+  @IsOptional()
+  @IsEnum(TenantStatus)
   status?: TenantStatus;
 }
