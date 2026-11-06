@@ -58,13 +58,20 @@ export class PropertyUnitsService {
     const propertyCharges = this.getPropertyCharges(dto);
     await this.validatePropertyCharges(propertyCharges, dto.propertyId);
 
+    const unitStatus =
+      property.status === 'MAINTENANCE'
+        ? 'MAINTENANCE'
+        : property.status === 'INACTIVE'
+          ? 'UNAVAILABLE'
+          : dto.status;
+
     const unit = await this.prisma.db.orm.public.PropertyUnit.create({
       managerId,
       propertyId: dto.propertyId,
       propertyUseType: dto.propertyUseType,
       unitNumber: dto.unitNumber,
       bedroomCount: dto.bedroomCount,
-      status: dto.status,
+      status: unitStatus,
       marketRent: dto.marketRent.toString(),
       billingFrequency: dto.billingFrequency,
     });

@@ -157,6 +157,7 @@ enum PropertyUnitStatus {
   AVAILABLE
   OCCUPIED
   MAINTENANCE
+  UNAVAILABLE
   ARCHIVED
 }
 model PropertyUnit {
