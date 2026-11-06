@@ -5,6 +5,7 @@ import {
   Param,
   Patch,
   Post,
+  Query,
   UseGuards,
 } from '@nestjs/common';
 import {
@@ -17,6 +18,7 @@ import {
 import { CurrentUser } from '@/common/decorators/current-user.decorator';
 import { TenanciesService } from './tenancies.service';
 import { AssignTenantDto } from './dto/assign-tenant.dto';
+import { ListTenanciesDto } from './dto/list-tenancies.dto';
 import { UnassignTenantDto } from './dto/unassign-tenant.dto';
 import * as authenticatedUserType from '../common/types/authenticated-user.type';
 import { JwtAuthGuard } from '@/common/guards/jwt-auth.guard';
@@ -42,8 +44,11 @@ export class TenanciesController {
 
   @Get()
   @ApiOperation({ summary: 'List active and historical tenancies' })
-  findAll(@CurrentUser() user: authenticatedUserType.AuthenticatedUser) {
-    return this.tenanciesService.findAll(user.id);
+  findAll(
+    @CurrentUser() user: authenticatedUserType.AuthenticatedUser,
+    @Query() query: ListTenanciesDto,
+  ) {
+    return this.tenanciesService.findAll(user.id, query);
   }
 
   @Get(':id')

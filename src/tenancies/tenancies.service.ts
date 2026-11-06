@@ -6,14 +6,63 @@ import {
 
 import { DatabaseService } from '@/database/database.service';
 import { AssignTenantDto, TenancyStatus } from './dto/assign-tenant.dto';
+import { ListTenanciesDto } from './dto/list-tenancies.dto';
 import { TenantStatus } from '@/tenants/dto/create-tenant.dto';
+
+export interface TenancyListResponse {
+  data: object[];
+  pagination: {
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
+    hasNextPage: boolean;
+    hasPreviousPage: boolean;
+  };
+}
 
 @Injectable()
 export class TenanciesService {
   constructor(private readonly prisma: DatabaseService) {}
 
-  async findAll(managerId: string) {
-    return this.prisma.db.orm.public.Tenancy.where({ managerId }).all();
+  async findAll(
+    managerId: string,
+    query: ListTenanciesDto,
+  ): Promise<TenancyListResponse> {
+    const { status, page = 1, limit = 10 } = query;
+    const offset = (page - 1) * limit;
+
+    let tenancies = this.prisma.db.orm.public.Tenancy.where({ managerId });
+
+    if (status) {
+      tenancies = tenancies.where({ status });
+    }
+
+    const [data, total] = await Promise.all([
+      tenancies
+        .orderBy((tenancy) => tenancy.createdAt.desc())
+        .offset(offset)
+        .limit(limit)
+        .all(),
+      tenancies.aggregate((aggregate) => ({
+        total: aggregate.count(),
+      })),
+    ]);
+
+    const totalCount = Number(total.total);
+    const totalPages = Math.ceil(totalCount / limit);
+
+    return {
+      data,
+      pagination: {
+        page,
+        limit,
+        total: totalCount,
+        totalPages,
+        hasNextPage: page < totalPages,
+        hasPreviousPage: page > 1,
+      },
+    };
   }
 
   async findOne(managerId: string, tenancyId: string) {
