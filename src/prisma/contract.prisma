@@ -129,7 +129,8 @@ model PropertyCharge {
   id               Uuid    @id @default(uuid())
   managerId        Uuid    @map("manager_id")
   propertyId       Uuid    @map("property_id")
-  name             String  @unique
+  name             String
+  stub             String
   description      String?
   amount           Decimal
   isActive         Boolean @map("is_active")
@@ -142,6 +143,7 @@ model PropertyCharge {
 
   unitCharges  PropertyUnitCharge[]
 
+  @@unique([managerId, propertyId, stub])
   @@index([managerId])
   @@index([propertyId])
   @@map("property_charges")
@@ -166,6 +168,7 @@ model PropertyUnit {
   propertyId       Uuid               @map("property_id")
   propertyUseType  PropertyUseType    @default(RESIDENTIAL) @map("property_use_type")
   unitNumber       String             @map("unit_number")
+  stub             String
   bedroomCount     Int                @map("bedroom_count")
   status           PropertyUnitStatus @default(AVAILABLE)
   marketRent       Decimal            @map("market_rent")
@@ -180,6 +183,7 @@ model PropertyUnit {
   tenancies   Tenancy[]
   unitCharges PropertyUnitCharge[]
 
+  @@unique([managerId, propertyId, stub])
   @@index([managerId])
   @@index([propertyId])
   @@index([propertyId, status])

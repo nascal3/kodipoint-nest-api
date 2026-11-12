@@ -34,7 +34,7 @@ import type {
 } from '@prisma/orm-postgres/contract/types';
 
 export type StorageHash =
-  StorageHashBase<'74a12ceccfe9d45024bafe21e83ea0ede910db628d056c146be65cfc5dae2f4a'>;
+  StorageHashBase<'38342fe6144df65ec073d5c543254f4c43f84d0db0a4de4c6a0bbf7512729830'>;
 export type ExecutionHash =
   ExecutionHashBase<'8e9c983ff78a07252f8d86c07b2c152fd109aba234b96c8b51748afacf5a1756'>;
 export type ProfileHash =
@@ -360,6 +360,7 @@ export type FieldOutputTypes = {
       readonly managerId: CodecTypes['pg/uuid@1']['output'];
       readonly propertyId: CodecTypes['pg/uuid@1']['output'];
       readonly name: CodecTypes['pg/text@1']['output'];
+      readonly stub: CodecTypes['pg/text@1']['output'];
       readonly description: CodecTypes['pg/text@1']['output'] | null;
       readonly amount: CodecTypes['pg/numeric@1']['output'];
       readonly isActive: CodecTypes['pg/bool@1']['output'];
@@ -372,6 +373,7 @@ export type FieldOutputTypes = {
       readonly propertyId: CodecTypes['pg/uuid@1']['output'];
       readonly propertyUseType: 'RESIDENTIAL' | 'COMMERCIAL' | 'MIXED';
       readonly unitNumber: CodecTypes['pg/text@1']['output'];
+      readonly stub: CodecTypes['pg/text@1']['output'];
       readonly bedroomCount: CodecTypes['pg/int4@1']['output'];
       readonly status: 'AVAILABLE' | 'OCCUPIED' | 'MAINTENANCE' | 'UNAVAILABLE' | 'ARCHIVED';
       readonly marketRent: CodecTypes['pg/numeric@1']['output'];
@@ -566,6 +568,7 @@ export type FieldInputTypes = {
       readonly managerId: CodecTypes['pg/uuid@1']['input'];
       readonly propertyId: CodecTypes['pg/uuid@1']['input'];
       readonly name: CodecTypes['pg/text@1']['input'];
+      readonly stub: CodecTypes['pg/text@1']['input'];
       readonly description: CodecTypes['pg/text@1']['input'] | null;
       readonly amount: CodecTypes['pg/numeric@1']['input'];
       readonly isActive: CodecTypes['pg/bool@1']['input'];
@@ -578,6 +581,7 @@ export type FieldInputTypes = {
       readonly propertyId: CodecTypes['pg/uuid@1']['input'];
       readonly propertyUseType: 'RESIDENTIAL' | 'COMMERCIAL' | 'MIXED';
       readonly unitNumber: CodecTypes['pg/text@1']['input'];
+      readonly stub: CodecTypes['pg/text@1']['input'];
       readonly bedroomCount: CodecTypes['pg/int4@1']['input'];
       readonly status: 'AVAILABLE' | 'OCCUPIED' | 'MAINTENANCE' | 'UNAVAILABLE' | 'ARCHIVED';
       readonly marketRent: CodecTypes['pg/numeric@1']['input'];
@@ -776,6 +780,7 @@ export type StorageColumnTypes = {
       readonly manager_id: CodecTypes['pg/uuid@1']['output'];
       readonly name: CodecTypes['pg/text@1']['output'];
       readonly property_id: CodecTypes['pg/uuid@1']['output'];
+      readonly stub: CodecTypes['pg/text@1']['output'];
       readonly updated_at: CodecTypes['pg/timestamptz-temporal@1']['output'];
     };
     readonly property_unit_charges: {
@@ -795,6 +800,7 @@ export type StorageColumnTypes = {
       readonly property_id: CodecTypes['pg/uuid@1']['output'];
       readonly property_use_type: 'RESIDENTIAL' | 'COMMERCIAL' | 'MIXED';
       readonly status: 'AVAILABLE' | 'OCCUPIED' | 'MAINTENANCE' | 'UNAVAILABLE' | 'ARCHIVED';
+      readonly stub: CodecTypes['pg/text@1']['output'];
       readonly unit_number: CodecTypes['pg/text@1']['output'];
       readonly updated_at: CodecTypes['pg/timestamptz-temporal@1']['output'];
     };
@@ -982,6 +988,7 @@ export type StorageColumnInputTypes = {
       readonly manager_id: CodecTypes['pg/uuid@1']['input'];
       readonly name: CodecTypes['pg/text@1']['input'];
       readonly property_id: CodecTypes['pg/uuid@1']['input'];
+      readonly stub: CodecTypes['pg/text@1']['input'];
       readonly updated_at: CodecTypes['pg/timestamptz-temporal@1']['input'];
     };
     readonly property_unit_charges: {
@@ -1001,6 +1008,7 @@ export type StorageColumnInputTypes = {
       readonly property_id: CodecTypes['pg/uuid@1']['input'];
       readonly property_use_type: 'RESIDENTIAL' | 'COMMERCIAL' | 'MIXED';
       readonly status: 'AVAILABLE' | 'OCCUPIED' | 'MAINTENANCE' | 'UNAVAILABLE' | 'ARCHIVED';
+      readonly stub: CodecTypes['pg/text@1']['input'];
       readonly unit_number: CodecTypes['pg/text@1']['input'];
       readonly updated_at: CodecTypes['pg/timestamptz-temporal@1']['input'];
     };
@@ -1172,6 +1180,7 @@ export namespace Models {
     managerId: CodecTypes['pg/uuid@1']['output'];
     propertyId: CodecTypes['pg/uuid@1']['output'];
     name: CodecTypes['pg/text@1']['output'];
+    stub: CodecTypes['pg/text@1']['output'];
     description: CodecTypes['pg/text@1']['output'] | null;
     amount: CodecTypes['pg/numeric@1']['output'];
     isActive: CodecTypes['pg/bool@1']['output'];
@@ -1188,6 +1197,7 @@ export namespace Models {
     propertyId: CodecTypes['pg/uuid@1']['output'];
     propertyUseType: 'RESIDENTIAL' | 'COMMERCIAL' | 'MIXED';
     unitNumber: CodecTypes['pg/text@1']['output'];
+    stub: CodecTypes['pg/text@1']['output'];
     bedroomCount: CodecTypes['pg/int4@1']['output'];
     status: 'AVAILABLE' | 'OCCUPIED' | 'MAINTENANCE' | 'UNAVAILABLE' | 'ARCHIVED';
     marketRent: CodecTypes['pg/numeric@1']['output'];
@@ -2443,6 +2453,11 @@ type ContractBase = Omit<
                   readonly codecId: 'pg/text@1';
                   readonly nullable: false;
                 };
+                readonly stub: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                };
                 readonly description: {
                   readonly nativeType: 'text';
                   readonly codecId: 'pg/text@1';
@@ -2471,7 +2486,9 @@ type ContractBase = Omit<
                 };
               };
               primaryKey: { readonly columns: readonly ['id'] };
-              uniques: readonly [{ readonly columns: readonly ['name'] }];
+              uniques: readonly [
+                { readonly columns: readonly ['manager_id', 'property_id', 'stub'] },
+              ];
               indexes: readonly [
                 {
                   readonly name: 'property_charges_manager_id_idx_c3dee277';
@@ -2627,6 +2644,11 @@ type ContractBase = Omit<
                   readonly codecId: 'pg/text@1';
                   readonly nullable: false;
                 };
+                readonly stub: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                };
                 readonly bedroom_count: {
                   readonly nativeType: 'int4';
                   readonly codecId: 'pg/int4@1';
@@ -2668,7 +2690,9 @@ type ContractBase = Omit<
                 };
               };
               primaryKey: { readonly columns: readonly ['id'] };
-              uniques: readonly [];
+              uniques: readonly [
+                { readonly columns: readonly ['manager_id', 'property_id', 'stub'] },
+              ];
               indexes: readonly [
                 {
                   readonly name: 'property_units_manager_id_idx_c3dee277';
@@ -4320,6 +4344,10 @@ type ContractBase = Omit<
                 readonly nullable: false;
                 readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
               };
+              readonly stub: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
               readonly description: {
                 readonly nullable: true;
                 readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
@@ -4389,6 +4417,7 @@ type ContractBase = Omit<
                 readonly managerId: { readonly column: 'manager_id' };
                 readonly propertyId: { readonly column: 'property_id' };
                 readonly name: { readonly column: 'name' };
+                readonly stub: { readonly column: 'stub' };
                 readonly description: { readonly column: 'description' };
                 readonly amount: { readonly column: 'amount' };
                 readonly isActive: { readonly column: 'is_active' };
@@ -4416,6 +4445,10 @@ type ContractBase = Omit<
                 readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
               };
               readonly unitNumber: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly stub: {
                 readonly nullable: false;
                 readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
               };
@@ -4504,6 +4537,7 @@ type ContractBase = Omit<
                 readonly propertyId: { readonly column: 'property_id' };
                 readonly propertyUseType: { readonly column: 'property_use_type' };
                 readonly unitNumber: { readonly column: 'unit_number' };
+                readonly stub: { readonly column: 'stub' };
                 readonly bedroomCount: { readonly column: 'bedroom_count' };
                 readonly status: { readonly column: 'status' };
                 readonly marketRent: { readonly column: 'market_rent' };

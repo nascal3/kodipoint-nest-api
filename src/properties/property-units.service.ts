@@ -7,6 +7,7 @@ import { and } from '@prisma/orm-postgres/orm-client';
 import { Temporal } from '@js-temporal/polyfill';
 
 import { DatabaseService } from '@/database/database.service';
+import { generateStubName } from '@/common/utils/stubs.utils';
 import { CreatePropertyUnitDto } from './dto/create-property-unit.dto';
 import { UpdatePropertyUnitDto } from './dto/update-property-unit.dto';
 import { UpdatePropertyUnitChargeRateDto } from './dto/update-property-unit-charge-rate.dto';
@@ -35,6 +36,33 @@ type PropertyUnitChargeInput = {
 export class PropertyUnitsService {
   constructor(private readonly prisma: DatabaseService) {}
 
+  private async assertStubUnique(
+    managerId: string,
+    propertyId: string,
+    stub: string,
+    excludeUnitId?: string,
+  ) {
+    const existingUnit = await this.prisma.db.orm.public.PropertyUnit.where(
+      (unit) => {
+        const conditions = [
+          unit.managerId.eq(managerId),
+          unit.propertyId.eq(propertyId),
+          unit.stub.eq(stub),
+        ];
+        if (excludeUnitId) {
+          conditions.push(unit.id.neq(excludeUnitId));
+        }
+        return and(...conditions);
+      },
+    ).first();
+
+    if (existingUnit) {
+      throw new BadRequestException(
+        'A property unit with this unit number already exists in this property',
+      );
+    }
+  }
+
   async create(managerId: string, dto: CreatePropertyUnitDto) {
     const property = await this.prisma.db.orm.public.Property.where({
       id: dto.propertyId,
@@ -49,17 +77,8 @@ export class PropertyUnitsService {
       throw new BadRequestException('Cannot create units for inactive properties');
     }
 
-    const existingUnit = await this.prisma.db.orm.public.PropertyUnit.where({
-      unitNumber: dto.unitNumber,
-      propertyId: dto.propertyId,
-      managerId,
-    }).first();
-
-    if (existingUnit) {
-      throw new BadRequestException(
-        'A property unit with this unit number already exists in this property',
-      );
-    }
+    const stub = generateStubName(dto.unitNumber);
+    await this.assertStubUnique(managerId, dto.propertyId, stub);
 
     const propertyCharges = this.getPropertyCharges(dto);
     await this.validatePropertyCharges(propertyCharges, dto.propertyId);
@@ -76,6 +95,7 @@ export class PropertyUnitsService {
       propertyId: dto.propertyId,
       propertyUseType: dto.propertyUseType,
       unitNumber: dto.unitNumber,
+      stub,
       bedroomCount: dto.bedroomCount,
       status: unitStatus,
       marketRent: dto.marketRent.toString(),
@@ -345,19 +365,8 @@ export class PropertyUnitsService {
     }
 
     const effectiveUnitNumber = dto.unitNumber ?? unit.unitNumber;
-    if (dto.unitNumber !== undefined || propertyId !== undefined) {
-      const existingUnit = await this.prisma.db.orm.public.PropertyUnit.where({
-        unitNumber: effectiveUnitNumber,
-        propertyId: targetPropertyId,
-        managerId,
-      }).first();
-
-      if (existingUnit && existingUnit.id !== unitId) {
-        throw new BadRequestException(
-          'A property unit with this unit number already exists in this property',
-        );
-      }
-    }
+    const stub = generateStubName(effectiveUnitNumber);
+    await this.assertStubUnique(managerId, targetPropertyId, stub, unitId);
 
     const updatedUnit = await this.prisma.db.orm.public.PropertyUnit.where({
       id: unitId,
@@ -366,6 +375,7 @@ export class PropertyUnitsService {
       ...rest,
       ...(propertyId !== undefined && { propertyId }),
       ...(marketRent !== undefined && { marketRent: marketRent.toString() }),
+      stub,
     });
 
     if (shouldUpdateCharges) {

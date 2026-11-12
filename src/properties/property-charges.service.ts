@@ -2,6 +2,7 @@ import { Injectable, NotFoundException, ConflictException } from '@nestjs/common
 import { and } from '@prisma/orm-postgres/orm-client';
 
 import { DatabaseService } from '@/database/database.service';
+import { generateStubName } from '@/common/utils/stubs.utils';
 import { CreatePropertyChargeDto } from './dto/create-property-charge.dto';
 import { CreatePropertyChargesDto } from './dto/create-property-charges.dto';
 import { UpdatePropertyChargeDto } from './dto/update-property-charge.dto';
@@ -25,6 +26,33 @@ export interface FindAllResponse {
 export class PropertyChargesService {
   constructor(private readonly prisma: DatabaseService) {}
 
+  private async assertStubUnique(
+    managerId: string,
+    propertyId: string,
+    stub: string,
+    excludeChargeId?: string,
+  ) {
+    const existingCharge = await this.prisma.db.orm.public.PropertyCharge.where(
+      (charge) => {
+        const conditions = [
+          charge.managerId.eq(managerId),
+          charge.propertyId.eq(propertyId),
+          charge.stub.eq(stub),
+        ];
+        if (excludeChargeId) {
+          conditions.push(charge.id.neq(excludeChargeId));
+        }
+        return and(...conditions);
+      },
+    ).first();
+
+    if (existingCharge) {
+      throw new ConflictException(
+        'A property charge with this name already exists for this property',
+      );
+    }
+  }
+
   async create(managerId: string, dto: CreatePropertyChargeDto) {
     const property = await this.prisma.db.orm.public.Property.where(
       (property) =>
@@ -46,10 +74,14 @@ export class PropertyChargesService {
       throw new ConflictException('A property charge with this name already exists');
     }
 
+    const stub = generateStubName(dto.name);
+    await this.assertStubUnique(managerId, dto.propertyId, stub);
+
     return this.prisma.db.orm.public.PropertyCharge.create({
       managerId,
       propertyId: dto.propertyId,
       name: dto.name,
+      stub,
       description: dto.description,
       amount: dto.amount.toString(),
       isActive: dto.isActive,
@@ -184,7 +216,7 @@ export class PropertyChargesService {
   }
 
   async update(managerId: string, chargeId: string, dto: UpdatePropertyChargeDto) {
-    await this.findOne(managerId, chargeId);
+    const existingCharge = await this.findOne(managerId, chargeId);
 
     const { amount, propertyId, name, ...rest } = dto;
 
@@ -203,7 +235,7 @@ export class PropertyChargesService {
     }
 
     if (name !== undefined) {
-      const existingCharge = await this.prisma.db.orm.public.PropertyCharge.where(
+      const existingChargeByName = await this.prisma.db.orm.public.PropertyCharge.where(
         (charge) =>
           and(
             charge.name.eq(name),
@@ -211,10 +243,15 @@ export class PropertyChargesService {
           ),
       ).first();
 
-      if (existingCharge) {
+      if (existingChargeByName) {
         throw new ConflictException('A property charge with this name already exists');
       }
     }
+
+    const effectiveName = name ?? existingCharge.name;
+    const effectivePropertyId = propertyId ?? existingCharge.propertyId;
+    const stub = generateStubName(effectiveName);
+    await this.assertStubUnique(managerId, effectivePropertyId, stub, chargeId);
 
     return this.prisma.db.orm.public.PropertyCharge.where(
       (charge) =>
@@ -224,6 +261,7 @@ export class PropertyChargesService {
       ...(propertyId !== undefined && { propertyId }),
       ...(amount !== undefined && { amount: amount.toString() }),
       ...(name !== undefined && { name }),
+      stub,
     });
   }
 

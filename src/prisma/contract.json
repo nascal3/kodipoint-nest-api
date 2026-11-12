@@ -1943,6 +1943,13 @@
                   "kind": "scalar"
                 }
               },
+              "stub": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
               "updatedAt": {
                 "nullable": false,
                 "type": {
@@ -2025,6 +2032,9 @@
                 },
                 "propertyId": {
                   "column": "property_id"
+                },
+                "stub": {
+                  "column": "stub"
                 },
                 "updatedAt": {
                   "column": "updated_at"
@@ -2115,6 +2125,13 @@
                   "entityName": "PropertyUnitStatus",
                   "namespaceId": "public",
                   "plane": "domain"
+                }
+              },
+              "stub": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
                 }
               },
               "unitNumber": {
@@ -2224,6 +2241,9 @@
                 },
                 "status": {
                   "column": "status"
+                },
+                "stub": {
+                  "column": "stub"
                 },
                 "unitNumber": {
                   "column": "unit_number"
@@ -4587,6 +4607,11 @@
                   "nativeType": "uuid",
                   "nullable": false
                 },
+                "stub": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
                 "updated_at": {
                   "codecId": "pg/timestamptz-temporal@1",
                   "nativeType": "timestamptz",
@@ -4653,7 +4678,9 @@
               "uniques": [
                 {
                   "columns": [
-                    "name"
+                    "manager_id",
+                    "property_id",
+                    "stub"
                   ]
                 }
               ]
@@ -4861,6 +4888,11 @@
                     "plane": "storage"
                   }
                 },
+                "stub": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
                 "unit_number": {
                   "codecId": "pg/text@1",
                   "nativeType": "text",
@@ -4938,7 +4970,15 @@
                   "id"
                 ]
               },
-              "uniques": []
+              "uniques": [
+                {
+                  "columns": [
+                    "manager_id",
+                    "property_id",
+                    "stub"
+                  ]
+                }
+              ]
             },
             "receipts": {
               "columns": {
@@ -5620,7 +5660,7 @@
         "kind": "postgres-schema"
       }
     },
-    "storageHash": "74a12ceccfe9d45024bafe21e83ea0ede910db628d056c146be65cfc5dae2f4a"
+    "storageHash": "38342fe6144df65ec073d5c543254f4c43f84d0db0a4de4c6a0bbf7512729830"
   },
   "execution": {
     "executionHash": "8e9c983ff78a07252f8d86c07b2c152fd109aba234b96c8b51748afacf5a1756",
