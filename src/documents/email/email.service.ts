@@ -22,6 +22,12 @@ export interface SendEmailOptions {
   html?: string;
 }
 
+export interface EmailSendResult {
+  success: boolean;
+  messageId?: string;
+  error?: string;
+}
+
 @Injectable()
 export class EmailService {
   private readonly logger = new Logger(EmailService.name);
@@ -49,34 +55,70 @@ export class EmailService {
     this.defaultFrom = process.env.MAIL_FROM ?? 'no-reply@localhost';
   }
 
-  async sendWithAttachment(options: SendMailOptions): Promise<void> {
-    await this.transporter.sendMail({
-      from: options.from ?? this.defaultFrom,
-      to: options.to,
-      subject: options.subject,
-      text: options.text,
-      html: options.html,
-      attachments: [
-        {
-          filename: options.attachment.filename,
-          content: options.attachment.content,
-          contentType: options.attachment.contentType ?? 'application/pdf',
-        },
-      ],
-    });
+  async sendWithAttachment(options: SendMailOptions): Promise<EmailSendResult> {
+    try {
+      const result = await this.transporter.sendMail({
+        from: options.from ?? this.defaultFrom,
+        to: options.to,
+        subject: options.subject,
+        text: options.text,
+        html: options.html,
+        attachments: [
+          {
+            filename: options.attachment.filename,
+            content: options.attachment.content,
+            contentType: options.attachment.contentType ?? 'application/pdf',
+          },
+        ],
+      });
 
-    this.logger.log(
-      `Sent "${options.subject}" to ${options.to} (attachment: ${options.attachment.filename})`,
-    );
+      this.logger.log(
+        `Sent "${options.subject}" to ${options.to} (attachment: ${options.attachment.filename})`,
+      );
+
+      return {
+        success: true,
+        messageId: result.messageId,
+      };
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      this.logger.error(
+        `Failed to send "${options.subject}" to ${options.to}: ${errorMessage}`,
+      );
+
+      return {
+        success: false,
+        error: errorMessage,
+      };
+    }
   }
 
-  async send(options: SendEmailOptions): Promise<void> {
-    await this.transporter.sendMail({
-      from: options.from ?? this.defaultFrom,
-      to: options.to,
-      subject: options.subject,
-      text: options.text,
-      html: options.html,
-    });
+  async send(options: SendEmailOptions): Promise<EmailSendResult> {
+    try {
+      const result = await this.transporter.sendMail({
+        from: options.from ?? this.defaultFrom,
+        to: options.to,
+        subject: options.subject,
+        text: options.text,
+        html: options.html,
+      });
+
+      this.logger.log(`Sent "${options.subject}" to ${options.to}`);
+
+      return {
+        success: true,
+        messageId: result.messageId,
+      };
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      this.logger.error(
+        `Failed to send "${options.subject}" to ${options.to}: ${errorMessage}`,
+      );
+
+      return {
+        success: false,
+        error: errorMessage,
+      };
+    }
   }
 }

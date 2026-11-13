@@ -7,6 +7,12 @@ export interface SendSmsOptions {
   from?: string;
 }
 
+export interface SmsSendResult {
+  success: boolean;
+  messageId?: string;
+  error?: string;
+}
+
 @Injectable()
 export class SmsService {
   private readonly logger = new Logger(SmsService.name);
@@ -30,16 +36,34 @@ export class SmsService {
     this.sms = africasTalking.SMS;
   }
 
-  async sendSms(options: SendSmsOptions): Promise<void> {
-    const result = await this.sms.send({
-      to: [options.to],
-      message: options.message,
-      from: options.from,
-    });
+  async sendSms(options: SendSmsOptions): Promise<SmsSendResult> {
+    try {
+      const result = await this.sms.send({
+        to: [options.to],
+        message: options.message,
+        from: options.from,
+      });
 
-    this.logger.log(
-      `Sent SMS to ${options.to} (messageId: ${result.SMSMessageData?.Message})`,
-    );
+      this.logger.log(
+        `Sent SMS to ${options.to} (messageId: ${result.SMSMessageData?.Message}, status: ${result.SMSMessageData?.Recipients?.[0]?.status})`,
+      );
+
+      return {
+        success: true,
+        messageId: result.SMSMessageData?.Message,
+      };
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+
+      this.logger.error(
+        `Failed to send SMS to ${options.to}: ${errorMessage}`,
+      );
+
+      return {
+        success: false,
+        error: errorMessage,
+      };
+    }
   }
 
   async sendDocumentNotification(
@@ -47,10 +71,10 @@ export class SmsService {
     documentType: 'invoice' | 'receipt',
     documentNumber: string,
     managerName: string,
-  ): Promise<void> {
+  ): Promise<SmsSendResult> {
     const message = `Your ${documentType} ${documentNumber} from ${managerName} has been sent to your email. Please check your inbox.`;
 
-    await this.sendSms({
+    return this.sendSms({
       to,
       message,
     });
