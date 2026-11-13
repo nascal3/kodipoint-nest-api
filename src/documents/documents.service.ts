@@ -13,6 +13,7 @@ import { PdfService } from './pdf/pdf.service';
 import { EmailService } from './email/email.service';
 import { SmsService } from './sms/sms.service';
 import { SendDocumentDto } from './dto/send-document.dto';
+import { SendTenantMessageDto } from './dto/send-tenant-message.dto';
 import { buildInvoicePdf } from './pdf/builders/invoice-pdf.builder';
 import { buildReceiptPdf } from './pdf/builders/receipt-pdf.builder';
 
@@ -332,6 +333,59 @@ export class DocumentsService {
     return {
       message: 'Receipt SMS notification sent successfully',
       to: recipient,
+    };
+  }
+
+  /* ============================ TENANT MESSAGES ============================ */
+
+  async sendTenantMessage(dto: SendTenantMessageDto) {
+    const results: any = {
+      emailSent: false,
+      smsSent: false,
+    };
+
+    if (dto.sendEmail) {
+      if (!dto.email) {
+        throw new BadRequestException(
+          'Email address is required when sendEmail is true',
+        );
+      }
+
+      await this.emailService.send({
+        to: dto.email,
+        subject: dto.subject,
+        text: dto.message,
+      });
+
+      results.emailSent = true;
+      results.emailTo = dto.email;
+    }
+
+    if (dto.sendSms) {
+      if (!dto.phone) {
+        throw new BadRequestException(
+          'Phone number is required when sendSms is true',
+        );
+      }
+
+      await this.smsService.sendSms({
+        to: dto.phone,
+        message: dto.message,
+      });
+
+      results.smsSent = true;
+      results.smsTo = dto.phone;
+    }
+
+    if (!dto.sendEmail && !dto.sendSms) {
+      throw new BadRequestException(
+        'At least one delivery channel (sendEmail or sendSms) must be enabled',
+      );
+    }
+
+    return {
+      message: 'Tenant message sent successfully',
+      ...results,
     };
   }
 

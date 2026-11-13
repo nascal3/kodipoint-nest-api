@@ -21,6 +21,7 @@ import * as authenticatedUserType from '@/common/types/authenticated-user.type';
 
 import { DocumentsService } from './documents.service';
 import { SendDocumentDto } from './dto/send-document.dto';
+import { SendTenantMessageDto } from './dto/send-tenant-message.dto';
 
 @ApiTags('Documents')
 @ApiBearerAuth('access-token')
@@ -128,5 +129,16 @@ export class DocumentsController {
     @Body() dto: SendDocumentDto,
   ) {
     return this.documentsService.smsReceiptPdf(user.id, receiptId, dto);
+  }
+
+  /* ========================== TENANT MESSAGES ============================ */
+
+  @Post('send-tenant-message')
+  @ApiOperation({ summary: 'Send a message to a tenant via email, SMS, or both' })
+  sendTenantMessage(
+    @CurrentUser() user: authenticatedUserType.AuthenticatedUser,
+    @Body() dto: SendTenantMessageDto,
+  ) {
+    return this.documentsService.sendTenantMessage(dto);
   }
 }
