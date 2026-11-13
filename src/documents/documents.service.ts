@@ -282,7 +282,7 @@ export class DocumentsService {
       );
     }
 
-    await this.emailService.sendWithAttachment({
+    await this.queuesService.publishEmail({
       to: recipient,
       subject:
         dto.subject ??
@@ -298,7 +298,7 @@ export class DocumentsService {
     });
 
     return {
-      message: 'Receipt emailed successfully',
+      message: 'Receipt email queued successfully',
       to: recipient,
       filename: doc.filename,
     };
@@ -323,15 +323,15 @@ export class DocumentsService {
       );
     }
 
-    await this.smsService.sendDocumentNotification(
-      recipient,
-      'receipt',
-      receipt.receiptNumber,
-      `${manager.firstName} ${manager.lastName}`,
-    );
+    const message = `Your receipt ${receipt.receiptNumber} from ${manager.firstName} ${manager.lastName} has been sent to your email. Please check your inbox.`;
+
+    await this.queuesService.publishSms({
+      to: recipient,
+      message,
+    });
 
     return {
-      message: 'Receipt SMS notification sent successfully',
+      message: 'Receipt SMS notification queued successfully',
       to: recipient,
     };
   }
@@ -340,8 +340,8 @@ export class DocumentsService {
 
   async sendTenantMessage(dto: SendTenantMessageDto) {
     const results: any = {
-      emailSent: false,
-      smsSent: false,
+      emailQueued: false,
+      smsQueued: false,
     };
 
     if (dto.sendEmail) {
@@ -351,13 +351,13 @@ export class DocumentsService {
         );
       }
 
-      await this.emailService.send({
+      await this.queuesService.publishEmail({
         to: dto.email,
         subject: dto.subject,
         text: dto.message,
       });
 
-      results.emailSent = true;
+      results.emailQueued = true;
       results.emailTo = dto.email;
     }
 
@@ -368,12 +368,12 @@ export class DocumentsService {
         );
       }
 
-      await this.smsService.sendSms({
+      await this.queuesService.publishSms({
         to: dto.phone,
         message: dto.message,
       });
 
-      results.smsSent = true;
+      results.smsQueued = true;
       results.smsTo = dto.phone;
     }
 
@@ -384,7 +384,7 @@ export class DocumentsService {
     }
 
     return {
-      message: 'Tenant message sent successfully',
+      message: 'Tenant message queued successfully',
       ...results,
     };
   }

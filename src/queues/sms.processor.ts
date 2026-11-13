@@ -17,9 +17,12 @@ export class SmsProcessor {
   async sendSms(@Payload() data: SmsPayload, @Ctx() context: RmqContext) {
     const channel = context.getChannelRef();
     const originalMsg = context.getMessage();
+    const deliveryTag = originalMsg.fields.deliveryTag;
 
     try {
-      this.logger.log(`Processing SMS to ${data.to}`);
+      this.logger.log(
+        `Processing SMS to ${data.to} (deliveryTag=${deliveryTag}, redelivered=${originalMsg.fields.redelivered})`,
+      );
 
       await this.smsService.sendSms({
         to: data.to,
@@ -28,16 +31,38 @@ export class SmsProcessor {
       });
 
       this.logger.log(`SMS sent successfully to ${data.to}`);
-
-      // Acknowledge the message
-      channel.ack(originalMsg);
     } catch (error) {
       const errorMessage =
         error instanceof Error ? error.message : String(error);
       this.logger.error(`Failed to send SMS to ${data.to}: ${errorMessage}`);
 
       // Negative acknowledge with requeue
-      channel.nack(originalMsg, false, true);
+      try {
+        channel.nack(originalMsg, false, true);
+      } catch (settlementError) {
+        const settlementMessage =
+          settlementError instanceof Error
+            ? settlementError.message
+            : String(settlementError);
+        this.logger.error(
+          `Failed to requeue SMS delivery tag ${deliveryTag}: ${settlementMessage}`,
+        );
+        throw settlementError;
+      }
+      return;
+    }
+
+    try {
+      channel.ack(originalMsg);
+    } catch (settlementError) {
+      const settlementMessage =
+        settlementError instanceof Error
+          ? settlementError.message
+          : String(settlementError);
+      this.logger.error(
+        `Failed to acknowledge SMS delivery tag ${deliveryTag}: ${settlementMessage}`,
+      );
+      throw settlementError;
     }
   }
 }

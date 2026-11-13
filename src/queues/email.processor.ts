@@ -24,9 +24,12 @@ export class EmailProcessor {
   async sendEmail(@Payload() data: EmailPayload, @Ctx() context: RmqContext) {
     const channel = context.getChannelRef();
     const originalMsg = context.getMessage();
+    const deliveryTag = originalMsg.fields.deliveryTag;
 
     try {
-      this.logger.log(`Processing email to ${data.to}`);
+      this.logger.log(
+        `Processing email to ${data.to} (deliveryTag=${deliveryTag}, redelivered=${originalMsg.fields.redelivered})`,
+      );
 
       if (data.attachment) {
         await this.emailService.sendWithAttachment({
@@ -48,16 +51,38 @@ export class EmailProcessor {
       }
 
       this.logger.log(`Email sent successfully to ${data.to}`);
-
-      // Acknowledge the message
-      channel.ack(originalMsg);
     } catch (error) {
       const errorMessage =
         error instanceof Error ? error.message : String(error);
       this.logger.error(`Failed to send email to ${data.to}: ${errorMessage}`);
 
       // Negative acknowledge with requeue
-      channel.nack(originalMsg, false, true);
+      try {
+        channel.nack(originalMsg, false, true);
+      } catch (settlementError) {
+        const settlementMessage =
+          settlementError instanceof Error
+            ? settlementError.message
+            : String(settlementError);
+        this.logger.error(
+          `Failed to requeue email delivery tag ${deliveryTag}: ${settlementMessage}`,
+        );
+        throw settlementError;
+      }
+      return;
+    }
+
+    try {
+      channel.ack(originalMsg);
+    } catch (settlementError) {
+      const settlementMessage =
+        settlementError instanceof Error
+          ? settlementError.message
+          : String(settlementError);
+      this.logger.error(
+        `Failed to acknowledge email delivery tag ${deliveryTag}: ${settlementMessage}`,
+      );
+      throw settlementError;
     }
   }
 }

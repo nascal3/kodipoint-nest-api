@@ -35,6 +35,7 @@ async function bootstrap() {
     options: {
       urls: [rabbitmqUrl],
       queue: 'kodipoint_queue',
+      noAck: false,
       queueOptions: {
         durable: true,
       },
