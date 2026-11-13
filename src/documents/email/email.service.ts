@@ -52,13 +52,21 @@ export class EmailService {
       auth: user ? { user, pass } : undefined,
     });
 
-    this.defaultFrom = process.env.MAIL_FROM ?? 'no-reply@localhost';
+    this.defaultFrom = process.env.MAIL_FROM ?? '';
+  }
+
+  private resolveFrom(from?: string): string {
+    const sender = from ?? this.defaultFrom;
+    if (!sender) {
+      throw new Error('MAIL_FROM or an explicit sender address is required');
+    }
+    return sender;
   }
 
   async sendWithAttachment(options: SendMailOptions): Promise<EmailSendResult> {
     try {
       const result = await this.transporter.sendMail({
-        from: options.from ?? this.defaultFrom,
+        from: this.resolveFrom(options.from),
         to: options.to,
         subject: options.subject,
         text: options.text,
@@ -96,7 +104,7 @@ export class EmailService {
   async send(options: SendEmailOptions): Promise<EmailSendResult> {
     try {
       const result = await this.transporter.sendMail({
-        from: options.from ?? this.defaultFrom,
+        from: this.resolveFrom(options.from),
         to: options.to,
         subject: options.subject,
         text: options.text,

@@ -32,7 +32,7 @@ export class EmailProcessor {
       );
 
       if (data.attachment) {
-        await this.emailService.sendWithAttachment({
+        const result = await this.emailService.sendWithAttachment({
           to: data.to,
           subject: data.subject,
           text: data.text,
@@ -40,14 +40,16 @@ export class EmailProcessor {
           from: data.from,
           attachment: data.attachment,
         });
+        this.ensureSendSucceeded(result.success, result.error);
       } else {
-        await this.emailService.send({
+        const result = await this.emailService.send({
           from: data.from,
           to: data.to,
           subject: data.subject,
           text: data.text,
           html: data.html,
         });
+        this.ensureSendSucceeded(result.success, result.error);
       }
 
       this.logger.log(`Email sent successfully to ${data.to}`);
@@ -83,6 +85,12 @@ export class EmailProcessor {
         `Failed to acknowledge email delivery tag ${deliveryTag}: ${settlementMessage}`,
       );
       throw settlementError;
+    }
+  }
+
+  private ensureSendSucceeded(success: boolean, error?: string): void {
+    if (!success) {
+      throw new Error(error ?? 'Email delivery failed');
     }
   }
 }
