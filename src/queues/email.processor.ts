@@ -1,6 +1,9 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { Ctx, RmqContext, Payload } from '@nestjs/microservices';
-import { EmailService } from '@/documents/email/email.service';
+import {
+  EmailSendResult,
+  EmailService,
+} from '@/documents/email/email.service';
 
 interface EmailPayload {
   to: string;
@@ -25,6 +28,7 @@ export class EmailProcessor {
     const channel = context.getChannelRef();
     const originalMsg = context.getMessage();
     const deliveryTag = originalMsg.fields.deliveryTag;
+    let result: EmailSendResult;
 
     try {
       this.logger.log(
@@ -32,7 +36,7 @@ export class EmailProcessor {
       );
 
       if (data.attachment) {
-        const result = await this.emailService.sendWithAttachment({
+        result = await this.emailService.sendEmailWithAttachment({
           to: data.to,
           subject: data.subject,
           text: data.text,
@@ -40,39 +44,41 @@ export class EmailProcessor {
           from: data.from,
           attachment: data.attachment,
         });
-        this.ensureSendSucceeded(result.success, result.error);
       } else {
-        const result = await this.emailService.send({
+        result = await this.emailService.sendEmail({
           from: data.from,
           to: data.to,
           subject: data.subject,
           text: data.text,
           html: data.html,
         });
-        this.ensureSendSucceeded(result.success, result.error);
       }
-
-      this.logger.log(`Email sent successfully to ${data.to}`);
     } catch (error) {
       const errorMessage =
         error instanceof Error ? error.message : String(error);
       this.logger.error(`Failed to send email to ${data.to}: ${errorMessage}`);
 
-      // Negative acknowledge with requeue
-      try {
-        channel.nack(originalMsg, false, true);
-      } catch (settlementError) {
-        const settlementMessage =
-          settlementError instanceof Error
-            ? settlementError.message
-            : String(settlementError);
-        this.logger.error(
-          `Failed to requeue email delivery tag ${deliveryTag}: ${settlementMessage}`,
-        );
-        throw settlementError;
-      }
+      this.rejectMessage(channel, originalMsg, deliveryTag, true);
       return;
     }
+
+    if (!result.success) {
+      const errorMessage = result.error ?? 'Email delivery failed';
+      const requeue = result.retryable ?? true;
+
+      if (requeue) {
+        this.logger.error(`Failed to send email to ${data.to}: ${errorMessage}`);
+      } else {
+        this.logger.warn(
+          `Discarding email to ${data.to} after a permanent delivery failure: ${errorMessage}`,
+        );
+      }
+
+      this.rejectMessage(channel, originalMsg, deliveryTag, requeue);
+      return;
+    }
+
+    this.logger.log(`Email sent successfully to ${data.to}`);
 
     try {
       channel.ack(originalMsg);
@@ -88,9 +94,23 @@ export class EmailProcessor {
     }
   }
 
-  private ensureSendSucceeded(success: boolean, error?: string): void {
-    if (!success) {
-      throw new Error(error ?? 'Email delivery failed');
+  private rejectMessage(
+    channel: ReturnType<RmqContext['getChannelRef']>,
+    message: ReturnType<RmqContext['getMessage']>,
+    deliveryTag: number,
+    requeue: boolean,
+  ): void {
+    try {
+      channel.nack(message, false, requeue);
+    } catch (settlementError) {
+      const settlementMessage =
+        settlementError instanceof Error
+          ? settlementError.message
+          : String(settlementError);
+      this.logger.error(
+        `Failed to reject email delivery tag ${deliveryTag}: ${settlementMessage}`,
+      );
+      throw settlementError;
     }
   }
 }
