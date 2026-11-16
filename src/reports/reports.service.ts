@@ -245,17 +245,20 @@ export class ReportsService {
       );
     }
 
-    const propertyIds = Array.from(incomeByProperty.keys());
-    const properties = await this.prisma.db.orm.public.Property.where((p) =>
-      p.id.in(propertyIds),
-    ).all();
-
     const occupiedUnits = await this.prisma.db.orm.public.PropertyUnit.where(
       (unit) =>
         and(
           unit.managerId.eq(managerId),
           unit.status.eq(PropertyUnitStatus.OCCUPIED),
         ),
+    ).all();
+
+    const propertyIds = new Set([
+      ...incomeByProperty.keys(),
+      ...occupiedUnits.map((unit) => unit.propertyId),
+    ]);
+    const properties = await this.prisma.db.orm.public.Property.where((p) =>
+      and(p.managerId.eq(managerId), p.id.in(Array.from(propertyIds))),
     ).all();
 
     const occupiedRentByProperty = new Map<string, Decimal>();
