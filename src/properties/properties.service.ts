@@ -288,6 +288,13 @@ export class PropertiesService {
   async archive(managerId: string, propertyId: string) {
     await this.findOne(managerId, propertyId);
 
+    await this.prisma.db.orm.public.PropertyUnit.where({
+      propertyId,
+      managerId,
+    }).updateAll({
+      status: PropertyUnitStatus.ARCHIVED,
+    });
+
     return this.prisma.db.orm.public.Property.where({
       id: propertyId,
       managerId,
