@@ -100,8 +100,10 @@ export class PropertiesService {
       if (country) {
         propertiesQuery = propertiesQuery.where({ countryId: country });
       }
-      if (status) {
-        propertiesQuery = propertiesQuery.where({ status });
+      if (status?.length) {
+        propertiesQuery = propertiesQuery.where((property) =>
+          property.status.in(status),
+        );
       }
       if (propertyUseType) {
         propertiesQuery = propertiesQuery.where({ propertyUseType });
