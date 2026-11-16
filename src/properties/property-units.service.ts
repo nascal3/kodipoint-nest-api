@@ -366,6 +366,22 @@ export class PropertyUnitsService {
       status !== undefined
         ? this.assertValidStatus(status)
         : undefined;
+
+    if (unit.status === PropertyUnitStatus.ARCHIVED) {
+      const hasNonStatusUpdates =
+        marketRent !== undefined ||
+        propertyId !== undefined ||
+        propertyChargeIds !== undefined ||
+        requestedCharges !== undefined ||
+        Object.values(rest).some((value) => value !== undefined);
+
+      if (hasNonStatusUpdates) {
+        throw new BadRequestException(
+          'Only the status can be updated for an archived property unit',
+        );
+      }
+    }
+
     const shouldUpdateCharges =
       propertyChargeIds !== undefined || requestedCharges !== undefined;
     const propertyCharges = this.getPropertyCharges({
