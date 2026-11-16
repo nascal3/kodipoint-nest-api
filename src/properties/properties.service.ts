@@ -1,4 +1,5 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
+import { and } from '@prisma/orm-postgres/orm-client';
 
 import { DatabaseService } from '@/database/database.service';
 import { CreatePropertyDto, PropertyStatus } from './dto/create-property.dto';
@@ -213,20 +214,23 @@ export class PropertiesService {
     }).all();
     const propertyIds = new Set(properties.map((property) => property.id));
 
-    const activeTenancies = await this.prisma.db.orm.public.Tenancy.where({
-      managerId,
-      status: 'ACTIVE',
-    }).all();
+    const propertyUnits = await this.prisma.db.orm.public.PropertyUnit.where(
+      (unit) =>
+        and(
+          unit.managerId.eq(managerId),
+          unit.propertyId.in([...propertyIds]),
+        ),
+    ).all();
 
-    const occupiedUnits = new Set(
-      activeTenancies
-        .filter((tenancy) => propertyIds.has(tenancy.propertyId))
-        .map((tenancy) => `${tenancy.propertyId}:${tenancy.propertyUnit}`),
-    ).size;
-    const totalUnits = properties.reduce(
-      (total, property) => total + property.unitCount,
-      0,
-    );
+    const occupiedUnits = propertyUnits.filter(
+      (unit) => unit.status === 'OCCUPIED',
+    ).length;
+    const totalUnits = propertyUnits.filter(
+      (unit) => unit.status !== 'ARCHIVED',
+    ).length;
+    const vacantUnits = propertyUnits.filter(
+      (unit) => unit.status === 'AVAILABLE',
+    ).length;
 
     return {
       occupancyPercentage:
@@ -235,7 +239,7 @@ export class PropertiesService {
           : Number(((occupiedUnits / totalUnits) * 100).toFixed(1)),
       occupiedUnits,
       totalUnits,
-      vacantUnits: totalUnits - occupiedUnits,
+      vacantUnits,
     };
   }
 

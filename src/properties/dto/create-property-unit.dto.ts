@@ -12,7 +12,7 @@ import {
 } from 'class-validator';
 import { Type } from 'class-transformer';
 
-enum PropertyUnitStatus {
+export enum PropertyUnitStatus {
   AVAILABLE = 'AVAILABLE',
   OCCUPIED = 'OCCUPIED',
   MAINTENANCE = 'MAINTENANCE',

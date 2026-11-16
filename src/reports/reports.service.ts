@@ -11,6 +11,7 @@ import { ProjectedRentReportDto } from './dto/projected-rent-report.dto';
 import { SortOrder } from './dto/pagination.dto';
 import Decimal from 'decimal.js';
 import { Temporal } from '@js-temporal/polyfill';
+import {PropertyUnitStatus} from "@/properties/dto/create-property-unit.dto";
 
 @Injectable()
 export class ReportsService {
@@ -291,6 +292,7 @@ export class ReportsService {
         totalIncome: totalIncome.toFixed(2),
         totalPayments: payments.length,
         totalProperties: properties.length,
+        currency: properties[0]?.currency ?? null,
       },
       monthlyTotals,
       properties: paginatedData.data,
@@ -379,6 +381,7 @@ export class ReportsService {
         totalOwed: totalOwed.toFixed(2),
         totalOutstandingInvoices: invoices.length,
         totalProperties: properties.length,
+        currency: properties[0]?.currency ?? null,
       },
       monthlyTotals,
       properties: paginatedData.data,
@@ -567,7 +570,7 @@ export class ReportsService {
     const propertyUnits = await this.prisma.db.orm.public.PropertyUnit.where((unit) =>
       and(
         unit.managerId.eq(managerId),
-        unit.status.eq('OCCUPIED'),
+        unit.status.eq(PropertyUnitStatus.OCCUPIED),
         ...(dto.propertyId ? [unit.propertyId.eq(dto.propertyId)] : []),
       ),
     ).all();
@@ -595,10 +598,7 @@ export class ReportsService {
     const propertyIds = Array.from(rentByProperty.keys());
     const properties = await this.prisma.db.orm.public.Property.where((p) =>
       and(
-        p.managerId.eq(managerId),
-        ...(dto.propertyId
-          ? [p.id.eq(dto.propertyId)]
-          : [p.id.in(propertyIds)]),
+        p.managerId.eq(managerId)
       ),
     ).all();
 
@@ -645,6 +645,7 @@ export class ReportsService {
         totalOccupiedUnits: propertyUnits.length,
         totalVacantUnits: totalPropertyUnits - propertyUnits.length,
         totalProperties: properties.length,
+        currency: properties[0]?.currency ?? null,
       },
       properties: paginatedData.data,
       pagination: paginatedData.pagination,
