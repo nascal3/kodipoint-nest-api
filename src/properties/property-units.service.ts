@@ -8,7 +8,10 @@ import { Temporal } from '@js-temporal/polyfill';
 
 import { DatabaseService } from '@/database/database.service';
 import { generateStubName } from '@/common/utils/stubs.utils';
-import { CreatePropertyUnitDto } from './dto/create-property-unit.dto';
+import {
+  CreatePropertyUnitDto,
+  PropertyUnitStatus,
+} from './dto/create-property-unit.dto';
 import { UpdatePropertyUnitDto } from './dto/update-property-unit.dto';
 import { UpdatePropertyUnitChargeRateDto } from './dto/update-property-unit-charge-rate.dto';
 import { ListPropertyUnitsDto } from './dto/list-property-units.dto';
@@ -35,6 +38,15 @@ type PropertyUnitChargeInput = {
 @Injectable()
 export class PropertyUnitsService {
   constructor(private readonly prisma: DatabaseService) {}
+
+  private assertValidStatus(status: string): PropertyUnitStatus {
+    const validStatuses = Object.values(PropertyUnitStatus);
+    if (!validStatuses.includes(status as PropertyUnitStatus)) {
+      throw new BadRequestException('Invalid property unit status');
+    }
+
+    return status as PropertyUnitStatus;
+  }
 
   private async assertStubUnique(
     managerId: string,
@@ -350,8 +362,13 @@ export class PropertyUnitsService {
       propertyId,
       propertyChargeIds,
       propertyCharges: requestedCharges,
+      status,
       ...rest
     } = dto;
+    const normalizedStatus =
+      status !== undefined
+        ? this.assertValidStatus(status)
+        : undefined;
     const shouldUpdateCharges =
       propertyChargeIds !== undefined || requestedCharges !== undefined;
     const propertyCharges = this.getPropertyCharges({
@@ -379,15 +396,50 @@ export class PropertyUnitsService {
     const stub = generateStubName(effectiveUnitNumber);
     await this.assertStubUnique(managerId, targetPropertyId, stub, unitId);
 
-    const updatedUnit = await this.prisma.db.orm.public.PropertyUnit.where({
-      id: unitId,
-      managerId,
-    }).update({
+    const updateData = {
       ...rest,
+      ...(normalizedStatus !== undefined && { status: normalizedStatus }),
       ...(propertyId !== undefined && { propertyId }),
       ...(marketRent !== undefined && { marketRent: marketRent.toString() }),
       stub,
-    });
+    };
+
+    const isUnarchiving =
+      unit.status === PropertyUnitStatus.ARCHIVED &&
+      normalizedStatus !== undefined &&
+      normalizedStatus !== PropertyUnitStatus.ARCHIVED;
+
+    const updatedUnit = isUnarchiving
+      ? await this.prisma.db.transaction(async (tx) => {
+          const transitionPlan = this.prisma.db.raw.sql`
+            UPDATE public.property_units
+            SET status = ${normalizedStatus}
+            WHERE id = ${unitId}
+              AND manager_id = ${managerId}
+              AND status = propertyUnitStatus.ARCHIVED
+          `.affectedCount().build();
+          const { affectedRows } = await tx.execute(transitionPlan);
+
+          const updated = await tx.orm.public.PropertyUnit.where({
+            id: unitId,
+            managerId,
+          }).update(updateData);
+
+          if (affectedRows > 0) {
+            const incrementPlan = this.prisma.db.raw.sql`
+              UPDATE public.properties
+              SET unit_count = unit_count + 1
+              WHERE id = ${targetPropertyId}
+            `.affectedCount().build();
+            await tx.execute(incrementPlan);
+          }
+
+          return updated;
+        })
+      : await this.prisma.db.orm.public.PropertyUnit.where({
+          id: unitId,
+          managerId,
+        }).update(updateData);
 
     if (shouldUpdateCharges) {
       const now = Temporal.Now.instant();
