@@ -9,7 +9,7 @@ import {
   IsUUID,
 } from 'class-validator';
 
-enum PropertyStatus {
+export enum PropertyStatus {
   ACTIVE = 'ACTIVE',
   INACTIVE = 'INACTIVE',
   ARCHIVED = 'ARCHIVED',
@@ -115,14 +115,4 @@ export class CreatePropertyDto {
   @IsNumber()
   @Min(0)
   monthlyRent: number;
-
-  @ApiProperty({
-    description: 'The total number of rentable units in this property',
-    example: 12,
-    minimum: 0,
-  })
-  @IsOptional()
-  @IsInt()
-  @Min(0)
-  unitCount?: number;
 }

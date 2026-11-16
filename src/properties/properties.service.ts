@@ -1,7 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 
 import { DatabaseService } from '@/database/database.service';
-import { CreatePropertyDto } from './dto/create-property.dto';
+import { CreatePropertyDto, PropertyStatus } from './dto/create-property.dto';
 import { UpdatePropertyDto } from './dto/update-property.dto';
 import { ListPropertiesDto } from './dto/list-properties.dto';
 
@@ -70,8 +70,7 @@ export class PropertiesService {
       description: dto.description,
       currency: dto.currency,
       monthlyRent: dto.monthlyRent.toString(),
-      unitCount: dto.unitCount ?? 0,
-      status: dto.status ?? 'ACTIVE',
+      status: dto.status ?? PropertyStatus.ACTIVE,
     });
   }
 
@@ -210,7 +209,7 @@ export class PropertiesService {
   async getPortfolioOccupancy(managerId: string) {
     const properties = await this.prisma.db.orm.public.Property.where({
       managerId,
-      status: 'ACTIVE',
+      status: PropertyStatus.ACTIVE,
     }).all();
     const propertyIds = new Set(properties.map((property) => property.id));
 
@@ -287,7 +286,7 @@ export class PropertiesService {
       id: propertyId,
       managerId,
     }).update({
-      status: 'INACTIVE',
+      status: PropertyStatus.ARCHIVED,
     });
   }
 }
