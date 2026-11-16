@@ -11,7 +11,8 @@ import { ProjectedRentReportDto } from './dto/projected-rent-report.dto';
 import { SortOrder } from './dto/pagination.dto';
 import Decimal from 'decimal.js';
 import { Temporal } from '@js-temporal/polyfill';
-import {PropertyUnitStatus} from "@/properties/dto/create-property-unit.dto";
+import { PropertyUnitStatus } from "@/properties/dto/create-property-unit.dto";
+import { PropertyStatus } from "@/properties/dto/create-property.dto";
 
 @Injectable()
 export class ReportsService {
@@ -249,6 +250,36 @@ export class ReportsService {
       p.id.in(propertyIds),
     ).all();
 
+    const occupiedUnits = await this.prisma.db.orm.public.PropertyUnit.where(
+      (unit) =>
+        and(
+          unit.managerId.eq(managerId),
+          unit.status.eq(PropertyUnitStatus.OCCUPIED),
+        ),
+    ).all();
+
+    const occupiedRentByProperty = new Map<string, Decimal>();
+    const occupiedUnitsByProperty = new Map<string, number>();
+
+    for (const unit of occupiedUnits) {
+      const currentRent =
+        occupiedRentByProperty.get(unit.propertyId) || new Decimal(0);
+      occupiedRentByProperty.set(
+        unit.propertyId,
+        currentRent.plus(new Decimal(String(unit.marketRent))),
+      );
+
+      occupiedUnitsByProperty.set(
+        unit.propertyId,
+        (occupiedUnitsByProperty.get(unit.propertyId) || 0) + 1,
+      );
+    }
+
+    const totalOccupiedRent = occupiedUnits.reduce(
+      (sum, unit) => sum.plus(new Decimal(String(unit.marketRent))),
+      new Decimal(0),
+    );
+
     const propertyIncomeData = properties.map((property) => ({
       property: {
         id: property.id,
@@ -256,6 +287,9 @@ export class ReportsService {
         address: `${property.addressLine1}, ${property.city}`,
       },
       income: incomeByProperty.get(property.id)?.toFixed(2) || '0.00',
+      occupiedRent: occupiedRentByProperty.get(property.id)?.toFixed(2) || '0.00',
+      occupiedUnits: occupiedUnitsByProperty.get(property.id) || 0,
+      status: property.status,
       currency: property.currency,
     }));
 
@@ -290,9 +324,10 @@ export class ReportsService {
     return {
       summary: {
         totalIncome: totalIncome.toFixed(2),
+        totalOccupiedRent: totalOccupiedRent.toFixed(2),
         totalPayments: payments.length,
         totalProperties: properties.length,
-        currency: properties[0]?.currency ?? null,
+        currency: await this.getManagerCurrency(managerId),
       },
       monthlyTotals,
       properties: paginatedData.data,
@@ -338,6 +373,36 @@ export class ReportsService {
       p.id.in(propertyIds),
     ).all();
 
+    const occupiedUnits = await this.prisma.db.orm.public.PropertyUnit.where(
+      (unit) =>
+        and(
+          unit.managerId.eq(managerId),
+          unit.status.eq(PropertyUnitStatus.OCCUPIED),
+        ),
+    ).all();
+
+    const occupiedRentByProperty = new Map<string, Decimal>();
+    const occupiedUnitsByProperty = new Map<string, number>();
+
+    for (const unit of occupiedUnits) {
+      const currentRent =
+        occupiedRentByProperty.get(unit.propertyId) || new Decimal(0);
+      occupiedRentByProperty.set(
+        unit.propertyId,
+        currentRent.plus(new Decimal(String(unit.marketRent))),
+      );
+
+      occupiedUnitsByProperty.set(
+        unit.propertyId,
+        (occupiedUnitsByProperty.get(unit.propertyId) || 0) + 1,
+      );
+    }
+
+    const totalOccupiedRent = occupiedUnits.reduce(
+      (sum, unit) => sum.plus(new Decimal(String(unit.marketRent))),
+      new Decimal(0),
+    );
+
     const propertyOwedData = properties.map((property) => ({
       property: {
         id: property.id,
@@ -345,6 +410,9 @@ export class ReportsService {
         address: `${property.addressLine1}, ${property.city}`,
       },
       amountOwed: owedByProperty.get(property.id)?.toFixed(2) || '0.00',
+      occupiedRent:
+        occupiedRentByProperty.get(property.id)?.toFixed(2) || '0.00',
+      occupiedUnits: occupiedUnitsByProperty.get(property.id) || 0,
       currency: property.currency,
     }));
 
@@ -379,9 +447,10 @@ export class ReportsService {
     return {
       summary: {
         totalOwed: totalOwed.toFixed(2),
+        totalOccupiedRent: totalOccupiedRent.toFixed(2),
         totalOutstandingInvoices: invoices.length,
         totalProperties: properties.length,
-        currency: properties[0]?.currency ?? null,
+        currency: await this.getManagerCurrency(managerId),
       },
       monthlyTotals,
       properties: paginatedData.data,
@@ -595,17 +664,24 @@ export class ReportsService {
       unitsByProperty.set(unit.propertyId, currentUnits + 1);
     }
 
-    const propertyIds = Array.from(rentByProperty.keys());
-    const properties = await this.prisma.db.orm.public.Property.where((p) =>
-      and(
-        p.managerId.eq(managerId)
-      ),
+    const countableUnits = await this.prisma.db.orm.public.PropertyUnit.where(
+      (unit) =>
+        and(
+          unit.managerId.eq(managerId),
+          unit.status.in([
+            PropertyUnitStatus.AVAILABLE,
+            PropertyUnitStatus.OCCUPIED,
+          ]),
+          ...(dto.propertyId ? [unit.propertyId.eq(dto.propertyId)] : []),
+        ),
     ).all();
 
-    const totalPropertyUnits = properties.reduce(
-      (sum, property) => sum + property.unitCount,
-      0,
-    );
+    const properties = await this.prisma.db.orm.public.Property.where((p) =>
+      and(
+        p.managerId.eq(managerId),
+        p.status.neq(PropertyStatus.ARCHIVED),
+      ),
+    ).all();
 
     const totalPotentialRent = properties.reduce(
       (sum, property) =>
@@ -643,13 +719,21 @@ export class ReportsService {
         totalProjectedRent: totalProjectedRent.toFixed(2),
         totalPotentialRent: totalPotentialRent.toFixed(2),
         totalOccupiedUnits: propertyUnits.length,
-        totalVacantUnits: totalPropertyUnits - propertyUnits.length,
+        totalVacantUnits: countableUnits.length - propertyUnits.length,
         totalProperties: properties.length,
         currency: properties[0]?.currency ?? null,
       },
       properties: paginatedData.data,
       pagination: paginatedData.pagination,
     };
+  }
+
+  private async getManagerCurrency(managerId: string): Promise<string> {
+    const property = await this.prisma.db.orm.public.Property.where({
+      managerId,
+    }).first();
+
+    return property?.currency ?? 'KES';
   }
 
   private sortResults<T>(
