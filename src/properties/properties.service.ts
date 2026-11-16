@@ -1,9 +1,11 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
+import { and } from '@prisma/orm-postgres/orm-client';
 
 import { DatabaseService } from '@/database/database.service';
 import { CreatePropertyDto, PropertyStatus } from './dto/create-property.dto';
 import { UpdatePropertyDto } from './dto/update-property.dto';
 import { ListPropertiesDto } from './dto/list-properties.dto';
+import {PropertyUnitStatus} from "@/properties/dto/create-property-unit.dto";
 
 export interface PropertyWithOccupancy {
   id: string;
@@ -98,8 +100,10 @@ export class PropertiesService {
       if (country) {
         propertiesQuery = propertiesQuery.where({ countryId: country });
       }
-      if (status) {
-        propertiesQuery = propertiesQuery.where({ status });
+      if (status?.length) {
+        propertiesQuery = propertiesQuery.where((property) =>
+          property.status.in(status),
+        );
       }
       if (propertyUseType) {
         propertiesQuery = propertiesQuery.where({ propertyUseType });
@@ -165,7 +169,7 @@ export class PropertiesService {
       ).size;
 
       const propertyUnitsFiltered = propertyUnits.filter(
-        (unit) => unit.propertyId === property.id && unit.status !== 'ARCHIVED',
+        (unit) => unit.propertyId === property.id && unit.status !== PropertyUnitStatus.ARCHIVED,
       );
 
       const rents = propertyUnitsFiltered.map((unit) =>
@@ -213,20 +217,22 @@ export class PropertiesService {
     }).all();
     const propertyIds = new Set(properties.map((property) => property.id));
 
-    const activeTenancies = await this.prisma.db.orm.public.Tenancy.where({
-      managerId,
-      status: 'ACTIVE',
-    }).all();
+    const propertyUnits = await this.prisma.db.orm.public.PropertyUnit.where(
+      (unit) =>
+        and(
+          unit.managerId.eq(managerId)
+        ),
+    ).all();
 
-    const occupiedUnits = new Set(
-      activeTenancies
-        .filter((tenancy) => propertyIds.has(tenancy.propertyId))
-        .map((tenancy) => `${tenancy.propertyId}:${tenancy.propertyUnit}`),
-    ).size;
-    const totalUnits = properties.reduce(
-      (total, property) => total + property.unitCount,
-      0,
-    );
+    const occupiedUnits = propertyUnits.filter(
+      (unit) => unit.status === PropertyUnitStatus.OCCUPIED,
+    ).length;
+    const totalUnits = propertyUnits.filter(
+      (unit) =>
+        unit.status !== PropertyUnitStatus.ARCHIVED &&
+        unit.status !== PropertyUnitStatus.MAINTENANCE,
+    ).length;
+    const vacantUnits = totalUnits - occupiedUnits;
 
     return {
       occupancyPercentage:
@@ -235,7 +241,7 @@ export class PropertiesService {
           : Number(((occupiedUnits / totalUnits) * 100).toFixed(1)),
       occupiedUnits,
       totalUnits,
-      vacantUnits: totalUnits - occupiedUnits,
+      vacantUnits,
     };
   }
 
@@ -281,6 +287,13 @@ export class PropertiesService {
 
   async archive(managerId: string, propertyId: string) {
     await this.findOne(managerId, propertyId);
+
+    await this.prisma.db.orm.public.PropertyUnit.where({
+      propertyId,
+      managerId,
+    }).updateAll({
+      status: PropertyUnitStatus.ARCHIVED,
+    });
 
     return this.prisma.db.orm.public.Property.where({
       id: propertyId,

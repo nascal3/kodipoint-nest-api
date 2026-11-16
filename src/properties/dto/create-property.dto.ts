@@ -16,7 +16,7 @@ export enum PropertyStatus {
   MAINTENANCE = 'MAINTENANCE',
 }
 
-enum PropertyUseType {
+export enum PropertyUseType {
   RESIDENTIAL = 'RESIDENTIAL',
   COMMERCIAL = 'COMMERCIAL',
   MIXED = 'MIXED',

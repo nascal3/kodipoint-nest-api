@@ -8,10 +8,14 @@ import { Temporal } from '@js-temporal/polyfill';
 
 import { DatabaseService } from '@/database/database.service';
 import { generateStubName } from '@/common/utils/stubs.utils';
-import { CreatePropertyUnitDto } from './dto/create-property-unit.dto';
+import {
+  CreatePropertyUnitDto,
+  PropertyUnitStatus,
+} from './dto/create-property-unit.dto';
 import { UpdatePropertyUnitDto } from './dto/update-property-unit.dto';
 import { UpdatePropertyUnitChargeRateDto } from './dto/update-property-unit-charge-rate.dto';
 import { ListPropertyUnitsDto } from './dto/list-property-units.dto';
+import {PropertyStatus} from "@/properties/dto/create-property.dto";
 
 export interface PaginationMeta {
   page: number;
@@ -35,6 +39,15 @@ type PropertyUnitChargeInput = {
 @Injectable()
 export class PropertyUnitsService {
   constructor(private readonly prisma: DatabaseService) {}
+
+  private assertValidStatus(status: string): PropertyUnitStatus {
+    const validStatuses = Object.values(PropertyUnitStatus);
+    if (!validStatuses.includes(status as PropertyUnitStatus)) {
+      throw new BadRequestException('Invalid property unit status');
+    }
+
+    return status as PropertyUnitStatus;
+  }
 
   private async assertStubUnique(
     managerId: string,
@@ -73,8 +86,8 @@ export class PropertyUnitsService {
       throw new NotFoundException('Property not found');
     }
 
-    if (property.status === 'INACTIVE') {
-      throw new BadRequestException('Cannot create units for inactive properties');
+    if (property.status === PropertyStatus.INACTIVE || property.status === PropertyStatus.ARCHIVED) {
+      throw new BadRequestException('Cannot create units for inactive or archived properties');
     }
 
     const stub = generateStubName(dto.unitNumber);
@@ -84,37 +97,44 @@ export class PropertyUnitsService {
     await this.validatePropertyCharges(propertyCharges, dto.propertyId);
 
     const unitStatus =
-      property.status === 'MAINTENANCE'
-        ? 'MAINTENANCE'
-        : property.status === 'ARCHIVED'
-          ? 'UNAVAILABLE'
-          : dto.status;
+      property.status === PropertyStatus.MAINTENANCE ? PropertyUnitStatus.MAINTENANCE : dto.status;
 
-    const unit = await this.prisma.db.orm.public.PropertyUnit.create({
-      managerId,
-      propertyId: dto.propertyId,
-      propertyUseType: dto.propertyUseType,
-      unitNumber: dto.unitNumber,
-      stub,
-      bedroomCount: dto.bedroomCount,
-      status: unitStatus,
-      marketRent: dto.marketRent.toString(),
-      billingFrequency: dto.billingFrequency,
+    const unit = await this.prisma.db.transaction(async (tx) => {
+      const createdUnit = await tx.orm.public.PropertyUnit.create({
+        managerId,
+        propertyId: dto.propertyId,
+        propertyUseType: dto.propertyUseType,
+        unitNumber: dto.unitNumber,
+        stub,
+        bedroomCount: dto.bedroomCount,
+        status: unitStatus,
+        marketRent: dto.marketRent.toString(),
+        billingFrequency: dto.billingFrequency,
+      });
+
+      const incrementPlan = this.prisma.db.raw.sql`
+        UPDATE public.properties
+        SET unit_count = unit_count + 1
+        WHERE id = ${dto.propertyId}
+      `.affectedCount().build();
+      await tx.execute(incrementPlan);
+
+      if (propertyCharges.length > 0) {
+        const now = Temporal.Now.instant();
+        await Promise.all(
+          propertyCharges.map((charge) =>
+            tx.orm.public.PropertyUnitCharge.create({
+              propertyUnitId: createdUnit.id,
+              propertyChargeId: charge.propertyChargeId,
+              customAmount: charge.amount?.toString() ?? null,
+              validFrom: now,
+            }),
+          ),
+        );
+      }
+
+      return createdUnit;
     });
-
-    if (propertyCharges.length > 0) {
-      const now = Temporal.Now.instant();
-      await Promise.all(
-        propertyCharges.map((charge) =>
-          this.prisma.db.orm.public.PropertyUnitCharge.create({
-            propertyUnitId: unit.id,
-            propertyChargeId: charge.propertyChargeId,
-            customAmount: charge.amount?.toString() ?? null,
-            validFrom: now,
-          }),
-        ),
-      );
-    }
 
     return {
       ...unit,
@@ -339,8 +359,29 @@ export class PropertyUnitsService {
       propertyId,
       propertyChargeIds,
       propertyCharges: requestedCharges,
+      status,
       ...rest
     } = dto;
+    const normalizedStatus =
+      status !== undefined
+        ? this.assertValidStatus(status)
+        : undefined;
+
+    if (unit.status === PropertyUnitStatus.ARCHIVED) {
+      const hasNonStatusUpdates =
+        marketRent !== undefined ||
+        propertyId !== undefined ||
+        propertyChargeIds !== undefined ||
+        requestedCharges !== undefined ||
+        Object.values(rest).some((value) => value !== undefined);
+
+      if (hasNonStatusUpdates) {
+        throw new BadRequestException(
+          'Only the status can be updated for an archived property unit',
+        );
+      }
+    }
+
     const shouldUpdateCharges =
       propertyChargeIds !== undefined || requestedCharges !== undefined;
     const propertyCharges = this.getPropertyCharges({
@@ -368,15 +409,50 @@ export class PropertyUnitsService {
     const stub = generateStubName(effectiveUnitNumber);
     await this.assertStubUnique(managerId, targetPropertyId, stub, unitId);
 
-    const updatedUnit = await this.prisma.db.orm.public.PropertyUnit.where({
-      id: unitId,
-      managerId,
-    }).update({
+    const updateData = {
       ...rest,
+      ...(normalizedStatus !== undefined && { status: normalizedStatus }),
       ...(propertyId !== undefined && { propertyId }),
       ...(marketRent !== undefined && { marketRent: marketRent.toString() }),
       stub,
-    });
+    };
+
+    const isUnarchiving =
+      unit.status === PropertyUnitStatus.ARCHIVED &&
+      normalizedStatus !== undefined &&
+      normalizedStatus !== PropertyUnitStatus.ARCHIVED;
+
+    const updatedUnit = isUnarchiving
+      ? await this.prisma.db.transaction(async (tx) => {
+          const transitionPlan = this.prisma.db.raw.sql`
+            UPDATE public.property_units
+            SET status = ${normalizedStatus}
+            WHERE id = ${unitId}
+              AND manager_id = ${managerId}
+              AND status = propertyUnitStatus.ARCHIVED
+          `.affectedCount().build();
+          const { affectedRows } = await tx.execute(transitionPlan);
+
+          const updated = await tx.orm.public.PropertyUnit.where({
+            id: unitId,
+            managerId,
+          }).update(updateData);
+
+          if (affectedRows > 0) {
+            const incrementPlan = this.prisma.db.raw.sql`
+              UPDATE public.properties
+              SET unit_count = unit_count + 1
+              WHERE id = ${targetPropertyId}
+            `.affectedCount().build();
+            await tx.execute(incrementPlan);
+          }
+
+          return updated;
+        })
+      : await this.prisma.db.orm.public.PropertyUnit.where({
+          id: unitId,
+          managerId,
+        }).update(updateData);
 
     if (shouldUpdateCharges) {
       const now = Temporal.Now.instant();
@@ -494,13 +570,36 @@ export class PropertyUnitsService {
   }
 
   async archive(managerId: string, unitId: string) {
-    await this.findOne(managerId, unitId);
+    const unit = await this.findOne(managerId, unitId);
 
-    return this.prisma.db.orm.public.PropertyUnit.where({
-      id: unitId,
-      managerId,
-    }).update({
-      status: 'ARCHIVED',
+    return this.prisma.db.transaction(async (tx) => {
+      const archivePlan = this.prisma.db.raw.sql`
+        UPDATE public.property_units
+        SET status = 'ARCHIVED'
+        WHERE id = ${unitId}
+          AND manager_id = ${managerId}
+          AND status <> 'ARCHIVED'
+      `.affectedCount().build();
+      const { affectedRows } = await tx.execute(archivePlan);
+
+      if (affectedRows === 0) {
+        return tx.orm.public.PropertyUnit.where({
+          id: unitId,
+          managerId,
+        }).first();
+      }
+
+      const decrementPlan = this.prisma.db.raw.sql`
+        UPDATE public.properties
+        SET unit_count = unit_count - 1
+        WHERE id = ${unit.propertyId}
+      `.affectedCount().build();
+      await tx.execute(decrementPlan);
+
+      return tx.orm.public.PropertyUnit.where({
+        id: unitId,
+        managerId,
+      }).first();
     });
   }
 
