@@ -15,6 +15,7 @@ import {
 import { UpdatePropertyUnitDto } from './dto/update-property-unit.dto';
 import { UpdatePropertyUnitChargeRateDto } from './dto/update-property-unit-charge-rate.dto';
 import { ListPropertyUnitsDto } from './dto/list-property-units.dto';
+import {PropertyStatus} from "@/properties/dto/create-property.dto";
 
 export interface PaginationMeta {
   page: number;
@@ -85,8 +86,8 @@ export class PropertyUnitsService {
       throw new NotFoundException('Property not found');
     }
 
-    if (property.status === 'INACTIVE') {
-      throw new BadRequestException('Cannot create units for inactive properties');
+    if (property.status === PropertyStatus.INACTIVE || property.status === PropertyStatus.ARCHIVED) {
+      throw new BadRequestException('Cannot create units for inactive or archived properties');
     }
 
     const stub = generateStubName(dto.unitNumber);
@@ -96,11 +97,7 @@ export class PropertyUnitsService {
     await this.validatePropertyCharges(propertyCharges, dto.propertyId);
 
     const unitStatus =
-      property.status === 'MAINTENANCE'
-        ? 'MAINTENANCE'
-        : property.status === 'ARCHIVED'
-          ? 'UNAVAILABLE'
-          : dto.status;
+      property.status === PropertyStatus.MAINTENANCE ? PropertyUnitStatus.MAINTENANCE : dto.status;
 
     const unit = await this.prisma.db.transaction(async (tx) => {
       const createdUnit = await tx.orm.public.PropertyUnit.create({
