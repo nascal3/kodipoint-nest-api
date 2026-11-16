@@ -736,7 +736,7 @@ export class ReportsService {
       managerId,
     }).first();
 
-    return property?.currency ?? 'KES';
+    return property?.currency ?? '--';
   }
 
   private sortResults<T>(
