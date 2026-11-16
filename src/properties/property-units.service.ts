@@ -505,13 +505,36 @@ export class PropertyUnitsService {
   }
 
   async archive(managerId: string, unitId: string) {
-    await this.findOne(managerId, unitId);
+    const unit = await this.findOne(managerId, unitId);
 
-    return this.prisma.db.orm.public.PropertyUnit.where({
-      id: unitId,
-      managerId,
-    }).update({
-      status: 'ARCHIVED',
+    return this.prisma.db.transaction(async (tx) => {
+      const archivePlan = this.prisma.db.raw.sql`
+        UPDATE public.property_units
+        SET status = 'ARCHIVED'
+        WHERE id = ${unitId}
+          AND manager_id = ${managerId}
+          AND status <> 'ARCHIVED'
+      `.affectedCount().build();
+      const { affectedRows } = await tx.execute(archivePlan);
+
+      if (affectedRows === 0) {
+        return tx.orm.public.PropertyUnit.where({
+          id: unitId,
+          managerId,
+        }).first();
+      }
+
+      const decrementPlan = this.prisma.db.raw.sql`
+        UPDATE public.properties
+        SET unit_count = unit_count - 1
+        WHERE id = ${unit.propertyId}
+      `.affectedCount().build();
+      await tx.execute(decrementPlan);
+
+      return tx.orm.public.PropertyUnit.where({
+        id: unitId,
+        managerId,
+      }).first();
     });
   }
 
