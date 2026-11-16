@@ -13,6 +13,7 @@ export enum PropertyStatus {
   ACTIVE = 'ACTIVE',
   INACTIVE = 'INACTIVE',
   ARCHIVED = 'ARCHIVED',
+  MAINTENANCE = 'MAINTENANCE',
 }
 
 enum PropertyUseType {
