@@ -220,8 +220,7 @@ export class PropertiesService {
     const propertyUnits = await this.prisma.db.orm.public.PropertyUnit.where(
       (unit) =>
         and(
-          unit.managerId.eq(managerId),
-          unit.propertyId.in([...propertyIds]),
+          unit.managerId.eq(managerId)
         ),
     ).all();
 
@@ -229,11 +228,11 @@ export class PropertiesService {
       (unit) => unit.status === PropertyUnitStatus.OCCUPIED,
     ).length;
     const totalUnits = propertyUnits.filter(
-      (unit) => unit.status !== PropertyUnitStatus.ARCHIVED,
+      (unit) =>
+        unit.status !== PropertyUnitStatus.ARCHIVED &&
+        unit.status !== PropertyUnitStatus.MAINTENANCE,
     ).length;
-    const vacantUnits = propertyUnits.filter(
-      (unit) => unit.status === PropertyUnitStatus.AVAILABLE,
-    ).length;
+    const vacantUnits = totalUnits - occupiedUnits;
 
     return {
       occupancyPercentage:
