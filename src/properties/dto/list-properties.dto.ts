@@ -2,19 +2,7 @@ import { ApiProperty } from '@nestjs/swagger';
 import { IsEnum, IsOptional, IsString, IsUUID } from 'class-validator';
 
 import { PaginationDto } from '@/reports/dto/pagination.dto';
-
-enum PropertyStatus {
-  ACTIVE = 'ACTIVE',
-  INACTIVE = 'INACTIVE',
-  MAINTENANCE = 'MAINTENANCE',
-  ARCHIVED = 'ARCHIVED',
-}
-
-enum PropertyUseType {
-  RESIDENTIAL = 'RESIDENTIAL',
-  COMMERCIAL = 'COMMERCIAL',
-  MIXED = 'MIXED',
-}
+import {PropertyStatus, PropertyUseType} from "@/properties/dto/create-property.dto";
 
 export class ListPropertiesDto extends PaginationDto {
   @ApiProperty({

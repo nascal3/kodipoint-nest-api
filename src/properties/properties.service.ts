@@ -5,6 +5,7 @@ import { DatabaseService } from '@/database/database.service';
 import { CreatePropertyDto, PropertyStatus } from './dto/create-property.dto';
 import { UpdatePropertyDto } from './dto/update-property.dto';
 import { ListPropertiesDto } from './dto/list-properties.dto';
+import {PropertyUnitStatus} from "@/properties/dto/create-property-unit.dto";
 
 export interface PropertyWithOccupancy {
   id: string;
@@ -166,7 +167,7 @@ export class PropertiesService {
       ).size;
 
       const propertyUnitsFiltered = propertyUnits.filter(
-        (unit) => unit.propertyId === property.id && unit.status !== 'ARCHIVED',
+        (unit) => unit.propertyId === property.id && unit.status !== PropertyUnitStatus.ARCHIVED,
       );
 
       const rents = propertyUnitsFiltered.map((unit) =>
@@ -223,13 +224,13 @@ export class PropertiesService {
     ).all();
 
     const occupiedUnits = propertyUnits.filter(
-      (unit) => unit.status === 'OCCUPIED',
+      (unit) => unit.status === PropertyUnitStatus.OCCUPIED,
     ).length;
     const totalUnits = propertyUnits.filter(
-      (unit) => unit.status !== 'ARCHIVED',
+      (unit) => unit.status !== PropertyUnitStatus.ARCHIVED,
     ).length;
     const vacantUnits = propertyUnits.filter(
-      (unit) => unit.status === 'AVAILABLE',
+      (unit) => unit.status === PropertyUnitStatus.AVAILABLE,
     ).length;
 
     return {
