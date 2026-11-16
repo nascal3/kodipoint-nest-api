@@ -90,31 +90,42 @@ export class PropertyUnitsService {
           ? 'UNAVAILABLE'
           : dto.status;
 
-    const unit = await this.prisma.db.orm.public.PropertyUnit.create({
-      managerId,
-      propertyId: dto.propertyId,
-      propertyUseType: dto.propertyUseType,
-      unitNumber: dto.unitNumber,
-      stub,
-      bedroomCount: dto.bedroomCount,
-      status: unitStatus,
-      marketRent: dto.marketRent.toString(),
-      billingFrequency: dto.billingFrequency,
-    });
+    const unit = await this.prisma.db.transaction(async (tx) => {
+      const createdUnit = await tx.orm.public.PropertyUnit.create({
+        managerId,
+        propertyId: dto.propertyId,
+        propertyUseType: dto.propertyUseType,
+        unitNumber: dto.unitNumber,
+        stub,
+        bedroomCount: dto.bedroomCount,
+        status: unitStatus,
+        marketRent: dto.marketRent.toString(),
+        billingFrequency: dto.billingFrequency,
+      });
 
-    if (propertyCharges.length > 0) {
-      const now = Temporal.Now.instant();
-      await Promise.all(
-        propertyCharges.map((charge) =>
-          this.prisma.db.orm.public.PropertyUnitCharge.create({
-            propertyUnitId: unit.id,
-            propertyChargeId: charge.propertyChargeId,
-            customAmount: charge.amount?.toString() ?? null,
-            validFrom: now,
-          }),
-        ),
-      );
-    }
+      const incrementPlan = this.prisma.db.raw.sql`
+        UPDATE public.properties
+        SET unit_count = unit_count + 1
+        WHERE id = ${dto.propertyId}
+      `.affectedCount().build();
+      await tx.execute(incrementPlan);
+
+      if (propertyCharges.length > 0) {
+        const now = Temporal.Now.instant();
+        await Promise.all(
+          propertyCharges.map((charge) =>
+            tx.orm.public.PropertyUnitCharge.create({
+              propertyUnitId: createdUnit.id,
+              propertyChargeId: charge.propertyChargeId,
+              customAmount: charge.amount?.toString() ?? null,
+              validFrom: now,
+            }),
+          ),
+        );
+      }
+
+      return createdUnit;
+    });
 
     return {
       ...unit,
