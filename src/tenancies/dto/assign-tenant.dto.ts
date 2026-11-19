@@ -31,7 +31,7 @@ export class AssignTenantDto {
     description: 'The unit/apartment of the property to assign the tenant to',
     example: 'A-12',
   })
-  @IsUUID()
+  @IsString()
   propertyUnit: string;
 
   @ApiProperty({
