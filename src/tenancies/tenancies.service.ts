@@ -8,6 +8,8 @@ import { DatabaseService } from '@/database/database.service';
 import { AssignTenantDto, TenancyStatus } from './dto/assign-tenant.dto';
 import { ListTenanciesDto } from './dto/list-tenancies.dto';
 import { TenantStatus } from '@/tenants/dto/create-tenant.dto';
+import { Temporal } from '@js-temporal/polyfill';
+import {PropertyUnitStatus} from "@/properties/dto/create-property-unit.dto";
 
 export interface TenancyListResponse {
   data: object[];
@@ -132,15 +134,26 @@ export class TenanciesService {
       );
     }
 
-    return this.prisma.db.orm.public.Tenancy.create({
-      managerId,
-      propertyId: dto.propertyId,
-      propertyUnit: dto.propertyUnit,
-      tenantId: dto.tenantId,
-      startDate: dto.startDate,
-      status: TenancyStatus.ACTIVE,
-      notes: dto.notes,
-      assignedAt: new Date(),
+    return this.prisma.db.transaction(async (tx) => {
+      const tenancy = await tx.orm.public.Tenancy.create({
+        managerId,
+        propertyId: dto.propertyId,
+        propertyUnit: dto.propertyUnit,
+        tenantId: dto.tenantId,
+        startDate: Temporal.PlainDate.from(dto.startDate.slice(0, 10)),
+        status: dto.status,
+        notes: dto.notes,
+        assignedAt: Temporal.Now.instant(),
+      });
+
+      await tx.orm.public.PropertyUnit.where({
+        id: propertyUnit.id,
+        managerId,
+      }).update({
+        status: PropertyUnitStatus.OCCUPIED,
+      });
+
+      return tenancy;
     });
   }
 
@@ -162,7 +175,7 @@ export class TenanciesService {
     });
   }
 
-  async unassign(managerId: string, tenancyId: string, endDate: Date) {
+  async unassign(managerId: string, tenancyId: string, endDate: string) {
     const tenancy = await this.prisma.db.orm.public.Tenancy.where({
       id: tenancyId,
       managerId,
@@ -173,7 +186,8 @@ export class TenanciesService {
       throw new NotFoundException('Active tenancy not found');
     }
 
-    const status = endDate > new Date()
+    const endDateValue = new Date(endDate);
+    const status = endDateValue > new Date()
       ? TenancyStatus.NOTICE : TenancyStatus.ENDED;
 
     const tenantStatus = status === TenancyStatus.NOTICE
@@ -185,8 +199,8 @@ export class TenanciesService {
       managerId,
     }).update({
       status,
-      endDate,
-      unassignedAt: new Date(),
+      endDate: Temporal.PlainDate.from(endDate.slice(0, 10)),
+      unassignedAt: Temporal.Now.instant(),
     });
 
     await this.prisma.db.orm.public.Tenant.where({

@@ -84,7 +84,7 @@ export class TenanciesController {
     return this.tenanciesService.unassign(
       user.id,
       tenancyId,
-      new Date(dto.endDate),
+      dto.endDate,
     );
   }
 }
