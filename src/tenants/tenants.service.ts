@@ -1,9 +1,10 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { or } from '@prisma/orm-postgres/orm-client';
+import { and, or } from '@prisma/orm-postgres/orm-client';
 
 import { DatabaseService } from '@/database/database.service';
 import {CreateTenantDto, IdentificationDoc, TenantStatus} from './dto/create-tenant.dto';
 import { ListTenantsDto } from './dto/list-tenants.dto';
+import { SearchTenantsDto } from './dto/search-tenants.dto';
 import { UpdateTenantDto } from './dto/update-tenant.dto';
 import {TenancyStatus} from "@/tenancies/dto/assign-tenant.dto";
 
@@ -89,6 +90,76 @@ export class TenantsService {
         totalCount: Number(total.total),
         totalPages: Math.ceil(Number(total.total) / limit),
         hasNextPage: page < Math.ceil(Number(total.total) / limit),
+        hasPreviousPage: page > 1,
+      },
+    };
+  }
+
+  async search(
+    managerId: string,
+    query: SearchTenantsDto,
+  ): Promise<TenantListResponse> {
+    const { q, page = 1, limit = 10 } = query;
+    const offset = (page - 1) * limit;
+    const term = q.trim();
+    const pattern = `%${term}%`;
+    const digits = term.replace(/\D/g, '');
+    const parts = term.split(/\s+/).filter(Boolean);
+
+    const tenants = this.prisma.db.orm.public.Tenant.where({ managerId }).where(
+      (tenant) => {
+        const conditions = [
+          tenant.firstName.ilike(pattern),
+          tenant.lastName.ilike(pattern),
+          tenant.phone.ilike(pattern),
+        ];
+
+        if (digits.length >= 3 && digits !== term) {
+          conditions.push(tenant.phone.ilike(`%${digits}%`));
+        }
+
+        if (parts.length > 1) {
+          const [first, ...rest] = parts;
+          const last = rest.join(' ');
+          conditions.push(
+            and(
+              tenant.firstName.ilike(`%${first}%`),
+              tenant.lastName.ilike(`%${last}%`),
+            ),
+            and(
+              tenant.lastName.ilike(`%${first}%`),
+              tenant.firstName.ilike(`%${last}%`),
+            ),
+          );
+        }
+
+        return or(...conditions);
+      },
+    );
+
+    const [data, total] = await Promise.all([
+      tenants
+        .select('id', 'firstName', 'lastName', 'email', 'phone', 'status', 'createdAt')
+        .orderBy((tenant) => tenant.createdAt.desc())
+        .offset(offset)
+        .limit(limit)
+        .all(),
+      tenants.aggregate((aggregate) => ({
+        total: aggregate.count(),
+      })),
+    ]);
+
+    const totalCount = Number(total.total);
+    const totalPages = Math.ceil(totalCount / limit);
+
+    return {
+      data,
+      pagination: {
+        page,
+        limit,
+        totalCount,
+        totalPages,
+        hasNextPage: page < totalPages,
         hasPreviousPage: page > 1,
       },
     };

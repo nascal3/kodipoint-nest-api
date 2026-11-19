@@ -21,6 +21,7 @@ import { TenantsService } from './tenants.service';
 import { CreateTenantDto } from './dto/create-tenant.dto';
 import { UpdateTenantDto } from './dto/update-tenant.dto';
 import { ListTenantsDto } from './dto/list-tenants.dto';
+import { SearchTenantsDto } from './dto/search-tenants.dto';
 import * as authenticatedUserType from '@/common/types/authenticated-user.type';
 import { JwtAuthGuard } from '@/common/guards/jwt-auth.guard';
 
@@ -52,6 +53,18 @@ export class TenantsController {
     @Query() query: ListTenantsDto,
   ) {
     return this.tenantsService.findAll(user.id, query);
+  }
+
+  @Get('search')
+  @ApiOperation({
+    summary:
+      'Search tenants by first name, last name, or phone (case-insensitive partial match)',
+  })
+  search(
+    @CurrentUser() user: authenticatedUserType.AuthenticatedUser,
+    @Query() query: SearchTenantsDto,
+  ) {
+    return this.tenantsService.search(user.id, query);
   }
 
   @Get(':id')
