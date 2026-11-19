@@ -211,6 +211,15 @@ export class TenanciesService {
       status: tenantStatus,
     });
 
+    if (tenancy.propertyUnitId) {
+      await this.prisma.db.orm.public.PropertyUnit.where({
+        id: tenancy.propertyUnitId,
+        managerId,
+      }).update({
+        status: PropertyUnitStatus.AVAILABLE,
+      });
+    }
+
     return tenancy;
   }
 }
