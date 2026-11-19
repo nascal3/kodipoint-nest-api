@@ -220,7 +220,8 @@ export class PropertiesService {
     const propertyUnits = await this.prisma.db.orm.public.PropertyUnit.where(
       (unit) =>
         and(
-          unit.managerId.eq(managerId)
+          unit.managerId.eq(managerId),
+          unit.propertyId.in([...propertyIds])
         ),
     ).all();
 

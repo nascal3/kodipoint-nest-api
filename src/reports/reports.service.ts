@@ -667,10 +667,17 @@ export class ReportsService {
       unitsByProperty.set(unit.propertyId, currentUnits + 1);
     }
 
+    const activeProperties = await this.prisma.db.orm.public.Property.where({
+      managerId,
+      status: PropertyStatus.ACTIVE,
+    }).all();
+    const propertyIds = new Set(activeProperties.map((property) => property.id));
+
     const countableUnits = await this.prisma.db.orm.public.PropertyUnit.where(
       (unit) =>
         and(
           unit.managerId.eq(managerId),
+          unit.propertyId.in([...propertyIds]),
           unit.status.in([
             PropertyUnitStatus.AVAILABLE,
             PropertyUnitStatus.OCCUPIED,
