@@ -70,7 +70,7 @@ export class TenantsService {
           tenancies
             .include('property', (property) => property.select('name', 'currency'))
             .include('unit', (unit) =>
-              unit.select('unitNumber', 'marketRent', 'billingFrequency', 'bedroomCount'),
+              unit.select('unitNumber', 'propertyUseType', 'marketRent', 'billingFrequency', 'bedroomCount'),
             ),
         )
         .orderBy((tenant) => tenant.createdAt.desc())
