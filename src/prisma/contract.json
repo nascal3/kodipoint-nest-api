@@ -2542,7 +2542,7 @@
                 }
               },
               "propertyUnitId": {
-                "nullable": true,
+                "nullable": false,
                 "type": {
                   "codecId": "pg/uuid@1",
                   "kind": "scalar"
@@ -2656,7 +2656,7 @@
               },
               "unit": {
                 "cardinality": "N:1",
-                "nullable": true,
+                "nullable": false,
                 "on": {
                   "localFields": [
                     "propertyUnitId"
@@ -5150,7 +5150,7 @@
                 "property_unit_id": {
                   "codecId": "pg/uuid@1",
                   "nativeType": "uuid",
-                  "nullable": true
+                  "nullable": false
                 },
                 "start_date": {
                   "codecId": "pg/date-temporal@1",
@@ -5675,7 +5675,7 @@
         "kind": "postgres-schema"
       }
     },
-    "storageHash": "c766a1f8e380ed483c077ea79b3aa3b235b4c7bd8a071b907b28abf75d3a67b3"
+    "storageHash": "748fd88d3a2e947ad5e105feaff3d5ef8c5ef27021d3720f8d9edf48af2906b1"
   },
   "execution": {
     "executionHash": "8e9c983ff78a07252f8d86c07b2c152fd109aba234b96c8b51748afacf5a1756",

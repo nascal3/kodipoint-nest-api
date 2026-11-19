@@ -251,25 +251,25 @@ enum TenancyStatus {
   ENDED
 }
 model Tenancy {
-  id            Uuid             @id @default(uuid())
-  managerId     Uuid             @map("manager_id")
-  propertyId    Uuid             @map("property_id")
-  propertyUnit  String           @map("property_unit")
-  propertyUnitId Uuid?           @map("property_unit_id")
-  tenantId      Uuid             @map("tenant_id")
-  startDate     Date             @map("start_date")
-  endDate       Date?            @map("end_date")
-  status        TenancyStatus    @default(ACTIVE)
-  notes         String?
-  assignedAt    DateTime         @map("assigned_at")
-  unassignedAt  DateTime?        @map("unassigned_at")
+  id              Uuid             @id @default(uuid())
+  managerId       Uuid             @map("manager_id")
+  propertyId      Uuid             @map("property_id")
+  propertyUnit    String           @map("property_unit")
+  propertyUnitId  Uuid             @map("property_unit_id")
+  tenantId        Uuid             @map("tenant_id")
+  startDate       Date             @map("start_date")
+  endDate         Date?            @map("end_date")
+  status          TenancyStatus    @default(ACTIVE)
+  notes           String?
+  assignedAt      DateTime         @map("assigned_at")
+  unassignedAt    DateTime?        @map("unassigned_at")
 
   createdAt temporal.createdAt() @map("created_at")
   updatedAt temporal.updatedAt() @map("updated_at")
 
   manager       User          @relation(fields: [managerId], references: [id])
   property      Property      @relation(fields: [propertyId], references: [id])
-  unit          PropertyUnit? @relation(fields: [propertyUnitId], references: [id])
+  unit          PropertyUnit  @relation(fields: [propertyUnitId], references: [id])
   tenant        Tenant        @relation(fields: [tenantId], references: [id])
 
   invoices Invoice[]

@@ -34,7 +34,7 @@ import type {
 } from '@prisma/orm-postgres/contract/types';
 
 export type StorageHash =
-  StorageHashBase<'c766a1f8e380ed483c077ea79b3aa3b235b4c7bd8a071b907b28abf75d3a67b3'>;
+  StorageHashBase<'748fd88d3a2e947ad5e105feaff3d5ef8c5ef27021d3720f8d9edf48af2906b1'>;
 export type ExecutionHash =
   ExecutionHashBase<'8e9c983ff78a07252f8d86c07b2c152fd109aba234b96c8b51748afacf5a1756'>;
 export type ProfileHash =
@@ -402,7 +402,7 @@ export type FieldOutputTypes = {
       readonly managerId: CodecTypes['pg/uuid@1']['output'];
       readonly propertyId: CodecTypes['pg/uuid@1']['output'];
       readonly propertyUnit: CodecTypes['pg/text@1']['output'];
-      readonly propertyUnitId: CodecTypes['pg/uuid@1']['output'] | null;
+      readonly propertyUnitId: CodecTypes['pg/uuid@1']['output'];
       readonly tenantId: CodecTypes['pg/uuid@1']['output'];
       readonly startDate: CodecTypes['pg/date-temporal@1']['output'];
       readonly endDate: CodecTypes['pg/date-temporal@1']['output'] | null;
@@ -611,7 +611,7 @@ export type FieldInputTypes = {
       readonly managerId: CodecTypes['pg/uuid@1']['input'];
       readonly propertyId: CodecTypes['pg/uuid@1']['input'];
       readonly propertyUnit: CodecTypes['pg/text@1']['input'];
-      readonly propertyUnitId: CodecTypes['pg/uuid@1']['input'] | null;
+      readonly propertyUnitId: CodecTypes['pg/uuid@1']['input'];
       readonly tenantId: CodecTypes['pg/uuid@1']['input'];
       readonly startDate: CodecTypes['pg/date-temporal@1']['input'];
       readonly endDate: CodecTypes['pg/date-temporal@1']['input'] | null;
@@ -824,7 +824,7 @@ export type StorageColumnTypes = {
       readonly notes: CodecTypes['pg/text@1']['output'] | null;
       readonly property_id: CodecTypes['pg/uuid@1']['output'];
       readonly property_unit: CodecTypes['pg/text@1']['output'];
-      readonly property_unit_id: CodecTypes['pg/uuid@1']['output'] | null;
+      readonly property_unit_id: CodecTypes['pg/uuid@1']['output'];
       readonly start_date: CodecTypes['pg/date-temporal@1']['output'];
       readonly status: 'ACTIVE' | 'NOTICE' | 'ENDED';
       readonly tenant_id: CodecTypes['pg/uuid@1']['output'];
@@ -1033,7 +1033,7 @@ export type StorageColumnInputTypes = {
       readonly notes: CodecTypes['pg/text@1']['input'] | null;
       readonly property_id: CodecTypes['pg/uuid@1']['input'];
       readonly property_unit: CodecTypes['pg/text@1']['input'];
-      readonly property_unit_id: CodecTypes['pg/uuid@1']['input'] | null;
+      readonly property_unit_id: CodecTypes['pg/uuid@1']['input'];
       readonly start_date: CodecTypes['pg/date-temporal@1']['input'];
       readonly status: 'ACTIVE' | 'NOTICE' | 'ENDED';
       readonly tenant_id: CodecTypes['pg/uuid@1']['input'];
@@ -1252,7 +1252,7 @@ export namespace Models {
     managerId: CodecTypes['pg/uuid@1']['output'];
     propertyId: CodecTypes['pg/uuid@1']['output'];
     propertyUnit: CodecTypes['pg/text@1']['output'];
-    propertyUnitId: CodecTypes['pg/uuid@1']['output'] | null;
+    propertyUnitId: CodecTypes['pg/uuid@1']['output'];
     tenantId: CodecTypes['pg/uuid@1']['output'];
     startDate: CodecTypes['pg/date-temporal@1']['output'];
     endDate: CodecTypes['pg/date-temporal@1']['output'] | null;
@@ -1266,7 +1266,7 @@ export namespace Models {
     manager: public_User;
     property: public_Property;
     tenant: public_Tenant;
-    unit: public_PropertyUnit | null;
+    unit: public_PropertyUnit;
     readonly [RelationKeys]?: 'invoices' | 'manager' | 'property' | 'tenant' | 'unit';
   };
   export type public_Invoice = {
@@ -2849,7 +2849,7 @@ type ContractBase = Omit<
                 readonly property_unit_id: {
                   readonly nativeType: 'uuid';
                   readonly codecId: 'pg/uuid@1';
-                  readonly nullable: true;
+                  readonly nullable: false;
                 };
                 readonly tenant_id: {
                   readonly nativeType: 'uuid';
@@ -4736,7 +4736,7 @@ type ContractBase = Omit<
                 readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
               };
               readonly propertyUnitId: {
-                readonly nullable: true;
+                readonly nullable: false;
                 readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/uuid@1' };
               };
               readonly tenantId: {
@@ -4839,7 +4839,7 @@ type ContractBase = Omit<
                   readonly model: 'PropertyUnit';
                 };
                 readonly cardinality: 'N:1';
-                readonly nullable: true;
+                readonly nullable: false;
                 readonly on: {
                   readonly localFields: readonly ['propertyUnitId'];
                   readonly targetFields: readonly ['id'];
