@@ -34,7 +34,7 @@ import type {
 } from '@prisma/orm-postgres/contract/types';
 
 export type StorageHash =
-  StorageHashBase<'85b9854ad20611a5dd586dea6907b9a61719d15e00827270a1911e3b6b9b838a'>;
+  StorageHashBase<'c766a1f8e380ed483c077ea79b3aa3b235b4c7bd8a071b907b28abf75d3a67b3'>;
 export type ExecutionHash =
   ExecutionHashBase<'8e9c983ff78a07252f8d86c07b2c152fd109aba234b96c8b51748afacf5a1756'>;
 export type ProfileHash =
@@ -406,7 +406,7 @@ export type FieldOutputTypes = {
       readonly tenantId: CodecTypes['pg/uuid@1']['output'];
       readonly startDate: CodecTypes['pg/date-temporal@1']['output'];
       readonly endDate: CodecTypes['pg/date-temporal@1']['output'] | null;
-      readonly status: 'ACTIVE' | 'EXPIRING' | 'ENDED';
+      readonly status: 'ACTIVE' | 'NOTICE' | 'ENDED';
       readonly notes: CodecTypes['pg/text@1']['output'] | null;
       readonly assignedAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
       readonly unassignedAt: CodecTypes['pg/timestamptz-temporal@1']['output'] | null;
@@ -615,7 +615,7 @@ export type FieldInputTypes = {
       readonly tenantId: CodecTypes['pg/uuid@1']['input'];
       readonly startDate: CodecTypes['pg/date-temporal@1']['input'];
       readonly endDate: CodecTypes['pg/date-temporal@1']['input'] | null;
-      readonly status: 'ACTIVE' | 'EXPIRING' | 'ENDED';
+      readonly status: 'ACTIVE' | 'NOTICE' | 'ENDED';
       readonly notes: CodecTypes['pg/text@1']['input'] | null;
       readonly assignedAt: CodecTypes['pg/timestamptz-temporal@1']['input'];
       readonly unassignedAt: CodecTypes['pg/timestamptz-temporal@1']['input'] | null;
@@ -826,7 +826,7 @@ export type StorageColumnTypes = {
       readonly property_unit: CodecTypes['pg/text@1']['output'];
       readonly property_unit_id: CodecTypes['pg/uuid@1']['output'] | null;
       readonly start_date: CodecTypes['pg/date-temporal@1']['output'];
-      readonly status: 'ACTIVE' | 'EXPIRING' | 'ENDED';
+      readonly status: 'ACTIVE' | 'NOTICE' | 'ENDED';
       readonly tenant_id: CodecTypes['pg/uuid@1']['output'];
       readonly unassigned_at: CodecTypes['pg/timestamptz-temporal@1']['output'] | null;
       readonly updated_at: CodecTypes['pg/timestamptz-temporal@1']['output'];
@@ -1035,7 +1035,7 @@ export type StorageColumnInputTypes = {
       readonly property_unit: CodecTypes['pg/text@1']['input'];
       readonly property_unit_id: CodecTypes['pg/uuid@1']['input'] | null;
       readonly start_date: CodecTypes['pg/date-temporal@1']['input'];
-      readonly status: 'ACTIVE' | 'EXPIRING' | 'ENDED';
+      readonly status: 'ACTIVE' | 'NOTICE' | 'ENDED';
       readonly tenant_id: CodecTypes['pg/uuid@1']['input'];
       readonly unassigned_at: CodecTypes['pg/timestamptz-temporal@1']['input'] | null;
       readonly updated_at: CodecTypes['pg/timestamptz-temporal@1']['input'];
@@ -1256,7 +1256,7 @@ export namespace Models {
     tenantId: CodecTypes['pg/uuid@1']['output'];
     startDate: CodecTypes['pg/date-temporal@1']['output'];
     endDate: CodecTypes['pg/date-temporal@1']['output'] | null;
-    status: 'ACTIVE' | 'EXPIRING' | 'ENDED';
+    status: 'ACTIVE' | 'NOTICE' | 'ENDED';
     notes: CodecTypes['pg/text@1']['output'] | null;
     assignedAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
     unassignedAt: CodecTypes['pg/timestamptz-temporal@1']['output'] | null;
@@ -3242,7 +3242,7 @@ type ContractBase = Omit<
             };
             readonly TenancyStatus: {
               readonly kind: 'valueSet';
-              readonly values: readonly ['ACTIVE', 'EXPIRING', 'ENDED'];
+              readonly values: readonly ['ACTIVE', 'NOTICE', 'ENDED'];
             };
             readonly TenantStatus: {
               readonly kind: 'valueSet';
@@ -5286,7 +5286,7 @@ type ContractBase = Omit<
             readonly codecId: 'pg/text@1';
             readonly members: readonly [
               { readonly name: 'ACTIVE'; readonly value: 'ACTIVE' },
-              { readonly name: 'EXPIRING'; readonly value: 'EXPIRING' },
+              { readonly name: 'NOTICE'; readonly value: 'NOTICE' },
               { readonly name: 'ENDED'; readonly value: 'ENDED' },
             ];
           };

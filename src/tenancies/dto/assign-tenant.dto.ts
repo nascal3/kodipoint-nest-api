@@ -8,7 +8,7 @@ import {
 
 export enum TenancyStatus {
   ACTIVE = 'ACTIVE',
-  EXPIRING = 'EXPIRING',
+  NOTICE = 'NOTICE',
   ENDED = 'ENDED',
 }
 

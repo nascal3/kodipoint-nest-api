@@ -247,7 +247,7 @@ model Tenant {
 
 enum TenancyStatus {
   ACTIVE
-  EXPIRING
+  NOTICE
   ENDED
 }
 model Tenancy {

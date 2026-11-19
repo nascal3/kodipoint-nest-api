@@ -174,9 +174,9 @@ export class TenanciesService {
     }
 
     const status = endDate > new Date()
-      ? TenancyStatus.EXPIRING : TenancyStatus.ENDED;
+      ? TenancyStatus.NOTICE : TenancyStatus.ENDED;
 
-    const tenantStatus = status === TenancyStatus.EXPIRING
+    const tenantStatus = status === TenancyStatus.NOTICE
       ? TenantStatus.NOTICE
       : TenantStatus.ENDED;
 
