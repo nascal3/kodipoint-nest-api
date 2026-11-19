@@ -139,6 +139,7 @@ export class TenanciesService {
         managerId,
         propertyId: dto.propertyId,
         propertyUnit: dto.propertyUnit,
+        propertyUnitId: propertyUnit.id,
         tenantId: dto.tenantId,
         startDate: Temporal.PlainDate.from(dto.startDate.slice(0, 10)),
         status: dto.status,
