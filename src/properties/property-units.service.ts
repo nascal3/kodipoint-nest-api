@@ -277,6 +277,13 @@ export class PropertyUnitsService {
       ]),
     );
 
+    const activeTenancyIdByUnitId = new Map(
+      activeTenancies.map((tenancy) => [
+        tenancy.propertyUnitId,
+        tenancy.id,
+      ]),
+    );
+
     const latestTenancyByUnitId = new Map<
       string,
       (typeof tenancies)[number]
@@ -308,6 +315,7 @@ export class PropertyUnitsService {
           ? `${activeTenant.firstName} ${activeTenant.lastName}`
           : null,
         tenant_id: activeTenant?.id ?? null,
+        tenancyId: activeTenancyIdByUnitId.get(unit.id) ?? null,
         assigned_at: latestTenancy?.assignedAt ?? null,
         unassigned_at: latestTenancy?.unassignedAt ?? null,
         charges: unitChargeLinks.map((unitCharge) => {

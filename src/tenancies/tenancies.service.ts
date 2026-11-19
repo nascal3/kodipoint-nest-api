@@ -191,6 +191,9 @@ export class TenanciesService {
     const status = endDateValue > new Date()
       ? TenancyStatus.NOTICE : TenancyStatus.ENDED;
 
+    const unitStatus = endDateValue > new Date()
+      ? PropertyUnitStatus.NOTICE : PropertyUnitStatus.AVAILABLE;
+
     const tenantStatus = status === TenancyStatus.NOTICE
       ? TenantStatus.NOTICE
       : TenantStatus.ENDED;
@@ -216,7 +219,7 @@ export class TenanciesService {
         id: tenancy.propertyUnitId,
         managerId,
       }).update({
-        status: PropertyUnitStatus.AVAILABLE,
+        status: unitStatus,
       });
     }
 

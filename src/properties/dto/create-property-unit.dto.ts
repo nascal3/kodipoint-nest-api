@@ -15,6 +15,7 @@ import { Type } from 'class-transformer';
 export enum PropertyUnitStatus {
   AVAILABLE = 'AVAILABLE',
   OCCUPIED = 'OCCUPIED',
+  NOTICE = 'NOTICE',
   MAINTENANCE = 'MAINTENANCE',
   UNAVAILABLE = 'UNAVAILABLE',
   ARCHIVED = 'ARCHIVED',

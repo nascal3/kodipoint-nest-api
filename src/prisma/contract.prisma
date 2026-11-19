@@ -157,6 +157,7 @@ enum BillingFrequency {
 }
 enum PropertyUnitStatus {
   AVAILABLE
+  NOTICE
   OCCUPIED
   MAINTENANCE
   UNAVAILABLE

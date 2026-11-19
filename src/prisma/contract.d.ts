@@ -34,7 +34,7 @@ import type {
 } from '@prisma/orm-postgres/contract/types';
 
 export type StorageHash =
-  StorageHashBase<'748fd88d3a2e947ad5e105feaff3d5ef8c5ef27021d3720f8d9edf48af2906b1'>;
+  StorageHashBase<'4c550fca870b19c5d0dd547a139a018e93b1f550c894bbd9a13765b050ab0eb5'>;
 export type ExecutionHash =
   ExecutionHashBase<'8e9c983ff78a07252f8d86c07b2c152fd109aba234b96c8b51748afacf5a1756'>;
 export type ProfileHash =
@@ -375,7 +375,8 @@ export type FieldOutputTypes = {
       readonly unitNumber: CodecTypes['pg/text@1']['output'];
       readonly stub: CodecTypes['pg/text@1']['output'];
       readonly bedroomCount: CodecTypes['pg/int4@1']['output'];
-      readonly status: 'AVAILABLE' | 'OCCUPIED' | 'MAINTENANCE' | 'UNAVAILABLE' | 'ARCHIVED';
+      readonly status:
+        'AVAILABLE' | 'NOTICE' | 'OCCUPIED' | 'MAINTENANCE' | 'UNAVAILABLE' | 'ARCHIVED';
       readonly marketRent: CodecTypes['pg/numeric@1']['output'];
       readonly billingFrequency: 'MONTHLY' | 'QUARTERLY' | 'BI_ANNUALLY' | 'ANNUALLY';
       readonly createdAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
@@ -584,7 +585,8 @@ export type FieldInputTypes = {
       readonly unitNumber: CodecTypes['pg/text@1']['input'];
       readonly stub: CodecTypes['pg/text@1']['input'];
       readonly bedroomCount: CodecTypes['pg/int4@1']['input'];
-      readonly status: 'AVAILABLE' | 'OCCUPIED' | 'MAINTENANCE' | 'UNAVAILABLE' | 'ARCHIVED';
+      readonly status:
+        'AVAILABLE' | 'NOTICE' | 'OCCUPIED' | 'MAINTENANCE' | 'UNAVAILABLE' | 'ARCHIVED';
       readonly marketRent: CodecTypes['pg/numeric@1']['input'];
       readonly billingFrequency: 'MONTHLY' | 'QUARTERLY' | 'BI_ANNUALLY' | 'ANNUALLY';
       readonly createdAt: CodecTypes['pg/timestamptz-temporal@1']['input'];
@@ -801,7 +803,8 @@ export type StorageColumnTypes = {
       readonly market_rent: CodecTypes['pg/numeric@1']['output'];
       readonly property_id: CodecTypes['pg/uuid@1']['output'];
       readonly property_use_type: 'RESIDENTIAL' | 'COMMERCIAL' | 'MIXED';
-      readonly status: 'AVAILABLE' | 'OCCUPIED' | 'MAINTENANCE' | 'UNAVAILABLE' | 'ARCHIVED';
+      readonly status:
+        'AVAILABLE' | 'NOTICE' | 'OCCUPIED' | 'MAINTENANCE' | 'UNAVAILABLE' | 'ARCHIVED';
       readonly stub: CodecTypes['pg/text@1']['output'];
       readonly unit_number: CodecTypes['pg/text@1']['output'];
       readonly updated_at: CodecTypes['pg/timestamptz-temporal@1']['output'];
@@ -1010,7 +1013,8 @@ export type StorageColumnInputTypes = {
       readonly market_rent: CodecTypes['pg/numeric@1']['input'];
       readonly property_id: CodecTypes['pg/uuid@1']['input'];
       readonly property_use_type: 'RESIDENTIAL' | 'COMMERCIAL' | 'MIXED';
-      readonly status: 'AVAILABLE' | 'OCCUPIED' | 'MAINTENANCE' | 'UNAVAILABLE' | 'ARCHIVED';
+      readonly status:
+        'AVAILABLE' | 'NOTICE' | 'OCCUPIED' | 'MAINTENANCE' | 'UNAVAILABLE' | 'ARCHIVED';
       readonly stub: CodecTypes['pg/text@1']['input'];
       readonly unit_number: CodecTypes['pg/text@1']['input'];
       readonly updated_at: CodecTypes['pg/timestamptz-temporal@1']['input'];
@@ -1203,7 +1207,7 @@ export namespace Models {
     unitNumber: CodecTypes['pg/text@1']['output'];
     stub: CodecTypes['pg/text@1']['output'];
     bedroomCount: CodecTypes['pg/int4@1']['output'];
-    status: 'AVAILABLE' | 'OCCUPIED' | 'MAINTENANCE' | 'UNAVAILABLE' | 'ARCHIVED';
+    status: 'AVAILABLE' | 'NOTICE' | 'OCCUPIED' | 'MAINTENANCE' | 'UNAVAILABLE' | 'ARCHIVED';
     marketRent: CodecTypes['pg/numeric@1']['output'];
     billingFrequency: 'MONTHLY' | 'QUARTERLY' | 'BI_ANNUALLY' | 'ANNUALLY';
     createdAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
@@ -3230,6 +3234,7 @@ type ContractBase = Omit<
               readonly kind: 'valueSet';
               readonly values: readonly [
                 'AVAILABLE',
+                'NOTICE',
                 'OCCUPIED',
                 'MAINTENANCE',
                 'UNAVAILABLE',
@@ -5261,6 +5266,7 @@ type ContractBase = Omit<
             readonly codecId: 'pg/text@1';
             readonly members: readonly [
               { readonly name: 'AVAILABLE'; readonly value: 'AVAILABLE' },
+              { readonly name: 'NOTICE'; readonly value: 'NOTICE' },
               { readonly name: 'OCCUPIED'; readonly value: 'OCCUPIED' },
               { readonly name: 'MAINTENANCE'; readonly value: 'MAINTENANCE' },
               { readonly name: 'UNAVAILABLE'; readonly value: 'UNAVAILABLE' },
