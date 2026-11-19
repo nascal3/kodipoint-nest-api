@@ -5,6 +5,7 @@ import { DatabaseService } from '@/database/database.service';
 import {CreateTenantDto, IdentificationDoc, TenantStatus} from './dto/create-tenant.dto';
 import { ListTenantsDto } from './dto/list-tenants.dto';
 import { UpdateTenantDto } from './dto/update-tenant.dto';
+import {TenancyStatus} from "@/tenancies/dto/assign-tenant.dto";
 
 export interface TenantListResponse {
   data: object[];
@@ -120,9 +121,9 @@ export class TenantsService {
       await this.prisma.db.orm.public.Tenancy.where({
         tenantId,
         managerId,
-        status: 'ACTIVE',
+        status: TenancyStatus.ACTIVE,
       }).update({
-        status: 'EXPIRING',
+        status: TenancyStatus.NOTICE,
       });
     }
 
