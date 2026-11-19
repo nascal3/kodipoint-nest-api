@@ -367,6 +367,16 @@ export class PropertyUnitsService {
         ? this.assertValidStatus(status)
         : undefined;
 
+    if (
+      unit.status === PropertyUnitStatus.OCCUPIED &&
+      normalizedStatus !== undefined &&
+      normalizedStatus !== PropertyUnitStatus.OCCUPIED
+    ) {
+      throw new BadRequestException(
+        'An occupied property unit cannot be changed to another status',
+      );
+    }
+
     if (unit.status === PropertyUnitStatus.ARCHIVED) {
       const hasNonStatusUpdates =
         marketRent !== undefined ||
