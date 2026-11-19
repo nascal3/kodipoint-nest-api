@@ -20,6 +20,7 @@ import { TenanciesService } from './tenancies.service';
 import { AssignTenantDto } from './dto/assign-tenant.dto';
 import { ListTenanciesDto } from './dto/list-tenancies.dto';
 import { UnassignTenantDto } from './dto/unassign-tenant.dto';
+import { UpdateTenancyNotesDto } from './dto/update-tenancy-notes.dto';
 import * as authenticatedUserType from '../common/types/authenticated-user.type';
 import { JwtAuthGuard } from '@/common/guards/jwt-auth.guard';
 
@@ -59,6 +60,17 @@ export class TenanciesController {
     @Param('id') tenancyId: string,
   ) {
     return this.tenanciesService.findOne(user.id, tenancyId);
+  }
+
+  @Patch(':id/notes')
+  @ApiOperation({ summary: 'Update the notes of a tenancy' })
+  @ApiParam({ name: 'id', example: 'tenancy-uuid' })
+  updateNotes(
+    @CurrentUser() user: authenticatedUserType.AuthenticatedUser,
+    @Param('id') tenancyId: string,
+    @Body() dto: UpdateTenancyNotesDto,
+  ) {
+    return this.tenanciesService.updateNotes(user.id, tenancyId, dto.notes);
   }
 
   @Patch(':id/unassign')

@@ -139,7 +139,26 @@ export class TenanciesService {
       tenantId: dto.tenantId,
       startDate: dto.startDate,
       status: TenancyStatus.ACTIVE,
+      notes: dto.notes,
       assignedAt: new Date(),
+    });
+  }
+
+  async updateNotes(managerId: string, tenancyId: string, notes?: string) {
+    const tenancy = await this.prisma.db.orm.public.Tenancy.where({
+      id: tenancyId,
+      managerId,
+    }).first();
+
+    if (!tenancy) {
+      throw new NotFoundException('Tenancy not found');
+    }
+
+    return this.prisma.db.orm.public.Tenancy.where({
+      id: tenancyId,
+      managerId,
+    }).update({
+      notes,
     });
   }
 

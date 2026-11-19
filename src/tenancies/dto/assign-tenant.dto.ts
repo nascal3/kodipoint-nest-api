@@ -1,5 +1,10 @@
-import { ApiProperty } from '@nestjs/swagger';
-import { IsDateString, IsString, IsNumber, IsUUID, Min } from 'class-validator';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import {
+  IsDateString,
+  IsOptional,
+  IsString,
+  IsUUID,
+} from 'class-validator';
 
 export enum TenancyStatus {
   ACTIVE = 'ACTIVE',
@@ -42,4 +47,12 @@ export class AssignTenantDto {
   })
   @IsDateString()
   startDate: string;
+
+  @ApiPropertyOptional({
+    description: 'Optional notes about the tenancy',
+    example: 'Tenant requested a ground-floor unit',
+  })
+  @IsOptional()
+  @IsString()
+  notes?: string;
 }

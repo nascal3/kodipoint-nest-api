@@ -34,7 +34,7 @@ import type {
 } from '@prisma/orm-postgres/contract/types';
 
 export type StorageHash =
-  StorageHashBase<'38342fe6144df65ec073d5c543254f4c43f84d0db0a4de4c6a0bbf7512729830'>;
+  StorageHashBase<'85b9854ad20611a5dd586dea6907b9a61719d15e00827270a1911e3b6b9b838a'>;
 export type ExecutionHash =
   ExecutionHashBase<'8e9c983ff78a07252f8d86c07b2c152fd109aba234b96c8b51748afacf5a1756'>;
 export type ProfileHash =
@@ -407,6 +407,7 @@ export type FieldOutputTypes = {
       readonly startDate: CodecTypes['pg/date-temporal@1']['output'];
       readonly endDate: CodecTypes['pg/date-temporal@1']['output'] | null;
       readonly status: 'ACTIVE' | 'EXPIRING' | 'ENDED';
+      readonly notes: CodecTypes['pg/text@1']['output'] | null;
       readonly assignedAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
       readonly unassignedAt: CodecTypes['pg/timestamptz-temporal@1']['output'] | null;
       readonly createdAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
@@ -615,6 +616,7 @@ export type FieldInputTypes = {
       readonly startDate: CodecTypes['pg/date-temporal@1']['input'];
       readonly endDate: CodecTypes['pg/date-temporal@1']['input'] | null;
       readonly status: 'ACTIVE' | 'EXPIRING' | 'ENDED';
+      readonly notes: CodecTypes['pg/text@1']['input'] | null;
       readonly assignedAt: CodecTypes['pg/timestamptz-temporal@1']['input'];
       readonly unassignedAt: CodecTypes['pg/timestamptz-temporal@1']['input'] | null;
       readonly createdAt: CodecTypes['pg/timestamptz-temporal@1']['input'];
@@ -819,6 +821,7 @@ export type StorageColumnTypes = {
       readonly end_date: CodecTypes['pg/date-temporal@1']['output'] | null;
       readonly id: CodecTypes['pg/uuid@1']['output'];
       readonly manager_id: CodecTypes['pg/uuid@1']['output'];
+      readonly notes: CodecTypes['pg/text@1']['output'] | null;
       readonly property_id: CodecTypes['pg/uuid@1']['output'];
       readonly property_unit: CodecTypes['pg/text@1']['output'];
       readonly property_unit_id: CodecTypes['pg/uuid@1']['output'] | null;
@@ -1027,6 +1030,7 @@ export type StorageColumnInputTypes = {
       readonly end_date: CodecTypes['pg/date-temporal@1']['input'] | null;
       readonly id: CodecTypes['pg/uuid@1']['input'];
       readonly manager_id: CodecTypes['pg/uuid@1']['input'];
+      readonly notes: CodecTypes['pg/text@1']['input'] | null;
       readonly property_id: CodecTypes['pg/uuid@1']['input'];
       readonly property_unit: CodecTypes['pg/text@1']['input'];
       readonly property_unit_id: CodecTypes['pg/uuid@1']['input'] | null;
@@ -1253,6 +1257,7 @@ export namespace Models {
     startDate: CodecTypes['pg/date-temporal@1']['output'];
     endDate: CodecTypes['pg/date-temporal@1']['output'] | null;
     status: 'ACTIVE' | 'EXPIRING' | 'ENDED';
+    notes: CodecTypes['pg/text@1']['output'] | null;
     assignedAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
     unassignedAt: CodecTypes['pg/timestamptz-temporal@1']['output'] | null;
     createdAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
@@ -2869,6 +2874,11 @@ type ContractBase = Omit<
                     readonly kind: 'literal';
                     readonly value: DefaultLiteralValue<'pg/text@1', 'ACTIVE'>;
                   };
+                };
+                readonly notes: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: true;
                 };
                 readonly assigned_at: {
                   readonly nativeType: 'timestamptz';
@@ -4745,6 +4755,10 @@ type ContractBase = Omit<
                 readonly nullable: false;
                 readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
               };
+              readonly notes: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
               readonly assignedAt: {
                 readonly nullable: false;
                 readonly type: {
@@ -4845,6 +4859,7 @@ type ContractBase = Omit<
                 readonly startDate: { readonly column: 'start_date' };
                 readonly endDate: { readonly column: 'end_date' };
                 readonly status: { readonly column: 'status' };
+                readonly notes: { readonly column: 'notes' };
                 readonly assignedAt: { readonly column: 'assigned_at' };
                 readonly unassignedAt: { readonly column: 'unassigned_at' };
                 readonly createdAt: { readonly column: 'created_at' };

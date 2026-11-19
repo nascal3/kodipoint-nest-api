@@ -260,6 +260,7 @@ model Tenancy {
   startDate     Date             @map("start_date")
   endDate       Date?            @map("end_date")
   status        TenancyStatus    @default(ACTIVE)
+  notes         String?
   assignedAt    DateTime         @map("assigned_at")
   unassignedAt  DateTime?        @map("unassigned_at")
 
