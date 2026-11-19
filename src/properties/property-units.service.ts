@@ -216,7 +216,7 @@ export class PropertyUnitsService {
 
     const unitIds = units.map((unit) => unit.id);
 
-    const [unitCharges, activeTenancies] = await Promise.all([
+    const [unitCharges, tenancies] = await Promise.all([
       this.prisma.db.orm.public.PropertyUnitCharge.where((charge) =>
         and(
           charge.propertyUnitId.in(unitIds),
@@ -224,12 +224,13 @@ export class PropertyUnitsService {
         ),
       ).all(),
       this.prisma.db.orm.public.Tenancy.where((tenancy) =>
-        and(
-          tenancy.propertyUnitId.in(unitIds),
-          tenancy.status.eq('ACTIVE'),
-        ),
+        tenancy.propertyUnitId.in(unitIds),
       ).all(),
     ]);
+
+    const activeTenancies = tenancies.filter(
+      (tenancy) => tenancy.status === 'ACTIVE',
+    );
 
     const chargesByUnitId = unitCharges.reduce(
       (acc, charge) => {
@@ -276,6 +277,21 @@ export class PropertyUnitsService {
       ]),
     );
 
+    const latestTenancyByUnitId = new Map<
+      string,
+      (typeof tenancies)[number]
+    >();
+    for (const tenancy of tenancies) {
+      const existing = latestTenancyByUnitId.get(tenancy.propertyUnitId);
+      if (
+        !existing ||
+        tenancy.assignedAt.epochMilliseconds >
+          existing.assignedAt.epochMilliseconds
+      ) {
+        latestTenancyByUnitId.set(tenancy.propertyUnitId, tenancy);
+      }
+    }
+
     const unitsWithCharges = units.map((unit) => {
       const unitChargeLinks = chargesByUnitId[unit.id] || [];
       const unitChargeById = new Map(
@@ -285,11 +301,15 @@ export class PropertyUnitsService {
         ]),
       );
       const activeTenant = activeTenancyByUnitId.get(unit.id);
+      const latestTenancy = latestTenancyByUnitId.get(unit.id);
       return {
         ...unit,
         tenantName: activeTenant
           ? `${activeTenant.firstName} ${activeTenant.lastName}`
           : null,
+        tenant_id: activeTenant?.id ?? null,
+        assigned_at: latestTenancy?.assignedAt ?? null,
+        unassigned_at: latestTenancy?.unassignedAt ?? null,
         charges: unitChargeLinks.map((unitCharge) => {
           const charge = chargeById.get(unitCharge.propertyChargeId);
           return {
