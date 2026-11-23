@@ -642,7 +642,10 @@ export class ReportsService {
     const propertyUnits = await this.prisma.db.orm.public.PropertyUnit.where((unit) =>
       and(
         unit.managerId.eq(managerId),
-        unit.status.eq(PropertyUnitStatus.OCCUPIED),
+        unit.status.in([
+          PropertyUnitStatus.OCCUPIED,
+          PropertyUnitStatus.NOTICE,
+        ]),
         ...(dto.propertyId ? [unit.propertyId.eq(dto.propertyId)] : []),
       ),
     ).all();
@@ -681,6 +684,7 @@ export class ReportsService {
           unit.status.in([
             PropertyUnitStatus.AVAILABLE,
             PropertyUnitStatus.OCCUPIED,
+            PropertyUnitStatus.NOTICE,
           ]),
           ...(dto.propertyId ? [unit.propertyId.eq(dto.propertyId)] : []),
         ),
