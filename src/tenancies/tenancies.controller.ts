@@ -35,7 +35,7 @@ export class TenanciesController {
   constructor(private readonly tenanciesService: TenanciesService) {}
 
   @Post()
-  @ApiOperation({ summary: 'Assign a tenant to a property' })
+  @ApiOperation({ summary: 'Assign a tenant to a property unit' })
   assign(
     @CurrentUser() user: authenticatedUserType.AuthenticatedUser,
     @Body() dto: AssignTenantDto,

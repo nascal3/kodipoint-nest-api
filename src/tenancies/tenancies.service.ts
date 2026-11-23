@@ -124,13 +124,14 @@ export class TenanciesService {
     const existing = await this.prisma.db.orm.public.Tenancy.where({
       managerId,
       propertyId: dto.propertyId,
+      propertyUnitId: propertyUnit.id,
       tenantId: dto.tenantId,
       status: TenancyStatus.ACTIVE,
     }).first();
 
     if (existing) {
       throw new ConflictException(
-        'Tenant is already assigned to this property',
+        'Tenant is already assigned to this property unit',
       );
     }
 
