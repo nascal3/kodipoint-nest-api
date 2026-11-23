@@ -16,6 +16,7 @@ import { UpdatePropertyUnitDto } from './dto/update-property-unit.dto';
 import { UpdatePropertyUnitChargeRateDto } from './dto/update-property-unit-charge-rate.dto';
 import { ListPropertyUnitsDto } from './dto/list-property-units.dto';
 import {PropertyStatus} from "@/properties/dto/create-property.dto";
+import { TenancyStatus } from '@/tenancies/dto/assign-tenant.dto';
 
 export interface PaginationMeta {
   page: number;
@@ -228,8 +229,10 @@ export class PropertyUnitsService {
       ).all(),
     ]);
 
-    const activeTenancies = tenancies.filter(
-      (tenancy) => tenancy.status === 'ACTIVE',
+    const currentTenancies = tenancies.filter(
+      (tenancy) =>
+        tenancy.status === TenancyStatus.ACTIVE ||
+        tenancy.status === TenancyStatus.NOTICE,
     );
 
     const chargesByUnitId = unitCharges.reduce(
@@ -247,7 +250,7 @@ export class PropertyUnitsService {
       (unitCharge) => unitCharge.propertyChargeId,
     );
     const uniqueChargeIds = [...new Set(chargeIds)];
-    const tenantIds = activeTenancies.map((tenancy) => tenancy.tenantId);
+    const tenantIds = currentTenancies.map((tenancy) => tenancy.tenantId);
 
     const [charges, tenants] = await Promise.all([
       uniqueChargeIds.length > 0
@@ -271,14 +274,14 @@ export class PropertyUnitsService {
     );
 
     const activeTenancyByUnitId = new Map(
-      activeTenancies.map((tenancy) => [
+      currentTenancies.map((tenancy) => [
         tenancy.propertyUnitId,
         tenantById.get(tenancy.tenantId),
       ]),
     );
 
     const activeTenancyIdByUnitId = new Map(
-      activeTenancies.map((tenancy) => [
+      currentTenancies.map((tenancy) => [
         tenancy.propertyUnitId,
         tenancy.id,
       ]),
@@ -358,7 +361,7 @@ export class PropertyUnitsService {
       await this.prisma.db.orm.public.Tenancy.where((tenancy) =>
         and(
           tenancy.propertyUnitId.eq(unitId),
-          tenancy.status.eq('ACTIVE'),
+          tenancy.status.in([TenancyStatus.ACTIVE, TenancyStatus.NOTICE]),
         ),
       ).first();
 
