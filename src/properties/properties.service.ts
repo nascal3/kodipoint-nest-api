@@ -150,27 +150,28 @@ export class PropertiesService {
       })),
     ]);
 
-    const activeTenancies = await this.prisma.db.orm.public.Tenancy.where({
-      managerId,
-      status: 'ACTIVE',
-    }).all();
+    const propertyIds = properties.map((property) => property.id);
 
-    const propertyUnits = await this.prisma.db.orm.public.PropertyUnit.where({
-      managerId,
-    }).all();
+    const propertyUnits = await this.prisma.db.orm.public.PropertyUnit.where(
+      (unit) =>
+        and(
+          unit.managerId.eq(managerId),
+          unit.propertyId.in(propertyIds),
+        ),
+    ).all();
 
     const propertiesWithOccupancy = properties.map((property) => {
-      const propertyTenancies = activeTenancies.filter(
-        (tenancy) => tenancy.propertyId === property.id,
-      );
-
-      const occupiedUnits = new Set(
-        propertyTenancies.map((tenancy) => tenancy.propertyUnit),
-      ).size;
-
       const propertyUnitsFiltered = propertyUnits.filter(
-        (unit) => unit.propertyId === property.id && unit.status !== PropertyUnitStatus.ARCHIVED,
+        (unit) =>
+          unit.propertyId === property.id &&
+          unit.status !== PropertyUnitStatus.ARCHIVED,
       );
+
+      const occupiedUnits = propertyUnitsFiltered.filter(
+        (unit) =>
+          unit.status === PropertyUnitStatus.OCCUPIED ||
+          unit.status === PropertyUnitStatus.NOTICE,
+      ).length;
 
       const rents = propertyUnitsFiltered.map((unit) =>
         Number(unit.marketRent),
@@ -178,7 +179,9 @@ export class PropertiesService {
       const minRent = rents.length > 0 ? Math.min(...rents) : 0;
       const maxRent = rents.length > 0 ? Math.max(...rents) : 0;
 
-      const totalUnits = property.unitCount;
+      const totalUnits = propertyUnitsFiltered.filter(
+        (unit) => unit.status !== PropertyUnitStatus.MAINTENANCE,
+      ).length;
       const occupancyRate =
         totalUnits === 0
           ? 0
@@ -226,7 +229,9 @@ export class PropertiesService {
     ).all();
 
     const occupiedUnits = propertyUnits.filter(
-      (unit) => unit.status === PropertyUnitStatus.OCCUPIED,
+      (unit) =>
+        unit.status === PropertyUnitStatus.OCCUPIED ||
+        unit.status === PropertyUnitStatus.NOTICE,
     ).length;
     const totalUnits = propertyUnits.filter(
       (unit) =>
