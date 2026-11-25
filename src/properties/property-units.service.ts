@@ -650,20 +650,15 @@ export class PropertyUnitsService {
     propertyChargeIds?: string[];
     propertyCharges?: PropertyUnitChargeInput[];
   }): PropertyUnitChargeInput[] {
-    const chargeIds = input.propertyChargeIds ?? [];
     const charges = input.propertyCharges ?? [];
-
-    if (chargeIds.length > 0 && charges.length > 0) {
-      throw new BadRequestException(
-        'Use either propertyChargeIds or propertyCharges, not both',
-      );
-    }
 
     if (charges.length > 0) {
       return charges;
     }
 
-    return chargeIds.map((propertyChargeId) => ({ propertyChargeId }));
+    return (input.propertyChargeIds ?? []).map((propertyChargeId) => ({
+      propertyChargeId,
+    }));
   }
 
   private async validatePropertyCharges(
