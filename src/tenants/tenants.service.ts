@@ -7,6 +7,7 @@ import { ListTenantsDto } from './dto/list-tenants.dto';
 import { SearchTenantsDto } from './dto/search-tenants.dto';
 import { UpdateTenantDto } from './dto/update-tenant.dto';
 import {TenancyStatus} from "@/tenancies/dto/assign-tenant.dto";
+import {PropertyUnitStatus} from "@/properties/dto/create-property-unit.dto";
 
 export interface TenantListResponse {
   data: object[];
@@ -37,7 +38,6 @@ export class TenantsService {
       emergencyContactName: dto.emergencyContactName,
       emergencyContactPhone: dto.emergencyContactPhone,
       emergencyContactRelationship: dto.emergencyContactRelationship,
-      status: TenantStatus.ACTIVE,
     });
   }
 
@@ -141,7 +141,7 @@ export class TenantsService {
 
     const [data, total] = await Promise.all([
       tenants
-        .select('id', 'firstName', 'lastName', 'email', 'phone', 'status', 'createdAt')
+        .select('id', 'firstName', 'lastName', 'email', 'phone', 'createdAt')
         .orderBy((tenant) => tenant.createdAt.desc())
         .offset(offset)
         .limit(limit)
@@ -183,14 +183,21 @@ export class TenantsService {
   async update(managerId: string, tenantId: string, dto: UpdateTenantDto) {
     await this.findOne(managerId, tenantId);
 
+    /*
+     * Tenant status is derived from tenancy status, so `status`
+     * is not a Tenant column. It is still accepted on the DTO to
+     * trigger the tenancy side-effect below.
+     */
+    const { status: tenantStatus, ...tenantData } = dto;
+
     const updatedTenant = await this.prisma.db.orm.public.Tenant.where({
       id: tenantId,
       managerId,
     }).update({
-      ...dto,
+      ...tenantData,
     });
 
-    if (dto.status === TenantStatus.NOTICE) {
+    if (tenantStatus === TenantStatus.NOTICE) {
       await this.prisma.db.orm.public.Tenancy.where({
         tenantId,
         managerId,
@@ -206,11 +213,38 @@ export class TenantsService {
   async archive(managerId: string, tenantId: string) {
     await this.findOne(managerId, tenantId);
 
-    return this.prisma.db.orm.public.Tenant.where({
-      id: tenantId,
+    /*
+     * Archiving a tenant ends their active tenancies and frees
+     * their units, mirroring the unassign flow.
+     */
+    const tenancies = await this.prisma.db.orm.public.Tenancy.where({
+      tenantId,
       managerId,
-    }).update({
-      status: TenantStatus.ENDED,
-    });
+    })
+      .where((tenancy) =>
+        tenancy.status.in([TenancyStatus.ACTIVE, TenancyStatus.NOTICE]),
+      )
+      .all();
+
+    for (const tenancy of tenancies) {
+      await this.prisma.db.orm.public.Tenancy.where({
+        id: tenancy.id,
+        managerId,
+      }).update({
+        status: TenancyStatus.ENDED,
+        unassignedAt: new Date(),
+      });
+
+      if (tenancy.propertyUnitId) {
+        await this.prisma.db.orm.public.PropertyUnit.where({
+          id: tenancy.propertyUnitId,
+          managerId,
+        }).update({
+          status: PropertyUnitStatus.AVAILABLE,
+        });
+      }
+    }
+
+    return this.findOne(managerId, tenantId);
   }
 }

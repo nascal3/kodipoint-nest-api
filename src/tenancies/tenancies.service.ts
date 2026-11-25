@@ -7,7 +7,6 @@ import {
 import { DatabaseService } from '@/database/database.service';
 import { AssignTenantDto, TenancyStatus } from './dto/assign-tenant.dto';
 import { ListTenanciesDto } from './dto/list-tenancies.dto';
-import { TenantStatus } from '@/tenants/dto/create-tenant.dto';
 import { Temporal } from '@js-temporal/polyfill';
 import {PropertyUnitStatus} from "@/properties/dto/create-property-unit.dto";
 
@@ -198,10 +197,6 @@ export class TenanciesService {
     const unitStatus = endDateValue > new Date()
       ? PropertyUnitStatus.NOTICE : PropertyUnitStatus.AVAILABLE;
 
-    const tenantStatus = status === TenancyStatus.NOTICE
-      ? TenantStatus.NOTICE
-      : TenantStatus.ENDED;
-
     await this.prisma.db.orm.public.Tenancy.where({
       id: tenancyId,
       managerId,
@@ -209,13 +204,6 @@ export class TenanciesService {
       status,
       endDate: Temporal.PlainDate.from(endDate.slice(0, 10)),
       unassignedAt: Temporal.Now.instant(),
-    });
-
-    await this.prisma.db.orm.public.Tenant.where({
-      id: tenancy.tenantId,
-      managerId,
-    }).update({
-      status: tenantStatus,
     });
 
     if (tenancy.propertyUnitId) {
