@@ -181,8 +181,11 @@ export class TenanciesService {
     const tenancy = await this.prisma.db.orm.public.Tenancy.where({
       id: tenancyId,
       managerId,
-      status: TenancyStatus.ACTIVE,
-    }).first();
+    })
+      .where((tenancy) =>
+        tenancy.status.in([TenancyStatus.ACTIVE, TenancyStatus.NOTICE]),
+      )
+      .first();
 
     if (!tenancy) {
       throw new NotFoundException('Active tenancy not found');
