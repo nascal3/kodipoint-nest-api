@@ -321,6 +321,8 @@ export class PropertyUnitsService {
         tenancyId: activeTenancyIdByUnitId.get(unit.id) ?? null,
         assigned_at: latestTenancy?.assignedAt ?? null,
         unassigned_at: latestTenancy?.unassignedAt ?? null,
+        startDate: latestTenancy?.startDate ?? null,
+        endDate: latestTenancy?.endDate ?? null,
         charges: unitChargeLinks.map((unitCharge) => {
           const charge = chargeById.get(unitCharge.propertyChargeId);
           return {
