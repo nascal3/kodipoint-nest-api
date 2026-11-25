@@ -54,6 +54,44 @@ export class DocumentsService {
       managerId,
     }).first();
 
+    /*
+     * Payment activity is tracked through allocations so partial
+     * payments and prepayment credits show the amount actually
+     * applied to this invoice rather than the full payment total.
+     */
+    const invoiceAllocations = await this.prisma.db.orm.public
+      .PaymentAllocation.where({
+        managerId,
+        invoiceId: invoice.id,
+      })
+      .all();
+
+    const paymentRows = invoiceAllocations.length
+      ? await Promise.all(
+          invoiceAllocations.map(async (alloc: any) => {
+            const allocPayment = await this.prisma.db.orm.public.Payment.where(
+              {
+                id: alloc.paymentId,
+                managerId,
+              },
+            ).first();
+
+            return {
+              paymentDate: allocPayment?.paymentDate ?? alloc.allocatedAt,
+              amount: alloc.amount,
+              paymentMethod: allocPayment?.paymentMethod ?? '—',
+              referenceNumber:
+                allocPayment?.referenceNumber ?? alloc.notes ?? null,
+            };
+          }),
+        )
+      : (invoice.payments ?? []).map((p: any) => ({
+          paymentDate: p.paymentDate,
+          amount: p.amount,
+          paymentMethod: p.paymentMethod,
+          referenceNumber: p.referenceNumber,
+        }));
+
     const buffer = await this.pdfService.render((doc) =>
       buildInvoicePdf(doc, {
         manager: {
@@ -81,12 +119,7 @@ export class DocumentsService {
           unitAmount: i.unitAmount,
           totalAmount: i.totalAmount,
         })),
-        payments: (invoice.payments ?? []).map((p: any) => ({
-          paymentDate: p.paymentDate,
-          amount: p.amount,
-          paymentMethod: p.paymentMethod,
-          referenceNumber: p.referenceNumber,
-        })),
+        payments: paymentRows,
         tenant: invoice.tenant,
         property: invoice.property,
         tenancy: {
@@ -200,25 +233,52 @@ export class DocumentsService {
       propertyUnit = tenancy?.propertyUnit ?? '—';
     }
 
-    // Enrich allocations with their invoice numbers
-    const rawAllocations: any[] = receipt.allocations ?? [];
-    const allocations = await Promise.all(
-      rawAllocations.map(async (alloc) => {
-        const allocInvoice = await this.prisma.db.orm.public.Invoice.where({
-          id: alloc.invoiceId,
-          managerId,
-        }).first();
+    /*
+     * Each receipt certifies a specific amount: the linked
+     * allocation's amount, or the unallocated remainder carried
+     * forward as tenant credit.
+     */
+    const ownAllocation = receipt.paymentAllocation ?? null;
+    const receiptAmount =
+      ownAllocation?.amount ?? receipt.amount ?? receipt.payment.amount;
 
-        return {
-          id: alloc.id,
-          invoiceId: alloc.invoiceId,
-          invoiceNumber: allocInvoice?.invoiceNumber ?? '—',
-          amount: alloc.amount,
+    const enrichAllocation = async (alloc: any) => {
+      const allocInvoice = await this.prisma.db.orm.public.Invoice.where({
+        id: alloc.invoiceId,
+        managerId,
+      }).first();
+
+      return {
+        id: alloc.id,
+        invoiceId: alloc.invoiceId,
+        invoiceNumber: allocInvoice?.invoiceNumber ?? '—',
+        amount: alloc.amount,
+        paymentReference:
+          receipt.payment?.referenceNumber ?? receipt.payment?.id,
+      };
+    };
+
+    let allocations: any[];
+
+    if (ownAllocation) {
+      allocations = [await enrichAllocation(ownAllocation)];
+    } else if (receipt.amount) {
+      allocations = [
+        {
+          id: 'carried-forward',
+          invoiceId: invoice.id,
+          invoiceNumber: invoice.invoiceNumber,
+          amount: receiptAmount,
           paymentReference:
             receipt.payment?.referenceNumber ?? receipt.payment?.id,
-        };
-      }),
-    );
+          label: 'Unallocated balance — carried forward as credit',
+        },
+      ];
+    } else {
+      allocations = await Promise.all(
+        (receipt.allocations ?? []).map(enrichAllocation),
+      );
+    }
 
     const buffer = await this.pdfService.render((doc) =>
       buildReceiptPdf(doc, {
@@ -233,6 +293,7 @@ export class DocumentsService {
           id: receipt.id,
           receiptNumber: receipt.receiptNumber,
           issuedAt: receipt.issuedAt,
+          amount: receiptAmount,
           notes: receipt.notes,
         },
         payment: {

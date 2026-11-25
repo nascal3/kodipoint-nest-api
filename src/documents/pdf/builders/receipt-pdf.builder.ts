@@ -30,6 +30,7 @@ export interface ReceiptPdfData {
     id: string;
     receiptNumber: string;
     issuedAt: Date | string;
+    amount?: string | null;
     notes?: string | null;
   };
   payment: {
@@ -51,6 +52,7 @@ export interface ReceiptPdfData {
     invoiceNumber: string;
     amount: string;
     paymentReference?: string | null;
+    label?: string | null;
   }>;
   tenant: {
     firstName: string;
@@ -87,6 +89,7 @@ export function buildReceiptPdf(
   const tenantName = tenantFullName(data.tenant);
   const statusLabel = formatPaymentStatus(data.payment.status);
   const statusColor = paymentStatusColor(data.payment.status);
+  const amountReceived = data.receipt.amount ?? data.payment.amount;
 
   let y = doc.page.margins.top;
 
@@ -242,7 +245,7 @@ export function buildReceiptPdf(
     .font('Helvetica-Bold')
     .fontSize(28)
     .fillColor(COLORS.accent)
-    .text(`${currency} ${formatAmount(data.payment.amount)}`, left, y);
+    .text(`${currency} ${formatAmount(amountReceived)}`, left, y);
 
   y += 46;
 
@@ -281,13 +284,15 @@ export function buildReceiptPdf(
           id: 'primary',
           invoiceId: data.invoice.id,
           invoiceNumber: data.invoice.invoiceNumber,
-          amount: data.payment.amount,
+          amount: amountReceived,
           paymentReference: data.payment.referenceNumber ?? data.payment.id,
         },
       ];
 
   for (const alloc of rows) {
-    const docLabel = `Invoice ${alloc.invoiceNumber}  (Ref: ${alloc.invoiceId})`;
+    const docLabel =
+      alloc.label ??
+      `Invoice ${alloc.invoiceNumber}  (Ref: ${alloc.invoiceId})`;
     const refLabel =
       alloc.paymentReference ?? data.payment.referenceNumber ?? data.payment.id;
     const amountLabel = formatCurrency(alloc.amount, currency);
@@ -338,7 +343,7 @@ export function buildReceiptPdf(
   const acknowledgment =
     `This document serves as an official proof of payment for invoice ` +
     `${data.invoice.invoiceNumber} in the amount of ` +
-    `${currency} ${formatAmount(data.payment.amount)} processed via ` +
+    `${currency} ${formatAmount(amountReceived)} processed via ` +
     `${data.payment.paymentMethod}.`;
 
   doc

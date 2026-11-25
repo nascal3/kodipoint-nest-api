@@ -209,11 +209,6 @@ model PropertyUnitCharge {
   @@map("property_unit_charges")
 }
 
-enum TenantStatus {
-  ACTIVE
-  NOTICE
-  ENDED
-}
 enum IdentificationDoc {
   NATIONAL_ID
   PASSPORT
@@ -231,7 +226,6 @@ model Tenant {
   emergencyContactName         String             @map("emergency_contact_name")
   emergencyContactPhone        String             @map("emergency_contact_phone")
   emergencyContactRelationship String             @map("emergency_contact_relationship")
-  status                       TenantStatus       @default(ACTIVE)
 
   createdAt temporal.createdAt() @map("created_at")
   updatedAt temporal.updatedAt() @map("updated_at")
@@ -385,7 +379,7 @@ model Payment {
   invoice  Invoice  @relation(fields: [invoiceId], references: [id])
   tenant   Tenant   @relation(fields: [tenantId], references: [id])
 
-  receipt Receipt?
+  receipts Receipt[]
 
   allocations PaymentAllocation[]
 
@@ -398,17 +392,20 @@ model Payment {
 }
 
 model Receipt {
-  id            Uuid     @id @default(uuid())
-  managerId     Uuid     @map("manager_id")
-  paymentId     Uuid     @unique @map("payment_id")
-  receiptNumber String   @unique @map("receipt_number")
-  issuedAt      DateTime @map("issued_at")
-  notes         String?
+  id                  Uuid     @id @default(uuid())
+  managerId           Uuid     @map("manager_id")
+  paymentId           Uuid     @map("payment_id")
+  paymentAllocationId Uuid?    @unique @map("payment_allocation_id")
+  amount              Decimal?
+  receiptNumber       String   @unique @map("receipt_number")
+  issuedAt            DateTime @map("issued_at")
+  notes               String?
 
   createdAt temporal.createdAt() @map("created_at")
 
-  manager User    @relation(fields: [managerId], references: [id])
-  payment Payment @relation(fields: [paymentId], references: [id])
+  manager           User              @relation(fields: [managerId], references: [id])
+  payment           Payment           @relation(fields: [paymentId], references: [id])
+  paymentAllocation PaymentAllocation? @relation(fields: [paymentAllocationId], references: [id])
 
   @@index([managerId])
   @@map("receipts")
@@ -450,6 +447,8 @@ model PaymentAllocation {
   manager User    @relation(fields: [managerId], references: [id])
   payment Payment @relation(fields: [paymentId], references: [id])
   invoice Invoice @relation(fields: [invoiceId], references: [id])
+
+  receipt Receipt?
 
   @@index([managerId])
   @@index([paymentId])

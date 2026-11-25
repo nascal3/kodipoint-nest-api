@@ -6,16 +6,21 @@ import {
 
 import { DatabaseService } from '@/database/database.service';
 import { PaymentStatus } from '@/payments/dto/create-payment.dto';
+import { generateReceiptNumber } from '@/common/utils/receipt-number.util';
+import { money } from '@/common/utils/money.util';
+import Decimal from 'decimal.js';
 
 @Injectable()
 export class ReceiptsService {
   constructor(private readonly prisma: DatabaseService) {}
 
   /**
-   * Create one receipt for a completed payment.
+   * Create receipts for a completed payment.
    *
-   * A payment can only have one receipt because
-   * Payment.paymentId is unique in the contract.
+   * One receipt is produced per payment allocation so a single
+   * payment covering several invoices yields one receipt per
+   * invoice/period. Allocations that already have a receipt are
+   * skipped, which keeps this endpoint idempotent.
    */
   async createForPayment(managerId: string, paymentId: string) {
     return this.prisma.db.transaction(async (tx) => {
@@ -34,25 +39,102 @@ export class ReceiptsService {
         );
       }
 
-      const existingReceipt = await tx.orm.public.Receipt.where({
-        paymentId,
+      const allocations = await tx.orm.public.PaymentAllocation.where({
         managerId,
-      }).first();
+        paymentId,
+      }).all();
 
-      if (existingReceipt) {
-        return this.getReceiptById(managerId, existingReceipt.id);
+      const existingReceipts = await tx.orm.public.Receipt.where({
+        managerId,
+        paymentId,
+      }).all();
+
+      const receiptedAllocationIds = new Set(
+        existingReceipts
+          .map((receipt: any) => receipt.paymentAllocationId)
+          .filter(Boolean),
+      );
+
+      if (!allocations.length) {
+        if (existingReceipts.length) {
+          return Promise.all(
+            existingReceipts.map((receipt: any) =>
+              this.getReceiptById(managerId, receipt.id),
+            ),
+          );
+        }
+
+        const receipt = await tx.orm.public.Receipt.create({
+          managerId,
+          paymentId,
+          amount: payment.amount,
+          receiptNumber: generateReceiptNumber(),
+          issuedAt: new Date(),
+        });
+
+        return [await this.getReceiptById(managerId, receipt.id)];
       }
 
-      const receiptNumber = await this.generateReceiptNumber();
+      const results = [];
 
-      const receipt = await tx.orm.public.Receipt.create({
-        managerId,
-        paymentId,
-        receiptNumber,
-        issuedAt: new Date(),
-      });
+      for (const allocation of allocations) {
+        if (receiptedAllocationIds.has(allocation.id)) {
+          const existing = existingReceipts.find(
+            (receipt: any) => receipt.paymentAllocationId === allocation.id,
+          );
 
-      return this.getReceiptById(managerId, receipt.id);
+          if (existing) {
+            results.push(await this.getReceiptById(managerId, existing.id));
+          }
+
+          continue;
+        }
+
+        const receipt = await tx.orm.public.Receipt.create({
+          managerId,
+          paymentId,
+          paymentAllocationId: allocation.id,
+          amount: allocation.amount,
+          receiptNumber: generateReceiptNumber(),
+          issuedAt: new Date(),
+        });
+
+        results.push(await this.getReceiptById(managerId, receipt.id));
+      }
+
+      /*
+       * Receipts without an allocation certify unallocated payment
+       * balance carried forward as tenant credit.
+       */
+      const allocatedTotal = allocations.reduce(
+        (total: Decimal, allocation: any) =>
+          total.plus(money(allocation.amount)),
+        new Decimal(0),
+      );
+
+      const remainder = money(payment.amount).minus(allocatedTotal);
+      const remainderReceipts = existingReceipts.filter(
+        (receipt: any) => !receipt.paymentAllocationId,
+      );
+
+      if (remainder.greaterThan(0) && !remainderReceipts.length) {
+        const receipt = await tx.orm.public.Receipt.create({
+          managerId,
+          paymentId,
+          amount: remainder.toFixed(2),
+          receiptNumber: generateReceiptNumber(),
+          issuedAt: new Date(),
+          notes: 'Unallocated payment balance carried forward',
+        });
+
+        remainderReceipts.push(receipt);
+      }
+
+      for (const receipt of remainderReceipts) {
+        results.push(await this.getReceiptById(managerId, receipt.id));
+      }
+
+      return results;
     });
   }
 
@@ -64,19 +146,34 @@ export class ReceiptsService {
   }
 
   /**
-   * Find a receipt using its payment ID.
+   * Find all receipts issued for a payment.
    */
   async findByPayment(managerId: string, paymentId: string) {
-    const receipt = await this.prisma.db.orm.public.Receipt.where({
+    const payment = await this.prisma.db.orm.public.Payment.where({
+      id: paymentId,
       managerId,
-      paymentId,
     }).first();
 
-    if (!receipt) {
-      throw new NotFoundException('Receipt not found for this payment');
+    if (!payment) {
+      throw new NotFoundException('Payment not found');
     }
 
-    return this.getReceiptById(managerId, receipt.id);
+    const receipts = await this.prisma.db.orm.public.Receipt.where({
+      managerId,
+      paymentId,
+    }).all();
+
+    if (!receipts.length) {
+      throw new NotFoundException('No receipts found for this payment');
+    }
+
+    const results = [];
+
+    for (const receipt of receipts) {
+      results.push(await this.getReceiptById(managerId, receipt.id));
+    }
+
+    return results;
   }
 
   /**
@@ -103,29 +200,14 @@ export class ReceiptsService {
     const receipt = await this.getReceiptById(managerId, receiptId);
 
     return {
-      receiptNumber: receipt.receiptNumber,
-      issuedAt: receipt.issuedAt,
-      notes: receipt.notes,
+      ...receipt,
       payment: receipt.payment,
+      paymentAllocation: receipt.paymentAllocation,
       invoice: receipt.invoice,
       tenant: receipt.tenant,
       property: receipt.property,
+      allocations: receipt.allocations,
     };
-  }
-
-  /**
-   * Generate a receipt number.
-   *
-   * For production, replace this with a database-backed
-   * sequence or numbering table if strict sequential
-   * numbering is required.
-   */
-  private async generateReceiptNumber(): Promise<string> {
-    const date = new Date().toISOString().slice(0, 10).replace(/-/g, '');
-
-    const random = Math.floor(100000 + Math.random() * 900000);
-
-    return `RCT-${date}-${random}`;
   }
 
   /**
@@ -154,8 +236,29 @@ export class ReceiptsService {
       throw new NotFoundException('Receipt payment not found');
     }
 
+    /*
+     * Receipts linked to an allocation resolve their invoice
+     * through it. Legacy receipts fall back to the invoice the
+     * payment was recorded against.
+     */
+    let invoiceId = payment.invoiceId;
+    let paymentAllocation = null;
+
+    if (receipt.paymentAllocationId) {
+      paymentAllocation = await this.prisma.db.orm.public.PaymentAllocation.where(
+        {
+          id: receipt.paymentAllocationId,
+          managerId,
+        },
+      ).first();
+
+      if (paymentAllocation) {
+        invoiceId = paymentAllocation.invoiceId;
+      }
+    }
+
     const invoice = await this.prisma.db.orm.public.Invoice.where({
-      id: payment.invoiceId,
+      id: invoiceId,
       managerId,
     }).first();
 
@@ -191,6 +294,7 @@ export class ReceiptsService {
     return {
       ...receipt,
       payment,
+      paymentAllocation,
       invoice,
       tenant,
       property,

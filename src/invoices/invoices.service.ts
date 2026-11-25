@@ -9,6 +9,8 @@ import { DatabaseService } from '@/database/database.service';
 import { CreateInvoiceDto } from './dto/create-invoice.dto';
 import { ListInvoicesDto, InvoiceStatus } from './dto/list-invoices.dto';
 import { TenancyStatus } from '@/tenancies/dto/assign-tenant.dto';
+import { PaymentStatus } from '@/payments/dto/create-payment.dto';
+import { generateReceiptNumber } from '@/common/utils/receipt-number.util';
 import { UpdateInvoiceDto } from './dto/update-invoice.dto';
 import { SendInvoiceDto, InvoiceDeliveryChannel } from './dto/send-invoice.dto';
 import Decimal from 'decimal.js';
@@ -204,9 +206,38 @@ export class InvoicesService {
           invoiceId: previousInvoice.id,
         }).all();
 
-        const amountPaid = paymentAllocations.reduce((total, allocation) => {
-          return total.plus(new Decimal(String(allocation.amount)));
-        }, new Decimal(0));
+        const allocationPaymentIds = [
+          ...new Set(
+            paymentAllocations.map(
+              (allocation: any) => allocation.paymentId,
+            ),
+          ),
+        ];
+
+        const allocationPayments = allocationPaymentIds.length
+          ? await tx.orm.public.Payment.where((payment) =>
+              and(
+                payment.managerId.eq(managerId),
+                payment.id.in(allocationPaymentIds),
+              ),
+            ).all()
+          : [];
+
+        const successfulPaymentIds = new Set(
+          allocationPayments
+            .filter(
+              (payment: any) => payment.status === PaymentStatus.SUCCESSFUL,
+            )
+            .map((payment: any) => payment.id),
+        );
+
+        const amountPaid = paymentAllocations
+          .filter((allocation: any) =>
+            successfulPaymentIds.has(allocation.paymentId),
+          )
+          .reduce((total, allocation) => {
+            return total.plus(new Decimal(String(allocation.amount)));
+          }, new Decimal(0));
 
         /*
          * Get balances already transferred from the
@@ -351,7 +382,49 @@ export class InvoicesService {
       }
 
       /*
-       * 13. Return the invoice and a useful calculation
+       * 13. Apply unallocated balances from previous successful
+       * payments (tenant credit) to the new invoice, oldest
+       * payment first. Each application creates a payment
+       * allocation and a receipt so the credit is visible on
+       * both sides.
+       */
+      const prepaymentsApplied = await this.applyPaymentCredits(
+        tx,
+        managerId,
+        invoice,
+      );
+
+      let amountPaid = new Decimal(0);
+      let balanceDue = new Decimal(String(invoice.totalAmount));
+      let finalStatus = invoice.status;
+
+      if (prepaymentsApplied.length) {
+        amountPaid = prepaymentsApplied.reduce(
+          (total, applied) => total.plus(new Decimal(String(applied.amount))),
+          new Decimal(0),
+        );
+
+        balanceDue = Decimal.max(
+          new Decimal(String(invoice.totalAmount)).minus(amountPaid),
+          new Decimal(0),
+        );
+
+        finalStatus = balanceDue.equals(0)
+          ? InvoiceStatus.PAID
+          : InvoiceStatus.PARTIALLY_PAID;
+
+        await tx.orm.public.Invoice.where({
+          id: invoice.id,
+          managerId,
+        }).update({
+          amountPaid: amountPaid.toFixed(2),
+          balanceDue: balanceDue.toFixed(2),
+          status: finalStatus,
+        });
+      }
+
+      /*
+       * 14. Return the invoice and a useful calculation
        * summary for the API response.
        */
       const serviceChargesTotal = charges.reduce((total, charge) => {
@@ -364,8 +437,14 @@ export class InvoicesService {
         return total.plus(chargeAmount);
       }, new Decimal(0));
 
+      const finalInvoice =
+        (await tx.orm.public.Invoice.where({
+          id: invoice.id,
+          managerId,
+        }).first()) ?? invoice;
+
       return {
-        invoice,
+        invoice: finalInvoice,
         invoiceItems: createdInvoiceItems,
         calculation: {
           rent: rentAmount.toFixed(2),
@@ -373,8 +452,8 @@ export class InvoicesService {
           balanceBroughtForward: balanceBroughtForward.toFixed(2),
           subtotal: subtotal.toFixed(2),
           totalAmount: subtotal.toFixed(2),
-          amountPaid: '0.00',
-          balanceDue: subtotal.toFixed(2),
+          amountPaid: amountPaid.toFixed(2),
+          balanceDue: balanceDue.toFixed(2),
         },
         balanceTransfers: balancesToCarryForward.map((balance) => ({
           sourceInvoiceId: balance.sourceInvoiceId,
@@ -382,8 +461,101 @@ export class InvoicesService {
           amount: balance.amount.toFixed(2),
           targetInvoiceId: invoice.id,
         })),
+        prepaymentsApplied,
       };
     });
+  }
+
+  /**
+   * Apply unallocated balances from the tenant's previous
+   * successful payments to a newly created invoice.
+   *
+   * Payments are consumed oldest-first. Each application creates
+   * a PaymentAllocation against the new invoice plus a Receipt,
+   * so the prepayment shows up as amountPaid on the invoice and
+   * as a receipt on the payment.
+   */
+  private async applyPaymentCredits(
+    tx: any,
+    managerId: string,
+    invoice: any,
+  ) {
+    const payments = await tx.orm.public.Payment.where({
+      managerId,
+      tenantId: invoice.tenantId,
+      propertyId: invoice.propertyId,
+      status: PaymentStatus.SUCCESSFUL,
+    }).all();
+
+    const ordered = payments.sort(
+      (a: any, b: any) =>
+        new Date(a.paymentDate).getTime() - new Date(b.paymentDate).getTime(),
+    );
+
+    let creditRemaining = new Decimal(String(invoice.totalAmount));
+    const applied: Array<{
+      paymentId: string;
+      allocationId: string;
+      receiptId: string;
+      amount: string;
+    }> = [];
+
+    for (const payment of ordered) {
+      if (!creditRemaining.greaterThan(0)) {
+        break;
+      }
+
+      const allocations = await tx.orm.public.PaymentAllocation.where({
+        managerId,
+        paymentId: payment.id,
+      }).all();
+
+      const allocatedAmount = allocations.reduce(
+        (total: Decimal, allocation: any) =>
+          total.plus(new Decimal(String(allocation.amount))),
+        new Decimal(0),
+      );
+
+      const remainder = new Decimal(String(payment.amount)).minus(
+        allocatedAmount,
+      );
+
+      if (!remainder.greaterThan(0)) {
+        continue;
+      }
+
+      const amount = Decimal.min(remainder, creditRemaining);
+
+      const allocation = await tx.orm.public.PaymentAllocation.create({
+        managerId,
+        paymentId: payment.id,
+        invoiceId: invoice.id,
+        amount: amount.toFixed(2),
+        allocatedAt: new Date(),
+        notes: 'Unallocated payment balance applied to invoice',
+      });
+
+      const receipt = await tx.orm.public.Receipt.create({
+        managerId,
+        paymentId: payment.id,
+        paymentAllocationId: allocation.id,
+        amount: amount.toFixed(2),
+        receiptNumber: generateReceiptNumber(),
+        issuedAt: new Date(),
+        notes: 'Prepayment applied to invoice',
+      });
+
+      applied.push({
+        paymentId: payment.id,
+        allocationId: allocation.id,
+        receiptId: receipt.id,
+        amount: amount.toFixed(2),
+      });
+
+      creditRemaining = creditRemaining.minus(amount);
+    }
+
+    return applied;
   }
 
   async findAll(
@@ -493,10 +665,17 @@ export class InvoicesService {
       managerId,
     }).all();
 
+    const paymentAllocations =
+      await this.prisma.db.orm.public.PaymentAllocation.where({
+        invoiceId: invoice.id,
+        managerId,
+      }).all();
+
     return {
       ...invoice,
       items,
       payments,
+      paymentAllocations,
     };
   }
 

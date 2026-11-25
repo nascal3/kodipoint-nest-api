@@ -245,23 +245,6 @@
               }
             ]
           },
-          "TenantStatus": {
-            "codecId": "pg/text@1",
-            "members": [
-              {
-                "name": "ACTIVE",
-                "value": "ACTIVE"
-              },
-              {
-                "name": "NOTICE",
-                "value": "NOTICE"
-              },
-              {
-                "name": "ENDED",
-                "value": "ENDED"
-              }
-            ]
-          },
           "UserStatus": {
             "codecId": "pg/text@1",
             "members": [
@@ -1369,9 +1352,8 @@
                   "namespace": "public"
                 }
               },
-              "receipt": {
-                "cardinality": "1:1",
-                "nullable": true,
+              "receipts": {
+                "cardinality": "1:N",
                 "on": {
                   "localFields": [
                     "id"
@@ -1553,6 +1535,22 @@
                 },
                 "to": {
                   "model": "Payment",
+                  "namespace": "public"
+                }
+              },
+              "receipt": {
+                "cardinality": "1:1",
+                "nullable": true,
+                "on": {
+                  "localFields": [
+                    "id"
+                  ],
+                  "targetFields": [
+                    "paymentAllocationId"
+                  ]
+                },
+                "to": {
+                  "model": "Receipt",
                   "namespace": "public"
                 }
               }
@@ -2375,6 +2373,13 @@
           },
           "Receipt": {
             "fields": {
+              "amount": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/numeric@1",
+                  "kind": "scalar"
+                }
+              },
               "createdAt": {
                 "nullable": false,
                 "type": {
@@ -2407,6 +2412,13 @@
                 "nullable": true,
                 "type": {
                   "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "paymentAllocationId": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/uuid@1",
                   "kind": "scalar"
                 }
               },
@@ -2457,10 +2469,29 @@
                   "model": "Payment",
                   "namespace": "public"
                 }
+              },
+              "paymentAllocation": {
+                "cardinality": "N:1",
+                "nullable": true,
+                "on": {
+                  "localFields": [
+                    "paymentAllocationId"
+                  ],
+                  "targetFields": [
+                    "id"
+                  ]
+                },
+                "to": {
+                  "model": "PaymentAllocation",
+                  "namespace": "public"
+                }
               }
             },
             "storage": {
               "fields": {
+                "amount": {
+                  "column": "amount"
+                },
                 "createdAt": {
                   "column": "created_at"
                 },
@@ -2475,6 +2506,9 @@
                 },
                 "notes": {
                   "column": "notes"
+                },
+                "paymentAllocationId": {
+                  "column": "payment_allocation_id"
                 },
                 "paymentId": {
                   "column": "payment_id"
@@ -2823,19 +2857,6 @@
                   "kind": "scalar"
                 }
               },
-              "status": {
-                "nullable": false,
-                "type": {
-                  "codecId": "pg/text@1",
-                  "kind": "scalar"
-                },
-                "valueSet": {
-                  "entityKind": "enum",
-                  "entityName": "TenantStatus",
-                  "namespaceId": "public",
-                  "plane": "domain"
-                }
-              },
               "updatedAt": {
                 "nullable": false,
                 "type": {
@@ -2947,9 +2968,6 @@
                 },
                 "phone": {
                   "column": "phone"
-                },
-                "status": {
-                  "column": "status"
                 },
                 "updatedAt": {
                   "column": "updated_at"
@@ -4996,6 +5014,11 @@
             },
             "receipts": {
               "columns": {
+                "amount": {
+                  "codecId": "pg/numeric@1",
+                  "nativeType": "numeric",
+                  "nullable": true
+                },
                 "created_at": {
                   "codecId": "pg/timestamptz-temporal@1",
                   "default": {
@@ -5023,6 +5046,11 @@
                 "notes": {
                   "codecId": "pg/text@1",
                   "nativeType": "text",
+                  "nullable": true
+                },
+                "payment_allocation_id": {
+                  "codecId": "pg/uuid@1",
+                  "nativeType": "uuid",
                   "nullable": true
                 },
                 "payment_id": {
@@ -5068,6 +5096,22 @@
                     "namespaceId": "public",
                     "tableName": "payments"
                   }
+                },
+                {
+                  "source": {
+                    "columns": [
+                      "payment_allocation_id"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "receipts"
+                  },
+                  "target": {
+                    "columns": [
+                      "id"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "payment_allocations"
+                  }
                 }
               ],
               "indexes": [
@@ -5077,6 +5121,14 @@
                   ],
                   "name": "receipts_manager_id_idx_c3dee277",
                   "prefix": "receipts_manager_id_idx",
+                  "unique": false
+                },
+                {
+                  "columns": [
+                    "payment_id"
+                  ],
+                  "name": "receipts_payment_id_idx_7931cf41",
+                  "prefix": "receipts_payment_id_idx",
                   "unique": false
                 }
               ],
@@ -5088,7 +5140,7 @@
               "uniques": [
                 {
                   "columns": [
-                    "payment_id"
+                    "payment_allocation_id"
                   ]
                 },
                 {
@@ -5323,11 +5375,6 @@
                   "expression": "\"identificationDoc\" IN ('NATIONAL_ID', 'PASSPORT')",
                   "name": "tenants_identificationDoc_check_422767a4",
                   "prefix": "tenants_identificationDoc_check"
-                },
-                {
-                  "expression": "\"status\" IN ('ACTIVE', 'NOTICE', 'ENDED')",
-                  "name": "tenants_status_check_e49e6437",
-                  "prefix": "tenants_status_check"
                 }
               ],
               "columns": {
@@ -5409,21 +5456,6 @@
                   "codecId": "pg/text@1",
                   "nativeType": "text",
                   "nullable": false
-                },
-                "status": {
-                  "codecId": "pg/text@1",
-                  "default": {
-                    "kind": "literal",
-                    "value": "ACTIVE"
-                  },
-                  "nativeType": "text",
-                  "nullable": false,
-                  "valueSet": {
-                    "entityKind": "valueSet",
-                    "entityName": "TenantStatus",
-                    "namespaceId": "public",
-                    "plane": "storage"
-                  }
                 },
                 "updated_at": {
                   "codecId": "pg/timestamptz-temporal@1",
@@ -5658,14 +5690,6 @@
                 "ENDED"
               ]
             },
-            "TenantStatus": {
-              "kind": "valueSet",
-              "values": [
-                "ACTIVE",
-                "NOTICE",
-                "ENDED"
-              ]
-            },
             "UserStatus": {
               "kind": "valueSet",
               "values": [
@@ -5680,7 +5704,7 @@
         "kind": "postgres-schema"
       }
     },
-    "storageHash": "4c550fca870b19c5d0dd547a139a018e93b1f550c894bbd9a13765b050ab0eb5"
+    "storageHash": "7828e9a47a1db58b14c7602b13d0274900729fba36b5165de861bf1d5495788f"
   },
   "execution": {
     "executionHash": "8e9c983ff78a07252f8d86c07b2c152fd109aba234b96c8b51748afacf5a1756",

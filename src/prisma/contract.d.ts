@@ -34,7 +34,7 @@ import type {
 } from '@prisma/orm-postgres/contract/types';
 
 export type StorageHash =
-  StorageHashBase<'4c550fca870b19c5d0dd547a139a018e93b1f550c894bbd9a13765b050ab0eb5'>;
+  StorageHashBase<'7828e9a47a1db58b14c7602b13d0274900729fba36b5165de861bf1d5495788f'>;
 export type ExecutionHash =
   ExecutionHashBase<'8e9c983ff78a07252f8d86c07b2c152fd109aba234b96c8b51748afacf5a1756'>;
 export type ProfileHash =
@@ -393,6 +393,8 @@ export type FieldOutputTypes = {
       readonly id: CodecTypes['pg/uuid@1']['output'];
       readonly managerId: CodecTypes['pg/uuid@1']['output'];
       readonly paymentId: CodecTypes['pg/uuid@1']['output'];
+      readonly paymentAllocationId: CodecTypes['pg/uuid@1']['output'] | null;
+      readonly amount: CodecTypes['pg/numeric@1']['output'] | null;
       readonly receiptNumber: CodecTypes['pg/text@1']['output'];
       readonly issuedAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
       readonly notes: CodecTypes['pg/text@1']['output'] | null;
@@ -427,7 +429,6 @@ export type FieldOutputTypes = {
       readonly emergencyContactName: CodecTypes['pg/text@1']['output'];
       readonly emergencyContactPhone: CodecTypes['pg/text@1']['output'];
       readonly emergencyContactRelationship: CodecTypes['pg/text@1']['output'];
-      readonly status: 'ACTIVE' | 'NOTICE' | 'ENDED';
       readonly createdAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
       readonly updatedAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
     };
@@ -603,6 +604,8 @@ export type FieldInputTypes = {
       readonly id: CodecTypes['pg/uuid@1']['input'];
       readonly managerId: CodecTypes['pg/uuid@1']['input'];
       readonly paymentId: CodecTypes['pg/uuid@1']['input'];
+      readonly paymentAllocationId: CodecTypes['pg/uuid@1']['input'] | null;
+      readonly amount: CodecTypes['pg/numeric@1']['input'] | null;
       readonly receiptNumber: CodecTypes['pg/text@1']['input'];
       readonly issuedAt: CodecTypes['pg/timestamptz-temporal@1']['input'];
       readonly notes: CodecTypes['pg/text@1']['input'] | null;
@@ -637,7 +640,6 @@ export type FieldInputTypes = {
       readonly emergencyContactName: CodecTypes['pg/text@1']['input'];
       readonly emergencyContactPhone: CodecTypes['pg/text@1']['input'];
       readonly emergencyContactRelationship: CodecTypes['pg/text@1']['input'];
-      readonly status: 'ACTIVE' | 'NOTICE' | 'ENDED';
       readonly createdAt: CodecTypes['pg/timestamptz-temporal@1']['input'];
       readonly updatedAt: CodecTypes['pg/timestamptz-temporal@1']['input'];
     };
@@ -810,11 +812,13 @@ export type StorageColumnTypes = {
       readonly updated_at: CodecTypes['pg/timestamptz-temporal@1']['output'];
     };
     readonly receipts: {
+      readonly amount: CodecTypes['pg/numeric@1']['output'] | null;
       readonly created_at: CodecTypes['pg/timestamptz-temporal@1']['output'];
       readonly id: CodecTypes['pg/uuid@1']['output'];
       readonly issued_at: CodecTypes['pg/timestamptz-temporal@1']['output'];
       readonly manager_id: CodecTypes['pg/uuid@1']['output'];
       readonly notes: CodecTypes['pg/text@1']['output'] | null;
+      readonly payment_allocation_id: CodecTypes['pg/uuid@1']['output'] | null;
       readonly payment_id: CodecTypes['pg/uuid@1']['output'];
       readonly receipt_number: CodecTypes['pg/text@1']['output'];
     };
@@ -848,7 +852,6 @@ export type StorageColumnTypes = {
       readonly last_name: CodecTypes['pg/text@1']['output'];
       readonly manager_id: CodecTypes['pg/uuid@1']['output'];
       readonly phone: CodecTypes['pg/text@1']['output'];
-      readonly status: 'ACTIVE' | 'NOTICE' | 'ENDED';
       readonly updated_at: CodecTypes['pg/timestamptz-temporal@1']['output'];
     };
     readonly users: {
@@ -1020,11 +1023,13 @@ export type StorageColumnInputTypes = {
       readonly updated_at: CodecTypes['pg/timestamptz-temporal@1']['input'];
     };
     readonly receipts: {
+      readonly amount: CodecTypes['pg/numeric@1']['input'] | null;
       readonly created_at: CodecTypes['pg/timestamptz-temporal@1']['input'];
       readonly id: CodecTypes['pg/uuid@1']['input'];
       readonly issued_at: CodecTypes['pg/timestamptz-temporal@1']['input'];
       readonly manager_id: CodecTypes['pg/uuid@1']['input'];
       readonly notes: CodecTypes['pg/text@1']['input'] | null;
+      readonly payment_allocation_id: CodecTypes['pg/uuid@1']['input'] | null;
       readonly payment_id: CodecTypes['pg/uuid@1']['input'];
       readonly receipt_number: CodecTypes['pg/text@1']['input'];
     };
@@ -1058,7 +1063,6 @@ export type StorageColumnInputTypes = {
       readonly last_name: CodecTypes['pg/text@1']['input'];
       readonly manager_id: CodecTypes['pg/uuid@1']['input'];
       readonly phone: CodecTypes['pg/text@1']['input'];
-      readonly status: 'ACTIVE' | 'NOTICE' | 'ENDED';
       readonly updated_at: CodecTypes['pg/timestamptz-temporal@1']['input'];
     };
     readonly users: {
@@ -1242,7 +1246,6 @@ export namespace Models {
     emergencyContactName: CodecTypes['pg/text@1']['output'];
     emergencyContactPhone: CodecTypes['pg/text@1']['output'];
     emergencyContactRelationship: CodecTypes['pg/text@1']['output'];
-    status: 'ACTIVE' | 'NOTICE' | 'ENDED';
     createdAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
     updatedAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
     invoices: public_Invoice[];
@@ -1344,22 +1347,25 @@ export namespace Models {
     invoice: public_Invoice;
     manager: public_User;
     property: public_Property;
-    receipt: public_Receipt | null;
+    receipts: public_Receipt[];
     tenant: public_Tenant;
     readonly [RelationKeys]?:
-      'allocations' | 'invoice' | 'manager' | 'property' | 'receipt' | 'tenant';
+      'allocations' | 'invoice' | 'manager' | 'property' | 'receipts' | 'tenant';
   };
   export type public_Receipt = {
     id: CodecTypes['pg/uuid@1']['output'];
     managerId: CodecTypes['pg/uuid@1']['output'];
     paymentId: CodecTypes['pg/uuid@1']['output'];
+    paymentAllocationId: CodecTypes['pg/uuid@1']['output'] | null;
+    amount: CodecTypes['pg/numeric@1']['output'] | null;
     receiptNumber: CodecTypes['pg/text@1']['output'];
     issuedAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
     notes: CodecTypes['pg/text@1']['output'] | null;
     createdAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
     manager: public_User;
     payment: public_Payment;
-    readonly [RelationKeys]?: 'manager' | 'payment';
+    paymentAllocation: public_PaymentAllocation | null;
+    readonly [RelationKeys]?: 'manager' | 'payment' | 'paymentAllocation';
   };
   export type public_InvoiceBalanceTransfer = {
     id: CodecTypes['pg/uuid@1']['output'];
@@ -1387,7 +1393,8 @@ export namespace Models {
     invoice: public_Invoice;
     manager: public_User;
     payment: public_Payment;
-    readonly [RelationKeys]?: 'invoice' | 'manager' | 'payment';
+    receipt: public_Receipt | null;
+    readonly [RelationKeys]?: 'invoice' | 'manager' | 'payment' | 'receipt';
   };
   export type public_IdempotencyKey = {
     id: CodecTypes['pg/uuid@1']['output'];
@@ -2766,6 +2773,16 @@ type ContractBase = Omit<
                   readonly codecId: 'pg/uuid@1';
                   readonly nullable: false;
                 };
+                readonly payment_allocation_id: {
+                  readonly nativeType: 'uuid';
+                  readonly codecId: 'pg/uuid@1';
+                  readonly nullable: true;
+                };
+                readonly amount: {
+                  readonly nativeType: 'numeric';
+                  readonly codecId: 'pg/numeric@1';
+                  readonly nullable: true;
+                };
                 readonly receipt_number: {
                   readonly nativeType: 'text';
                   readonly codecId: 'pg/text@1';
@@ -2790,7 +2807,7 @@ type ContractBase = Omit<
               };
               primaryKey: { readonly columns: readonly ['id'] };
               uniques: readonly [
-                { readonly columns: readonly ['payment_id'] },
+                { readonly columns: readonly ['payment_allocation_id'] },
                 { readonly columns: readonly ['receipt_number'] },
               ];
               indexes: readonly [
@@ -2798,6 +2815,12 @@ type ContractBase = Omit<
                   readonly name: 'receipts_manager_id_idx_c3dee277';
                   readonly prefix: 'receipts_manager_id_idx';
                   readonly columns: readonly ['manager_id'];
+                  readonly unique: false;
+                },
+                {
+                  readonly name: 'receipts_payment_id_idx_7931cf41';
+                  readonly prefix: 'receipts_payment_id_idx';
+                  readonly columns: readonly ['payment_id'];
                   readonly unique: false;
                 },
               ];
@@ -2823,6 +2846,18 @@ type ContractBase = Omit<
                   readonly target: {
                     readonly namespaceId: 'public' & NamespaceId;
                     readonly tableName: 'payments';
+                    readonly columns: readonly ['id'];
+                  };
+                },
+                {
+                  readonly source: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'receipts';
+                    readonly columns: readonly ['payment_allocation_id'];
+                  };
+                  readonly target: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'payment_allocations';
                     readonly columns: readonly ['id'];
                   };
                 },
@@ -3063,15 +3098,6 @@ type ContractBase = Omit<
                   readonly codecId: 'pg/text@1';
                   readonly nullable: false;
                 };
-                readonly status: {
-                  readonly nativeType: 'text';
-                  readonly codecId: 'pg/text@1';
-                  readonly nullable: false;
-                  readonly default: {
-                    readonly kind: 'literal';
-                    readonly value: DefaultLiteralValue<'pg/text@1', 'ACTIVE'>;
-                  };
-                };
                 readonly created_at: {
                   readonly nativeType: 'timestamptz';
                   readonly codecId: 'pg/timestamptz-temporal@1';
@@ -3246,10 +3272,6 @@ type ContractBase = Omit<
               readonly values: readonly ['RESIDENTIAL', 'COMMERCIAL', 'MIXED'];
             };
             readonly TenancyStatus: {
-              readonly kind: 'valueSet';
-              readonly values: readonly ['ACTIVE', 'NOTICE', 'ENDED'];
-            };
-            readonly TenantStatus: {
               readonly kind: 'valueSet';
               readonly values: readonly ['ACTIVE', 'NOTICE', 'ENDED'];
             };
@@ -4026,13 +4048,12 @@ type ContractBase = Omit<
                   readonly targetFields: readonly ['id'];
                 };
               };
-              readonly receipt: {
+              readonly receipts: {
                 readonly to: {
                   readonly namespace: 'public' & NamespaceId;
                   readonly model: 'Receipt';
                 };
-                readonly cardinality: '1:1';
-                readonly nullable: true;
+                readonly cardinality: '1:N';
                 readonly on: {
                   readonly localFields: readonly ['id'];
                   readonly targetFields: readonly ['paymentId'];
@@ -4144,6 +4165,18 @@ type ContractBase = Omit<
                 readonly on: {
                   readonly localFields: readonly ['paymentId'];
                   readonly targetFields: readonly ['id'];
+                };
+              };
+              readonly receipt: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'Receipt';
+                };
+                readonly cardinality: '1:1';
+                readonly nullable: true;
+                readonly on: {
+                  readonly localFields: readonly ['id'];
+                  readonly targetFields: readonly ['paymentAllocationId'];
                 };
               };
             };
@@ -4662,6 +4695,14 @@ type ContractBase = Omit<
                 readonly nullable: false;
                 readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/uuid@1' };
               };
+              readonly paymentAllocationId: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/uuid@1' };
+              };
+              readonly amount: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/numeric@1' };
+              };
               readonly receiptNumber: {
                 readonly nullable: false;
                 readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
@@ -4707,6 +4748,18 @@ type ContractBase = Omit<
                   readonly targetFields: readonly ['id'];
                 };
               };
+              readonly paymentAllocation: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'PaymentAllocation';
+                };
+                readonly cardinality: 'N:1';
+                readonly nullable: true;
+                readonly on: {
+                  readonly localFields: readonly ['paymentAllocationId'];
+                  readonly targetFields: readonly ['id'];
+                };
+              };
             };
             readonly storage: {
               readonly table: 'receipts';
@@ -4715,6 +4768,8 @@ type ContractBase = Omit<
                 readonly id: { readonly column: 'id' };
                 readonly managerId: { readonly column: 'manager_id' };
                 readonly paymentId: { readonly column: 'payment_id' };
+                readonly paymentAllocationId: { readonly column: 'payment_allocation_id' };
+                readonly amount: { readonly column: 'amount' };
                 readonly receiptNumber: { readonly column: 'receipt_number' };
                 readonly issuedAt: { readonly column: 'issued_at' };
                 readonly notes: { readonly column: 'notes' };
@@ -4922,10 +4977,6 @@ type ContractBase = Omit<
                 readonly nullable: false;
                 readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
               };
-              readonly status: {
-                readonly nullable: false;
-                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
-              };
               readonly createdAt: {
                 readonly nullable: false;
                 readonly type: {
@@ -5003,7 +5054,6 @@ type ContractBase = Omit<
                 readonly emergencyContactRelationship: {
                   readonly column: 'emergency_contact_relationship';
                 };
-                readonly status: { readonly column: 'status' };
                 readonly createdAt: { readonly column: 'created_at' };
                 readonly updatedAt: { readonly column: 'updated_at' };
               };
@@ -5271,14 +5321,6 @@ type ContractBase = Omit<
               { readonly name: 'MAINTENANCE'; readonly value: 'MAINTENANCE' },
               { readonly name: 'UNAVAILABLE'; readonly value: 'UNAVAILABLE' },
               { readonly name: 'ARCHIVED'; readonly value: 'ARCHIVED' },
-            ];
-          };
-          readonly TenantStatus: {
-            readonly codecId: 'pg/text@1';
-            readonly members: readonly [
-              { readonly name: 'ACTIVE'; readonly value: 'ACTIVE' },
-              { readonly name: 'NOTICE'; readonly value: 'NOTICE' },
-              { readonly name: 'ENDED'; readonly value: 'ENDED' },
             ];
           };
           readonly IdentificationDoc: {

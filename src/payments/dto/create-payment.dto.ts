@@ -1,11 +1,15 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { Type } from 'class-transformer';
 import {
+  ArrayMinSize,
+  IsArray,
   IsDateString,
   IsEnum,
   IsNumber,
   IsOptional,
   IsString,
   Min,
+  ValidateNested,
 } from 'class-validator';
 
 export enum PaymentStatus {
@@ -23,9 +27,28 @@ export enum PaymentMethod {
   OTHER = 'OTHER',
 }
 
+export class PaymentAllocationRequestDto {
+  @ApiProperty({
+    example: 'invoice-uuid',
+    description: 'Invoice this portion of the payment is allocated to',
+  })
+  @IsString()
+  invoiceId: string;
+
+  @ApiProperty({
+    example: '75000.00',
+    description: 'Amount allocated to the invoice',
+  })
+  @IsNumber()
+  @Min(0)
+  amount: number;
+}
+
 export class CreatePaymentDto {
   @ApiProperty({
     example: 'invoice-uuid',
+    description:
+      'Invoice the payment is recorded against. Also used to resolve the tenant and property for allocation.',
   })
   @IsString()
   invoiceId: string;
@@ -68,4 +91,25 @@ export class CreatePaymentDto {
   @IsOptional()
   @IsString()
   notes?: string;
+
+  @ApiPropertyOptional({
+    type: [PaymentAllocationRequestDto],
+    description:
+      'Optional explicit allocation plan. When omitted, the payment is auto-allocated oldest-first across the tenant\'s outstanding invoices for the same property. Any unallocated remainder stays on the payment and can be allocated later.',
+  })
+  @IsOptional()
+  @IsArray()
+  @ArrayMinSize(1)
+  @ValidateNested({ each: true })
+  @Type(() => PaymentAllocationRequestDto)
+  allocations?: PaymentAllocationRequestDto[];
+
+  @ApiPropertyOptional({
+    example: 'payment-idempotency-key-123',
+    description:
+      'Unique key to ensure idempotency. Duplicate requests with the same key return the cached response.',
+  })
+  @IsOptional()
+  @IsString()
+  idempotencyKey?: string;
 }

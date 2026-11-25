@@ -4,6 +4,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import Decimal from 'decimal.js';
+import { and } from '@prisma/orm-postgres/orm-client';
 
 import { DatabaseService } from '@/database/database.service';
 import { money } from '@/common/utils/money.util';
@@ -71,10 +72,32 @@ export class PaymentAllocationsService {
       invoiceId,
     }).all();
 
-    return allocations.reduce(
-      (total: Decimal, allocation: any) => total.plus(money(allocation.amount)),
-      new Decimal(0),
+    if (!allocations.length) {
+      return new Decimal(0);
+    }
+
+    const paymentIds = [
+      ...new Set(allocations.map((allocation: any) => allocation.paymentId)),
+    ];
+
+    const payments = await tx.orm.public.Payment.where((payment: any) =>
+      and(payment.managerId.eq(managerId), payment.id.in(paymentIds)),
+    ).all();
+
+    const successfulPaymentIds = new Set(
+      payments
+        .filter((payment: any) => payment.status === PaymentStatus.SUCCESSFUL)
+        .map((payment: any) => payment.id),
     );
+
+    return allocations
+      .filter((allocation: any) =>
+        successfulPaymentIds.has(allocation.paymentId),
+      )
+      .reduce(
+        (total: Decimal, allocation: any) => total.plus(money(allocation.amount)),
+        new Decimal(0),
+      );
   }
 
   async getInvoiceTransferredAmount(
