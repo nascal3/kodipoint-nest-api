@@ -2,17 +2,17 @@ import { ApiProperty } from '@nestjs/swagger';
 import { IsEnum, IsNumber, IsOptional, IsString, Min } from 'class-validator';
 import { Type } from 'class-transformer';
 
-import { TenantStatus } from './create-tenant.dto';
+import { TenancyStatus } from '@/tenancies/dto/assign-tenant.dto';
 
 export class ListTenantsDto {
   @ApiProperty({
     required: false,
-    enum: TenantStatus,
-    description: 'Filter by tenant status',
+    enum: TenancyStatus,
+    description: 'Filter by tenancy status',
   })
   @IsOptional()
-  @IsEnum(TenantStatus)
-  status?: TenantStatus;
+  @IsEnum(TenancyStatus)
+  status?: TenancyStatus;
 
   @ApiProperty({
     required: false,

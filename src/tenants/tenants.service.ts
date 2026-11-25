@@ -51,7 +51,9 @@ export class TenantsService {
     let tenants = this.prisma.db.orm.public.Tenant.where({ managerId });
 
     if (status) {
-      tenants = tenants.where({ status });
+      tenants = tenants.where((tenant) =>
+        tenant.tenancies.some((tenancy) => tenancy.status.eq(status)),
+      );
     }
 
     if (name) {
