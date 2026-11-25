@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { and } from '@prisma/orm-postgres/orm-client';
 import { DatabaseService } from '@/database/database.service';
 import { PropertyIncomeReportDto } from './dto/property-income-report.dto';
@@ -16,6 +16,8 @@ import { PropertyStatus } from "@/properties/dto/create-property.dto";
 
 @Injectable()
 export class ReportsService {
+  private readonly logger = new Logger(ReportsService.name);
+
   constructor(private readonly prisma: DatabaseService) {}
 
   async getPropertyIncomeReport(
@@ -28,6 +30,9 @@ export class ReportsService {
     }).first();
 
     if (!property) {
+      this.logger.warn(
+        `Property income report failed: propertyId=${dto.propertyId} managerId=${managerId} not found`,
+      );
       throw new NotFoundException('Property not found');
     }
 
@@ -69,6 +74,10 @@ export class ReportsService {
       dto.limit || 10,
     );
 
+    this.logger.log(
+      `Property income report generated: propertyId=${dto.propertyId} payments=${payments.length} totalIncome=${totalIncome.toFixed(2)} managerId=${managerId}`,
+    );
+
     return {
       property: {
         id: property.id,
@@ -95,6 +104,9 @@ export class ReportsService {
     }).first();
 
     if (!property) {
+      this.logger.warn(
+        `Property invoices report failed: propertyId=${dto.propertyId} managerId=${managerId} not found`,
+      );
       throw new NotFoundException('Property not found');
     }
 
@@ -127,6 +139,10 @@ export class ReportsService {
       dto.limit || 10,
     );
 
+    this.logger.log(
+      `Property invoices report generated: propertyId=${dto.propertyId} invoices=${invoices.length} totalIssued=${totalIssued.toFixed(2)} managerId=${managerId}`,
+    );
+
     return {
       property: {
         id: property.id,
@@ -155,6 +171,9 @@ export class ReportsService {
     }).first();
 
     if (!tenant) {
+      this.logger.warn(
+        `Tenant invoices report failed: tenantId=${dto.tenantId} managerId=${managerId} not found`,
+      );
       throw new NotFoundException('Tenant not found');
     }
 
@@ -185,6 +204,10 @@ export class ReportsService {
       sortedInvoices,
       dto.page || 1,
       dto.limit || 10,
+    );
+
+    this.logger.log(
+      `Tenant invoices report generated: tenantId=${dto.tenantId} invoices=${invoices.length} totalIssued=${totalIssued.toFixed(2)} managerId=${managerId}`,
     );
 
     return {
@@ -324,6 +347,10 @@ export class ReportsService {
       dto.toDate,
     );
 
+    this.logger.log(
+      `All-properties income report generated: payments=${payments.length} properties=${properties.length} totalIncome=${totalIncome.toFixed(2)} managerId=${managerId}`,
+    );
+
     return {
       summary: {
         totalIncome: totalIncome.toFixed(2),
@@ -445,6 +472,10 @@ export class ReportsService {
       owedByMonth,
       dto.fromDate,
       dto.toDate,
+    );
+
+    this.logger.log(
+      `Total rent owed report generated: invoices=${invoices.length} totalOwed=${totalOwed.toFixed(2)} managerId=${managerId}`,
     );
 
     return {
@@ -625,6 +656,10 @@ export class ReportsService {
     const total = Number(totalResult.total);
     const totalPages = Math.ceil(total / limit);
 
+    this.logger.log(
+      `Invoice table report generated: invoices=${data.length} total=${total} managerId=${managerId}`,
+    );
+
     return {
       data,
       pagination: {
@@ -726,6 +761,10 @@ export class ReportsService {
       sortedData,
       dto.page || 1,
       dto.limit || 10,
+    );
+
+    this.logger.log(
+      `Projected rent report generated: units=${propertyUnits.length} properties=${properties.length} totalProjectedRent=${totalProjectedRent.toFixed(2)} managerId=${managerId}`,
     );
 
     return {

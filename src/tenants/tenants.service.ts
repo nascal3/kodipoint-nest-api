@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { and, or } from '@prisma/orm-postgres/orm-client';
 
 import { DatabaseService } from '@/database/database.service';
@@ -23,10 +23,12 @@ export interface TenantListResponse {
 
 @Injectable()
 export class TenantsService {
+  private readonly logger = new Logger(TenantsService.name);
+
   constructor(private readonly prisma: DatabaseService) {}
 
   async create(managerId: string, dto: CreateTenantDto) {
-    return this.prisma.db.orm.public.Tenant.create({
+    const tenant = await this.prisma.db.orm.public.Tenant.create({
       managerId,
       firstName: dto.firstName,
       lastName: dto.lastName,
@@ -39,6 +41,12 @@ export class TenantsService {
       emergencyContactPhone: dto.emergencyContactPhone,
       emergencyContactRelationship: dto.emergencyContactRelationship,
     });
+
+    this.logger.log(
+      `Tenant created: id=${tenant.id} name="${tenant.firstName} ${tenant.lastName}" managerId=${managerId}`,
+    );
+
+    return tenant;
   }
 
   async findAll(
@@ -174,6 +182,9 @@ export class TenantsService {
     }).first();
 
     if (!tenant) {
+      this.logger.warn(
+        `Tenant lookup failed: id=${tenantId} managerId=${managerId} not found`,
+      );
       throw new NotFoundException('Tenant not found');
     }
 
@@ -205,7 +216,13 @@ export class TenantsService {
       }).update({
         status: TenancyStatus.NOTICE,
       });
+
+      this.logger.log(
+        `Tenant ${tenantId} marked as NOTICE; active tenancies updated`,
+      );
     }
+
+    this.logger.log(`Tenant updated: id=${tenantId} managerId=${managerId}`);
 
     return updatedTenant;
   }
@@ -244,6 +261,10 @@ export class TenantsService {
         });
       }
     }
+
+    this.logger.log(
+      `Tenant archived: id=${tenantId} managerId=${managerId} endedTenancies=${tenancies.length}`,
+    );
 
     return this.findOne(managerId, tenantId);
   }

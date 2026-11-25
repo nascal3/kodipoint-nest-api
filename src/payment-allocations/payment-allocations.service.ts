@@ -1,6 +1,7 @@
 import {
   BadRequestException,
   Injectable,
+  Logger,
   NotFoundException,
 } from '@nestjs/common';
 import Decimal from 'decimal.js';
@@ -12,6 +13,8 @@ import { PaymentStatus } from '@/payments/dto/create-payment.dto';
 
 @Injectable()
 export class PaymentAllocationsService {
+  private readonly logger = new Logger(PaymentAllocationsService.name);
+
   constructor(private readonly prisma: DatabaseService) {}
 
   async findByPayment(managerId: string, paymentId: string) {
@@ -21,6 +24,9 @@ export class PaymentAllocationsService {
     }).first();
 
     if (!payment) {
+      this.logger.warn(
+        `Payment allocations lookup failed: paymentId=${paymentId} managerId=${managerId} not found`,
+      );
       throw new NotFoundException('Payment not found');
     }
 
@@ -37,6 +43,9 @@ export class PaymentAllocationsService {
     }).first();
 
     if (!invoice) {
+      this.logger.warn(
+        `Invoice allocations lookup failed: invoiceId=${invoiceId} managerId=${managerId} not found`,
+      );
       throw new NotFoundException('Invoice not found');
     }
 
@@ -155,6 +164,9 @@ export class PaymentAllocationsService {
     requestedAmount: Decimal,
   ) {
     if (!requestedAmount.greaterThan(0)) {
+      this.logger.warn(
+        `Payment allocation rejected: amount ${requestedAmount.toString()} is not greater than zero`,
+      );
       throw new BadRequestException(
         'Allocation amount must be greater than zero',
       );
@@ -167,6 +179,9 @@ export class PaymentAllocationsService {
     }).first();
 
     if (!payment) {
+      this.logger.warn(
+        `Payment allocation rejected: successful paymentId=${paymentId} not found`,
+      );
       throw new NotFoundException('Successful payment not found');
     }
 
@@ -176,10 +191,16 @@ export class PaymentAllocationsService {
     }).first();
 
     if (!invoice) {
+      this.logger.warn(
+        `Payment allocation rejected: invoiceId=${invoiceId} not found`,
+      );
       throw new NotFoundException('Invoice not found');
     }
 
     if (invoice.status === 'CANCELLED') {
+      this.logger.warn(
+        `Payment allocation rejected: invoiceId=${invoiceId} is CANCELLED`,
+      );
       throw new BadRequestException(
         'Cannot allocate payment to a cancelled invoice',
       );
@@ -189,6 +210,9 @@ export class PaymentAllocationsService {
       payment.tenantId !== invoice.tenantId ||
       payment.propertyId !== invoice.propertyId
     ) {
+      this.logger.warn(
+        `Payment allocation rejected: paymentId=${paymentId} and invoiceId=${invoiceId} belong to different tenant/property`,
+      );
       throw new BadRequestException(
         'Payment and invoice do not belong to the same tenant and property',
       );
@@ -204,6 +228,9 @@ export class PaymentAllocationsService {
     const paymentRemaining = paymentAmount.minus(allocatedPaymentAmount);
 
     if (requestedAmount.greaterThan(paymentRemaining)) {
+      this.logger.warn(
+        `Payment allocation rejected: amount ${requestedAmount.toString()} exceeds payment remaining ${paymentRemaining.toFixed(2)} for paymentId=${paymentId}`,
+      );
       throw new BadRequestException(
         `Allocation exceeds the unallocated payment amount of ${paymentRemaining.toFixed(2)}`,
       );
@@ -216,6 +243,9 @@ export class PaymentAllocationsService {
     );
 
     if (requestedAmount.greaterThan(invoiceOutstanding)) {
+      this.logger.warn(
+        `Payment allocation rejected: amount ${requestedAmount.toString()} exceeds invoice outstanding ${invoiceOutstanding.toFixed(2)} for invoiceId=${invoiceId}`,
+      );
       throw new BadRequestException(
         `Allocation exceeds the invoice outstanding amount of ${invoiceOutstanding.toFixed(2)}`,
       );
