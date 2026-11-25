@@ -5,6 +5,7 @@ import { Transport, MicroserviceOptions } from '@nestjs/microservices';
 
 import { AppModule } from './app.module';
 import { HttpExceptionFilter } from '@/common/filters/http-exception.filter';
+import { LoggingInterceptor } from '@/common/interceptors/logging.interceptor';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -27,6 +28,7 @@ async function bootstrap() {
   app.enableCors();
 
   app.useGlobalFilters(new HttpExceptionFilter());
+  app.useGlobalInterceptors(new LoggingInterceptor());
 
   // Connect to RabbitMQ for microservices
   const rabbitmqUrl = process.env.RABBITMQ_URL || 'amqp://localhost:5672';

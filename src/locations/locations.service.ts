@@ -1,5 +1,6 @@
 import {
   Injectable,
+  Logger,
   NotFoundException,
   ConflictException,
 } from '@nestjs/common';
@@ -13,6 +14,8 @@ import { UpdateCityDto } from './dto/update-city.dto';
 
 @Injectable()
 export class LocationsService {
+  private readonly logger = new Logger(LocationsService.name);
+
   constructor(private readonly prisma: DatabaseService) {}
 
   // Country CRUD operations
@@ -22,12 +25,19 @@ export class LocationsService {
     }).first();
 
     if (existingCountry) {
+      this.logger.warn(
+        `Create country rejected: name "${dto.name}" already exists`,
+      );
       throw new ConflictException('Country with this name already exists');
     }
 
-    return this.prisma.db.orm.public.Country.create({
+    const country = await this.prisma.db.orm.public.Country.create({
       name: dto.name,
     });
+
+    this.logger.log(`Country created: id=${country.id} name="${country.name}"`);
+
+    return country;
   }
 
   async findAllCountries() {
@@ -40,6 +50,7 @@ export class LocationsService {
     }).first();
 
     if (!country) {
+      this.logger.warn(`Country lookup failed: id=${countryId} not found`);
       throw new NotFoundException('Country not found');
     }
 
@@ -56,19 +67,32 @@ export class LocationsService {
       ).first();
 
       if (existingCountry) {
+        this.logger.warn(
+          `Update country ${countryId} rejected: name "${dto.name}" already exists`,
+        );
         throw new ConflictException('Country with this name already exists');
       }
     }
 
-    return this.prisma.db.orm.public.Country.where({ id: countryId }).update(
-      dto,
-    );
+    const updated = await this.prisma.db.orm.public.Country.where({
+      id: countryId,
+    }).update(dto);
+
+    this.logger.log(`Country updated: id=${countryId}`);
+
+    return updated;
   }
 
   async deleteCountry(countryId: string) {
     await this.findOneCountry(countryId);
 
-    return this.prisma.db.orm.public.Country.where({ id: countryId }).delete();
+    const deleted = await this.prisma.db.orm.public.Country.where({
+      id: countryId,
+    }).delete();
+
+    this.logger.log(`Country deleted: id=${countryId}`);
+
+    return deleted;
   }
 
   // City CRUD operations
@@ -81,15 +105,24 @@ export class LocationsService {
     }).first();
 
     if (existingCity) {
+      this.logger.warn(
+        `Create city rejected: name "${dto.name}" already exists in country ${dto.countryId}`,
+      );
       throw new ConflictException(
         'City with this name already exists in this country',
       );
     }
 
-    return this.prisma.db.orm.public.City.create({
+    const city = await this.prisma.db.orm.public.City.create({
       name: dto.name,
       countryId: dto.countryId,
     });
+
+    this.logger.log(
+      `City created: id=${city.id} name="${city.name}" countryId=${city.countryId}`,
+    );
+
+    return city;
   }
 
   async findCitiesByCountry(countryId: string) {
@@ -108,6 +141,7 @@ export class LocationsService {
     }).first();
 
     if (!city) {
+      this.logger.warn(`City lookup failed: id=${cityId} not found`);
       throw new NotFoundException('City not found');
     }
 
@@ -133,18 +167,33 @@ export class LocationsService {
       ).first();
 
       if (existingCity) {
+        this.logger.warn(
+          `Update city ${cityId} rejected: name "${dto.name}" already exists in country ${countryId}`,
+        );
         throw new ConflictException(
           'City with this name already exists in this country',
         );
       }
     }
 
-    return this.prisma.db.orm.public.City.where({ id: cityId }).update(dto);
+    const updated = await this.prisma.db.orm.public.City.where({
+      id: cityId,
+    }).update(dto);
+
+    this.logger.log(`City updated: id=${cityId}`);
+
+    return updated;
   }
 
   async deleteCity(cityId: string) {
     await this.findOneCity(cityId);
 
-    return this.prisma.db.orm.public.City.where({ id: cityId }).delete();
+    const deleted = await this.prisma.db.orm.public.City.where({
+      id: cityId,
+    }).delete();
+
+    this.logger.log(`City deleted: id=${cityId}`);
+
+    return deleted;
   }
 }

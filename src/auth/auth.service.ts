@@ -2,6 +2,7 @@ import {
   BadRequestException,
   ConflictException,
   Injectable,
+  Logger,
   UnauthorizedException,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
@@ -20,6 +21,8 @@ type JwtPayload = {
 
 @Injectable()
 export class AuthService {
+  private readonly logger = new Logger(AuthService.name);
+
   constructor(
     private readonly prisma: DatabaseService,
     private readonly jwtService: JwtService,
@@ -37,6 +40,7 @@ export class AuthService {
     }).first();
 
     if (existingUser) {
+      this.logger.warn(`Registration rejected: email "${email}" already registered`);
       throw new ConflictException('An account with this email already exists');
     }
 
@@ -54,6 +58,8 @@ export class AuthService {
       billingEmail: email,
       passwordUpdatedAt: Temporal.Now.instant(),
     });
+
+    this.logger.log(`User registered: id=${user.id} email=${user.email}`);
 
     return {
       user: this.toSafeUser(user),
@@ -75,6 +81,7 @@ export class AuthService {
     }).first();
 
     if (!user) {
+      this.logger.warn(`Login failed: no account for email "${normalizedEmail}"`);
       throw new BadRequestException({
         message: 'Wrong Email or Password',
         details: 'Wrong Email or Password',
@@ -84,6 +91,7 @@ export class AuthService {
     const passwordMatches = await argon2.verify(user.passwordHash, password);
 
     if (!passwordMatches) {
+      this.logger.warn(`Login failed: invalid password for userId=${user.id}`);
       throw new BadRequestException({
         message: 'Wrong Email or Password',
         details: 'Wrong Email or Password',
@@ -98,6 +106,8 @@ export class AuthService {
    */
   async login(dto: LoginDto) {
     const user = await this.validateUser(dto.email, dto.password);
+
+    this.logger.log(`User logged in: id=${user.id} email=${user.email}`);
 
     return {
       user: this.toSafeUser(user),
@@ -151,6 +161,9 @@ export class AuthService {
       }).first();
 
       if (!user) {
+        this.logger.error(
+          `Google OAuth account ${profile.googleId} is linked to missing userId=${existingOAuthAccount.userId}`,
+        );
         throw new UnauthorizedException(
           'The Google account is linked to a missing user',
         );
@@ -171,6 +184,10 @@ export class AuthService {
         provider: 'google',
         providerAccountId: profile.googleId,
       });
+
+      this.logger.log(
+        `Google account linked to existing user: userId=${existingUser.id} email=${email}`,
+      );
 
       return existingUser;
     }
@@ -204,6 +221,8 @@ export class AuthService {
       provider: 'google',
       providerAccountId: profile.googleId,
     });
+
+    this.logger.log(`User registered via Google OAuth: id=${user.id} email=${email}`);
 
     return { ...user, newUser: true };
   }

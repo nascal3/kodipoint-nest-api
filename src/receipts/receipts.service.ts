@@ -1,6 +1,7 @@
 import {
   ConflictException,
   Injectable,
+  Logger,
   NotFoundException,
 } from '@nestjs/common';
 
@@ -12,6 +13,8 @@ import Decimal from 'decimal.js';
 
 @Injectable()
 export class ReceiptsService {
+  private readonly logger = new Logger(ReceiptsService.name);
+
   constructor(private readonly prisma: DatabaseService) {}
 
   /**
@@ -30,10 +33,16 @@ export class ReceiptsService {
       }).first();
 
       if (!payment) {
+        this.logger.warn(
+          `Receipt creation failed: paymentId=${paymentId} managerId=${managerId} not found`,
+        );
         throw new NotFoundException('Payment not found');
       }
 
       if (payment.status !== PaymentStatus.SUCCESSFUL) {
+        this.logger.warn(
+          `Receipt creation rejected: paymentId=${paymentId} status=${payment.status} is not SUCCESSFUL`,
+        );
         throw new ConflictException(
           'A receipt can only be created for a successful payment',
         );
@@ -134,6 +143,10 @@ export class ReceiptsService {
         results.push(await this.getReceiptById(managerId, receipt.id));
       }
 
+      this.logger.log(
+        `Receipts created for payment: paymentId=${paymentId} managerId=${managerId} count=${results.length}`,
+      );
+
       return results;
     });
   }
@@ -155,6 +168,9 @@ export class ReceiptsService {
     }).first();
 
     if (!payment) {
+      this.logger.warn(
+        `Receipts lookup failed: paymentId=${paymentId} managerId=${managerId} not found`,
+      );
       throw new NotFoundException('Payment not found');
     }
 
@@ -164,6 +180,7 @@ export class ReceiptsService {
     }).all();
 
     if (!receipts.length) {
+      this.logger.warn(`No receipts found for paymentId=${paymentId}`);
       throw new NotFoundException('No receipts found for this payment');
     }
 
@@ -224,6 +241,9 @@ export class ReceiptsService {
     }).first();
 
     if (!receipt) {
+      this.logger.warn(
+        `Receipt lookup failed: id=${receiptId} managerId=${managerId} not found`,
+      );
       throw new NotFoundException('Receipt not found');
     }
 

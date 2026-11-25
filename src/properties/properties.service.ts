@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { and } from '@prisma/orm-postgres/orm-client';
 
 import { DatabaseService } from '@/database/database.service';
@@ -48,6 +48,8 @@ export interface FindAllResponse {
 
 @Injectable()
 export class PropertiesService {
+  private readonly logger = new Logger(PropertiesService.name);
+
   constructor(private readonly prisma: DatabaseService) {}
 
   async create(managerId: string, dto: CreatePropertyDto) {
@@ -56,10 +58,13 @@ export class PropertiesService {
     }).first();
 
     if (!country) {
+      this.logger.warn(
+        `Property create failed: countryId=${dto.countryId} not found`,
+      );
       throw new NotFoundException('Country not found');
     }
 
-    return this.prisma.db.orm.public.Property.create({
+    const property = await this.prisma.db.orm.public.Property.create({
       managerId,
       name: dto.name,
       propertyUseType: dto.propertyUseType,
@@ -74,6 +79,12 @@ export class PropertiesService {
       monthlyRent: dto.monthlyRent.toString(),
       status: dto.status ?? PropertyStatus.ACTIVE,
     });
+
+    this.logger.log(
+      `Property created: id=${property.id} name="${property.name}" managerId=${managerId}`,
+    );
+
+    return property;
   }
 
   async findAll(
@@ -258,6 +269,9 @@ export class PropertiesService {
     }).first();
 
     if (!property) {
+      this.logger.warn(
+        `Property lookup failed: id=${propertyId} managerId=${managerId} not found`,
+      );
       throw new NotFoundException('Property not found');
     }
 
@@ -275,11 +289,12 @@ export class PropertiesService {
       }).first();
 
       if (!country) {
+        this.logger.warn(`Property update failed: countryId=${countryId} not found`);
         throw new NotFoundException('Country not found');
       }
     }
 
-    return this.prisma.db.orm.public.Property.where({
+    const updated = await this.prisma.db.orm.public.Property.where({
       id: propertyId,
       managerId,
     }).update({
@@ -289,6 +304,10 @@ export class PropertiesService {
       }),
       ...(monthlyRent !== undefined && { monthlyRent: monthlyRent.toString() }),
     });
+
+    this.logger.log(`Property updated: id=${propertyId} managerId=${managerId}`);
+
+    return updated;
   }
 
   async archive(managerId: string, propertyId: string) {
@@ -301,11 +320,15 @@ export class PropertiesService {
       status: PropertyUnitStatus.ARCHIVED,
     });
 
-    return this.prisma.db.orm.public.Property.where({
+    const archived = await this.prisma.db.orm.public.Property.where({
       id: propertyId,
       managerId,
     }).update({
       status: PropertyStatus.ARCHIVED,
     });
+
+    this.logger.log(`Property archived: id=${propertyId} managerId=${managerId}`);
+
+    return archived;
   }
 }

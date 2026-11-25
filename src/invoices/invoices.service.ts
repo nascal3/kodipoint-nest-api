@@ -2,6 +2,7 @@ import {
   BadRequestException,
   ConflictException,
   Injectable,
+  Logger,
   NotFoundException,
 } from '@nestjs/common';
 
@@ -19,6 +20,8 @@ import { and, or } from '@prisma/orm-postgres/orm-client';
 
 @Injectable()
 export class InvoicesService {
+  private readonly logger = new Logger(InvoicesService.name);
+
   constructor(private readonly prisma: DatabaseService) {}
 
   async create(managerId: string, dto: CreateInvoiceDto) {
@@ -34,12 +37,15 @@ export class InvoicesService {
     }
 
     if (dueDate < issueDate) {
+      this.logger.warn(
+        `Invoice create rejected: dueDate ${dto.dueDate} is earlier than issueDate ${dto.issueDate}`,
+      );
       throw new BadRequestException(
         'Due date cannot be earlier than issue date',
       );
     }
 
-    return this.prisma.db.transaction(async (tx) => {
+    const result = await this.prisma.db.transaction(async (tx) => {
       /*
        * 1. Find the active tenancy.
        */
@@ -50,6 +56,9 @@ export class InvoicesService {
       }).first();
 
       if (!tenancy) {
+        this.logger.warn(
+          `Invoice create failed: tenancyId=${dto.tenancyId} managerId=${managerId} no active tenancy found`,
+        );
         throw new NotFoundException('Active tenancy not found');
       }
 
@@ -62,6 +71,9 @@ export class InvoicesService {
       }).first();
 
       if (!property) {
+        this.logger.warn(
+          `Invoice create failed: propertyId=${tenancy.propertyId} managerId=${managerId} not found`,
+        );
         throw new NotFoundException('Property not found');
       }
 
@@ -74,6 +86,9 @@ export class InvoicesService {
       }).first();
 
       if (!tenant) {
+        this.logger.warn(
+          `Invoice create failed: tenantId=${tenancy.tenantId} managerId=${managerId} not found`,
+        );
         throw new NotFoundException('Tenant not found');
       }
 
@@ -90,6 +105,9 @@ export class InvoicesService {
         : null;
 
       if (!propertyUnit) {
+        this.logger.warn(
+          `Invoice create failed: propertyUnitId=${propertyUnitId} not found or not occupied`,
+        );
         throw new NotFoundException('Property unit not found or not occupied');
       }
 
@@ -347,6 +365,9 @@ export class InvoicesService {
       );
 
       if (subtotal.lessThanOrEqualTo(0)) {
+        this.logger.warn(
+          `Invoice create rejected: subtotal ${subtotal.toFixed(2)} is not greater than zero for tenancyId=${dto.tenancyId}`,
+        );
         throw new BadRequestException(
           'Invoice subtotal must be greater than zero',
         );
@@ -464,6 +485,12 @@ export class InvoicesService {
         prepaymentsApplied,
       };
     });
+
+    this.logger.log(
+      `Invoice created: id=${result.invoice.id} number=${result.invoice.invoiceNumber} total=${result.invoice.totalAmount} status=${result.invoice.status} managerId=${managerId}`,
+    );
+
+    return result;
   }
 
   /**
@@ -653,6 +680,9 @@ export class InvoicesService {
     }).first();
 
     if (!invoice) {
+      this.logger.warn(
+        `Invoice lookup failed: id=${invoiceId} managerId=${managerId} not found`,
+      );
       throw new NotFoundException('Invoice not found');
     }
 
@@ -683,28 +713,41 @@ export class InvoicesService {
     const invoice = await this.findOne(managerId, invoiceId);
 
     if (invoice.status !== InvoiceStatus.DRAFT) {
+      this.logger.warn(
+        `Invoice update rejected: id=${invoiceId} status=${invoice.status} is not DRAFT`,
+      );
       throw new ConflictException('Only draft invoices can be edited');
     }
 
     if (dto.dueDate && new Date(dto.dueDate) < invoice.issueDate) {
+      this.logger.warn(
+        `Invoice update rejected: id=${invoiceId} dueDate ${dto.dueDate} is earlier than issueDate`,
+      );
       throw new BadRequestException(
         'Due date cannot be earlier than issue date',
       );
     }
 
-    return this.prisma.db.orm.public.Invoice.where({
+    const updated = await this.prisma.db.orm.public.Invoice.where({
       id: invoiceId,
       managerId,
     }).update({
       ...(dto.dueDate ? { dueDate: new Date(dto.dueDate) } : {}),
       ...(dto.notes !== undefined ? { notes: dto.notes } : {}),
     });
+
+    this.logger.log(`Invoice updated: id=${invoiceId} managerId=${managerId}`);
+
+    return updated;
   }
 
   async cancel(managerId: string, invoiceId: string) {
     const invoice = await this.findOne(managerId, invoiceId);
 
     if (invoice.status === InvoiceStatus.PAID) {
+      this.logger.warn(
+        `Invoice cancel rejected: id=${invoiceId} is already PAID`,
+      );
       throw new ConflictException('A paid invoice cannot be cancelled');
     }
 
@@ -713,17 +756,24 @@ export class InvoicesService {
     }
 
     if (Number(invoice.amountPaid) > 0) {
+      this.logger.warn(
+        `Invoice cancel rejected: id=${invoiceId} has payments (amountPaid=${invoice.amountPaid})`,
+      );
       throw new ConflictException(
         'An invoice with payments cannot be cancelled',
       );
     }
 
-    return this.prisma.db.orm.public.Invoice.where({
+    const cancelled = await this.prisma.db.orm.public.Invoice.where({
       id: invoiceId,
       managerId,
     }).update({
       status: InvoiceStatus.CANCELLED,
     });
+
+    this.logger.log(`Invoice cancelled: id=${invoiceId} managerId=${managerId}`);
+
+    return cancelled;
   }
 
   async markOverdueInvoices(managerId?: string) {
@@ -748,6 +798,12 @@ export class InvoicesService {
       }).update({
         status: InvoiceStatus.OVERDUE,
       });
+    }
+
+    if (overdueInvoices.length > 0) {
+      this.logger.log(
+        `Marked ${overdueInvoices.length} invoice(s) as OVERDUE${managerId ? ` for managerId=${managerId}` : ''}`,
+      );
     }
 
     return {
@@ -786,6 +842,9 @@ export class InvoicesService {
       !invoice.tenant?.email &&
       dto.channels.includes(InvoiceDeliveryChannel.EMAIL)
     ) {
+      this.logger.warn(
+        `Invoice delivery rejected: invoiceId=${invoiceId} tenant has no email for EMAIL channel`,
+      );
       throw new BadRequestException('Tenant does not have an email address');
     }
 
@@ -793,8 +852,15 @@ export class InvoicesService {
       !invoice.tenant?.phone &&
       dto.channels.includes(InvoiceDeliveryChannel.SMS)
     ) {
+      this.logger.warn(
+        `Invoice delivery rejected: invoiceId=${invoiceId} tenant has no phone for SMS channel`,
+      );
       throw new BadRequestException('Tenant does not have a phone number');
     }
+
+    this.logger.log(
+      `Invoice delivery queued: invoiceId=${invoiceId} managerId=${managerId} channels=${dto.channels.join(',')}`,
+    );
 
     // Replace this return with a BullMQ enqueue call.
     return {

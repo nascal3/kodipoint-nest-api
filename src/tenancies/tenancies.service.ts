@@ -1,6 +1,7 @@
 import {
   ConflictException,
   Injectable,
+  Logger,
   NotFoundException,
 } from '@nestjs/common';
 
@@ -24,6 +25,8 @@ export interface TenancyListResponse {
 
 @Injectable()
 export class TenanciesService {
+  private readonly logger = new Logger(TenanciesService.name);
+
   constructor(private readonly prisma: DatabaseService) {}
 
   async findAll(
@@ -73,6 +76,9 @@ export class TenanciesService {
     }).first();
 
     if (!tenancy) {
+      this.logger.warn(
+        `Tenancy lookup failed: id=${tenancyId} managerId=${managerId} not found`,
+      );
       throw new NotFoundException('Tenancy not found');
     }
 
@@ -86,10 +92,16 @@ export class TenanciesService {
     }).first();
 
     if (!property) {
+      this.logger.warn(
+        `Tenancy assign failed: propertyId=${dto.propertyId} managerId=${managerId} not found`,
+      );
       throw new NotFoundException('Property not found');
     }
 
     if (property.status !== 'ACTIVE') {
+      this.logger.warn(
+        `Tenancy assign rejected: propertyId=${dto.propertyId} status=${property.status} is not ACTIVE`,
+      );
       throw new ConflictException(
         'Tenant can only be assigned to a property with ACTIVE status',
       );
@@ -102,10 +114,16 @@ export class TenanciesService {
     }).first();
 
     if (!propertyUnit) {
+      this.logger.warn(
+        `Tenancy assign failed: propertyId=${dto.propertyId} unit=${dto.propertyUnit} not found`,
+      );
       throw new NotFoundException('Property unit not found');
     }
 
     if (propertyUnit.status !== 'AVAILABLE') {
+      this.logger.warn(
+        `Tenancy assign rejected: unitId=${propertyUnit.id} status=${propertyUnit.status} is not AVAILABLE`,
+      );
       throw new ConflictException(
         'Tenant can only be assigned to a unit with AVAILABLE status',
       );
@@ -117,6 +135,9 @@ export class TenanciesService {
     }).first();
 
     if (!tenant) {
+      this.logger.warn(
+        `Tenancy assign failed: tenantId=${dto.tenantId} managerId=${managerId} not found`,
+      );
       throw new NotFoundException('Tenant not found');
     }
 
@@ -129,12 +150,15 @@ export class TenanciesService {
     }).first();
 
     if (existing) {
+      this.logger.warn(
+        `Tenancy assign rejected: tenantId=${dto.tenantId} already assigned to unitId=${propertyUnit.id}`,
+      );
       throw new ConflictException(
         'Tenant is already assigned to this property unit',
       );
     }
 
-    return this.prisma.db.transaction(async (tx) => {
+    const tenancy = await this.prisma.db.transaction(async (tx) => {
       const tenancy = await tx.orm.public.Tenancy.create({
         managerId,
         propertyId: dto.propertyId,
@@ -156,6 +180,12 @@ export class TenanciesService {
 
       return tenancy;
     });
+
+    this.logger.log(
+      `Tenancy assigned: id=${tenancy.id} tenantId=${dto.tenantId} propertyId=${dto.propertyId} unitId=${propertyUnit.id} managerId=${managerId}`,
+    );
+
+    return tenancy;
   }
 
   async updateNotes(managerId: string, tenancyId: string, notes?: string) {
@@ -165,15 +195,22 @@ export class TenanciesService {
     }).first();
 
     if (!tenancy) {
+      this.logger.warn(
+        `Tenancy update rejected: id=${tenancyId} managerId=${managerId} not found`,
+      );
       throw new NotFoundException('Tenancy not found');
     }
 
-    return this.prisma.db.orm.public.Tenancy.where({
+    const updated = await this.prisma.db.orm.public.Tenancy.where({
       id: tenancyId,
       managerId,
     }).update({
       notes,
     });
+
+    this.logger.log(`Tenancy notes updated: id=${tenancyId} managerId=${managerId}`);
+
+    return updated;
   }
 
   async unassign(managerId: string, tenancyId: string, endDate: string) {
@@ -187,6 +224,9 @@ export class TenanciesService {
       .first();
 
     if (!tenancy) {
+      this.logger.warn(
+        `Tenancy unassign failed: id=${tenancyId} managerId=${managerId} no active tenancy found`,
+      );
       throw new NotFoundException('Active tenancy not found');
     }
 
@@ -214,6 +254,10 @@ export class TenanciesService {
         status: unitStatus,
       });
     }
+
+    this.logger.log(
+      `Tenancy unassigned: id=${tenancyId} managerId=${managerId} status=${status} endDate=${endDate}`,
+    );
 
     return tenancy;
   }

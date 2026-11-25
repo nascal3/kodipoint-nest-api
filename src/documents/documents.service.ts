@@ -1,6 +1,7 @@
 import {
   BadRequestException,
   Injectable,
+  Logger,
   NotFoundException,
 } from '@nestjs/common';
 
@@ -25,6 +26,8 @@ export interface GeneratedDocument {
 
 @Injectable()
 export class DocumentsService {
+  private readonly logger = new Logger(DocumentsService.name);
+
   constructor(
     private readonly prisma: DatabaseService,
     private readonly invoicesService: InvoicesService,
@@ -150,6 +153,9 @@ export class DocumentsService {
 
     const recipient = dto.to ?? invoice.tenant?.email ?? null;
     if (!recipient) {
+      this.logger.warn(
+        `Invoice email rejected: invoiceId=${invoiceId} has no recipient email`,
+      );
       throw new BadRequestException(
         'No recipient email address is available. Provide one in the request body or update the tenant record.',
       );
@@ -169,6 +175,10 @@ export class DocumentsService {
         contentType: doc.contentType,
       },
     });
+
+    this.logger.log(
+      `Invoice email queued: invoiceId=${invoiceId} to=${recipient} managerId=${managerId}`,
+    );
 
     return {
       message: 'Invoice email send to queue successfully',
@@ -191,6 +201,9 @@ export class DocumentsService {
 
     const recipient = dto.to ?? invoice.tenant?.phone ?? null;
     if (!recipient) {
+      this.logger.warn(
+        `Invoice SMS rejected: invoiceId=${invoiceId} has no recipient phone`,
+      );
       throw new BadRequestException(
         'No recipient phone number is available. Provide one in the request body or update the tenant record.',
       );
@@ -200,6 +213,10 @@ export class DocumentsService {
       to: recipient,
       message: `Your invoice ${invoice.invoiceNumber} from ${manager.firstName} ${manager.lastName} has been sent to your email. Please check your inbox.`,
     });
+
+    this.logger.log(
+      `Invoice SMS queued: invoiceId=${invoiceId} to=${recipient} managerId=${managerId}`,
+    );
 
     return {
       message: 'Invoice SMS notification sent to queue successfully',
@@ -338,6 +355,9 @@ export class DocumentsService {
 
     const recipient = dto.to ?? receipt.tenant?.email ?? null;
     if (!recipient) {
+      this.logger.warn(
+        `Receipt email rejected: receiptId=${receiptId} has no recipient email`,
+      );
       throw new BadRequestException(
         'No recipient email address is available. Provide one in the request body or update the tenant record.',
       );
@@ -357,6 +377,10 @@ export class DocumentsService {
         contentType: doc.contentType,
       },
     });
+
+    this.logger.log(
+      `Receipt email queued: receiptId=${receiptId} to=${recipient} managerId=${managerId}`,
+    );
 
     return {
       message: 'Receipt email queued successfully',
@@ -379,6 +403,9 @@ export class DocumentsService {
 
     const recipient = dto.to ?? receipt.tenant?.phone ?? null;
     if (!recipient) {
+      this.logger.warn(
+        `Receipt SMS rejected: receiptId=${receiptId} has no recipient phone`,
+      );
       throw new BadRequestException(
         'No recipient phone number is available. Provide one in the request body or update the tenant record.',
       );
@@ -390,6 +417,10 @@ export class DocumentsService {
       to: recipient,
       message,
     });
+
+    this.logger.log(
+      `Receipt SMS queued: receiptId=${receiptId} to=${recipient} managerId=${managerId}`,
+    );
 
     return {
       message: 'Receipt SMS notification queued successfully',
@@ -407,6 +438,7 @@ export class DocumentsService {
 
     if (dto.sendEmail) {
       if (!dto.email) {
+        this.logger.warn('Tenant message rejected: sendEmail enabled but no email provided');
         throw new BadRequestException(
           'Email address is required when sendEmail is true',
         );
@@ -424,6 +456,7 @@ export class DocumentsService {
 
     if (dto.sendSms) {
       if (!dto.phone) {
+        this.logger.warn('Tenant message rejected: sendSms enabled but no phone provided');
         throw new BadRequestException(
           'Phone number is required when sendSms is true',
         );
@@ -439,10 +472,15 @@ export class DocumentsService {
     }
 
     if (!dto.sendEmail && !dto.sendSms) {
+      this.logger.warn('Tenant message rejected: no delivery channel enabled');
       throw new BadRequestException(
         'At least one delivery channel (sendEmail or sendSms) must be enabled',
       );
     }
+
+    this.logger.log(
+      `Tenant message queued: email=${results.emailQueued ? results.emailTo : 'no'} sms=${results.smsQueued ? results.smsTo : 'no'}`,
+    );
 
     return {
       message: 'Tenant message queued successfully',
@@ -458,6 +496,7 @@ export class DocumentsService {
     }).first();
 
     if (!manager) {
+      this.logger.warn(`Manager lookup failed: id=${managerId} not found`);
       throw new NotFoundException('Manager not found');
     }
 

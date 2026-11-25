@@ -1,6 +1,7 @@
 import {
   BadRequestException,
   Injectable,
+  Logger,
   NotFoundException,
 } from '@nestjs/common';
 import { and } from '@prisma/orm-postgres/orm-client';
@@ -39,11 +40,14 @@ type PropertyUnitChargeInput = {
 
 @Injectable()
 export class PropertyUnitsService {
+  private readonly logger = new Logger(PropertyUnitsService.name);
+
   constructor(private readonly prisma: DatabaseService) {}
 
   private assertValidStatus(status: string): PropertyUnitStatus {
     const validStatuses = Object.values(PropertyUnitStatus);
     if (!validStatuses.includes(status as PropertyUnitStatus)) {
+      this.logger.warn(`Invalid property unit status received: "${status}"`);
       throw new BadRequestException('Invalid property unit status');
     }
 
@@ -71,6 +75,9 @@ export class PropertyUnitsService {
     ).first();
 
     if (existingUnit) {
+      this.logger.warn(
+        `Property unit stub conflict: stub "${stub}" already exists for propertyId=${propertyId}`,
+      );
       throw new BadRequestException(
         'A property unit with this unit number already exists in this property',
       );
@@ -84,10 +91,16 @@ export class PropertyUnitsService {
     }).first();
 
     if (!property) {
+      this.logger.warn(
+        `Property unit create failed: propertyId=${dto.propertyId} managerId=${managerId} not found`,
+      );
       throw new NotFoundException('Property not found');
     }
 
     if (property.status === PropertyStatus.INACTIVE || property.status === PropertyStatus.ARCHIVED) {
+      this.logger.warn(
+        `Property unit create rejected: propertyId=${dto.propertyId} status=${property.status} is inactive/archived`,
+      );
       throw new BadRequestException('Cannot create units for inactive or archived properties');
     }
 
@@ -136,6 +149,10 @@ export class PropertyUnitsService {
 
       return createdUnit;
     });
+
+    this.logger.log(
+      `Property unit created: id=${unit.id} unitNumber="${unit.unitNumber}" propertyId=${dto.propertyId} managerId=${managerId}`,
+    );
 
     return {
       ...unit,
@@ -356,6 +373,9 @@ export class PropertyUnitsService {
     }).first();
 
     if (!unit) {
+      this.logger.warn(
+        `Property unit lookup failed: id=${unitId} managerId=${managerId} not found`,
+      );
       throw new NotFoundException('Property unit not found');
     }
 
@@ -405,6 +425,9 @@ export class PropertyUnitsService {
       normalizedStatus !== undefined &&
       normalizedStatus !== PropertyUnitStatus.OCCUPIED
     ) {
+      this.logger.warn(
+        `Property unit status change rejected: unitId=${unitId} is OCCUPIED, cannot change to ${normalizedStatus}`,
+      );
       throw new BadRequestException(
         'An occupied property unit cannot be changed to another status',
       );
@@ -419,6 +442,9 @@ export class PropertyUnitsService {
         Object.values(rest).some((value) => value !== undefined);
 
       if (hasNonStatusUpdates) {
+        this.logger.warn(
+          `Property unit update rejected: unitId=${unitId} is ARCHIVED and only status may change`,
+        );
         throw new BadRequestException(
           'Only the status can be updated for an archived property unit',
         );
@@ -439,6 +465,9 @@ export class PropertyUnitsService {
       }).first();
 
       if (!property) {
+        this.logger.warn(
+          `Property unit update failed: propertyId=${propertyId} managerId=${managerId} not found`,
+        );
         throw new NotFoundException('Property not found');
       }
     }
@@ -525,6 +554,8 @@ export class PropertyUnitsService {
       }
     }
 
+    this.logger.log(`Property unit updated: id=${unitId} managerId=${managerId}`);
+
     return {
       ...updatedUnit,
       charges: await this.getUnitChargeDetails(unitId),
@@ -552,6 +583,9 @@ export class PropertyUnitsService {
       }).first();
 
       if (!unit) {
+        this.logger.warn(
+          `Charge rate update failed: unitId=${unitId} managerId=${managerId} not found`,
+        );
         throw new NotFoundException('Property unit not found');
       }
 
@@ -562,6 +596,9 @@ export class PropertyUnitsService {
       }).first();
 
       if (!propertyCharge) {
+        this.logger.warn(
+          `Charge rate update failed: propertyChargeId=${propertyChargeId} not found for unitId=${unitId}`,
+        );
         throw new NotFoundException(
           'Property charge not found for this property',
         );
@@ -580,6 +617,9 @@ export class PropertyUnitsService {
       );
 
       if (currentRate?.validFrom.epochMilliseconds === effectiveTime) {
+        this.logger.warn(
+          `Charge rate update rejected: unitId=${unitId} chargeId=${propertyChargeId} already has a rate at effectiveFrom=${dto.effectiveFrom}`,
+        );
         throw new BadRequestException(
           'A rate already exists with this effective-from date',
         );
@@ -602,13 +642,19 @@ export class PropertyUnitsService {
         });
       }
 
-      return tx.orm.public.PropertyUnitCharge.create({
+      const createdRate = await tx.orm.public.PropertyUnitCharge.create({
         propertyUnitId: unitId,
         propertyChargeId,
         customAmount: dto.amount.toString(),
         validFrom: effectiveFrom,
         validTo: nextRate?.validFrom ?? null,
       });
+
+      this.logger.log(
+        `Charge rate updated: unitId=${unitId} propertyChargeId=${propertyChargeId} amount=${dto.amount} effectiveFrom=${dto.effectiveFrom}`,
+      );
+
+      return createdRate;
     });
   }
 
@@ -639,6 +685,10 @@ export class PropertyUnitsService {
       `.affectedCount().build();
       await tx.execute(decrementPlan);
 
+      this.logger.log(
+        `Property unit archived: id=${unitId} managerId=${managerId} propertyId=${unit.propertyId}`,
+      );
+
       return tx.orm.public.PropertyUnit.where({
         id: unitId,
         managerId,
@@ -667,6 +717,9 @@ export class PropertyUnitsService {
   ) {
     const chargeIds = charges.map((charge) => charge.propertyChargeId);
     if (new Set(chargeIds).size !== chargeIds.length) {
+      this.logger.warn(
+        `Property unit charge validation failed: duplicate propertyChargeIds for propertyId=${propertyId}`,
+      );
       throw new BadRequestException('Property charges must not be duplicated');
     }
 
@@ -684,6 +737,9 @@ export class PropertyUnitsService {
       ).all();
 
     if (propertyCharges.length !== chargeIds.length) {
+      this.logger.warn(
+        `Property unit charge validation failed: ${chargeIds.length - propertyCharges.length} charge(s) not found/inactive for propertyId=${propertyId}`,
+      );
       throw new NotFoundException(
         'One or more property charges not found, do not belong to this property, or are not active',
       );

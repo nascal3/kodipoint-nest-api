@@ -2,6 +2,7 @@ import {
   BadRequestException,
   ConflictException,
   Injectable,
+  Logger,
   NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
@@ -13,6 +14,8 @@ import { Temporal } from '@js-temporal/polyfill';
 
 @Injectable()
 export class UsersService {
+  private readonly logger = new Logger(UsersService.name);
+
   constructor(private readonly prisma: DatabaseService) {}
 
   /**
@@ -24,6 +27,7 @@ export class UsersService {
     }).first();
 
     if (!user) {
+      this.logger.warn(`Profile lookup failed: userId=${managerId} not found`);
       throw new NotFoundException('User profile not found');
     }
 
@@ -39,6 +43,7 @@ export class UsersService {
     }).first();
 
     if (!currentUser) {
+      this.logger.warn(`Profile update failed: userId=${managerId} not found`);
       throw new NotFoundException('User profile not found');
     }
 
@@ -52,6 +57,9 @@ export class UsersService {
       }).first();
 
       if (existingUser && existingUser.id !== managerId) {
+        this.logger.warn(
+          `Profile update rejected: email "${email}" already in use by userId=${existingUser.id}`,
+        );
         throw new ConflictException('This email is already in use');
       }
 
@@ -98,6 +106,8 @@ export class UsersService {
       throw new NotFoundException('User profile not found');
     }
 
+    this.logger.log(`Profile updated: userId=${managerId}`);
+
     return this.toSafeUser(updatedUser);
   }
 
@@ -123,6 +133,9 @@ export class UsersService {
     );
 
     if (!passwordMatches) {
+      this.logger.warn(
+        `Password change rejected: incorrect current password for userId=${managerId}`,
+      );
       throw new BadRequestException('Current password is incorrect');
     }
 
@@ -138,6 +151,8 @@ export class UsersService {
     if (!updatedUser) {
       throw new NotFoundException('User profile not found');
     }
+
+    this.logger.log(`Password changed: userId=${managerId}`);
 
     return this.toSafeUser(updatedUser);
   }
