@@ -671,32 +671,38 @@ export class InvoicesService {
     const propertyIds = invoices.map((i: any) => i.propertyId);
     const tenantIds = invoices.map((i: any) => i.tenantId);
 
-    const [tenants, properties, tenancies, payments] = await Promise.all([
-      tenantIds.length
-        ? this.prisma.db.orm.public.Tenant.where((tenant) =>
-            tenant.id.in(tenantIds),
-          ).all()
-        : [],
-      propertyIds.length
-        ? this.prisma.db.orm.public.Property.where((property) =>
-            property.id.in(propertyIds),
-          ).all()
-        : [],
-      tenancyIds.length
-        ? this.prisma.db.orm.public.Tenancy.where((tenancy) =>
-            tenancy.id.in(tenancyIds),
-          ).all()
-        : [],
-      invoiceIds.length
-        ? this.prisma.db.orm.public.Payment.where((payment) =>
-            and(
-              payment.invoiceId.in(invoiceIds),
-              payment.managerId.eq(managerId),
-              payment.status.eq(PaymentStatus.SUCCESSFUL),
-            ),
-          ).all()
-        : [],
-    ]);
+    const [tenants, properties, tenancies, payments, invoiceItems] =
+      await Promise.all([
+        tenantIds.length
+          ? this.prisma.db.orm.public.Tenant.where((tenant) =>
+              tenant.id.in(tenantIds),
+            ).all()
+          : [],
+        propertyIds.length
+          ? this.prisma.db.orm.public.Property.where((property) =>
+              property.id.in(propertyIds),
+            ).all()
+          : [],
+        tenancyIds.length
+          ? this.prisma.db.orm.public.Tenancy.where((tenancy) =>
+              tenancy.id.in(tenancyIds),
+            ).all()
+          : [],
+        invoiceIds.length
+          ? this.prisma.db.orm.public.Payment.where((payment) =>
+              and(
+                payment.invoiceId.in(invoiceIds),
+                payment.managerId.eq(managerId),
+                payment.status.eq(PaymentStatus.SUCCESSFUL),
+              ),
+            ).all()
+          : [],
+        invoiceIds.length
+          ? this.prisma.db.orm.public.InvoiceItem.where((item) =>
+              item.invoiceId.in(invoiceIds),
+            ).all()
+          : [],
+      ]);
 
     const tenantById = new Map(tenants.map((t: any) => [t.id, t]));
     const propertyById = new Map(properties.map((p: any) => [p.id, p]));
@@ -709,6 +715,13 @@ export class InvoicesService {
         ).all()
       : [];
     const propertyUnitById = new Map(propertyUnits.map((u: any) => [u.id, u]));
+
+    const invoiceItemsByInvoiceId = new Map<string, any[]>();
+    for (const item of invoiceItems) {
+      const existing = invoiceItemsByInvoiceId.get(item.invoiceId) || [];
+      existing.push(item);
+      invoiceItemsByInvoiceId.set(item.invoiceId, existing);
+    }
 
     const paymentDatesByInvoiceId = new Map<string, Date>();
     for (const payment of payments) {
@@ -727,6 +740,7 @@ export class InvoicesService {
       const tenancy = tenancyById.get(invoice.tenancyId);
       const propertyUnit = tenancy ? propertyUnitById.get(tenancy.propertyUnitId) : null;
       const paidDate = paymentDatesByInvoiceId.get(invoice.id);
+      const items = invoiceItemsByInvoiceId.get(invoice.id) || [];
 
       return {
         ...invoice,
@@ -734,6 +748,7 @@ export class InvoicesService {
         property,
         propertyUnit,
         paidDate,
+        invoiceItems: items,
       };
     });
 
