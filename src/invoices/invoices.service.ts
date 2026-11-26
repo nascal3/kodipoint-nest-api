@@ -660,12 +660,83 @@ export class InvoicesService {
       ).aggregate((aggregate) => ({ total: aggregate.count() })),
     ]);
 
+    const invoiceIds = invoices.map((i: any) => i.id);
+    const tenancyIds = invoices.map((i: any) => i.tenancyId);
+    const propertyIds = invoices.map((i: any) => i.propertyId);
+    const tenantIds = invoices.map((i: any) => i.tenantId);
+
+    const [tenants, properties, tenancies, payments] = await Promise.all([
+      tenantIds.length
+        ? this.prisma.db.orm.public.Tenant.where((tenant) =>
+            tenant.id.in(tenantIds),
+          ).all()
+        : [],
+      propertyIds.length
+        ? this.prisma.db.orm.public.Property.where((property) =>
+            property.id.in(propertyIds),
+          ).all()
+        : [],
+      tenancyIds.length
+        ? this.prisma.db.orm.public.Tenancy.where((tenancy) =>
+            tenancy.id.in(tenancyIds),
+          ).all()
+        : [],
+      invoiceIds.length
+        ? this.prisma.db.orm.public.Payment.where((payment) =>
+            and(
+              payment.invoiceId.in(invoiceIds),
+              payment.managerId.eq(managerId),
+              payment.status.eq(PaymentStatus.SUCCESSFUL),
+            ),
+          ).all()
+        : [],
+    ]);
+
+    const tenantById = new Map(tenants.map((t: any) => [t.id, t]));
+    const propertyById = new Map(properties.map((p: any) => [p.id, p]));
+    const tenancyById = new Map(tenancies.map((t: any) => [t.id, t]));
+
+    const propertyUnitIds = tenancies.map((t: any) => t.propertyUnitId);
+    const propertyUnits = propertyUnitIds.length
+      ? await this.prisma.db.orm.public.PropertyUnit.where((unit) =>
+          unit.id.in(propertyUnitIds),
+        ).all()
+      : [];
+    const propertyUnitById = new Map(propertyUnits.map((u: any) => [u.id, u]));
+
+    const paymentDatesByInvoiceId = new Map<string, Date>();
+    for (const payment of payments) {
+      const existing = paymentDatesByInvoiceId.get(payment.invoiceId);
+      if (!existing || new Date(payment.paymentDate) < existing) {
+        paymentDatesByInvoiceId.set(
+          payment.invoiceId,
+          new Date(payment.paymentDate),
+        );
+      }
+    }
+
+    const enrichedData = invoices.map((invoice: any) => {
+      const tenant = tenantById.get(invoice.tenantId);
+      const property = propertyById.get(invoice.propertyId);
+      const tenancy = tenancyById.get(invoice.tenancyId);
+      const propertyUnit = tenancy ? propertyUnitById.get(tenancy.propertyUnitId) : null;
+      const paidDate = paymentDatesByInvoiceId.get(invoice.id);
+
+      return {
+        ...invoice,
+        tenant,
+        property,
+        propertyUnit,
+        paidDate,
+      };
+    });
+
     const totalPages = Math.ceil(Number(total.total) / limit);
     const hasNextPage = page < totalPages;
     const hasPreviousPage = page > 1;
 
     return {
-      data: invoices,
+      data: enrichedData,
       pagination: {
         page,
         limit,
