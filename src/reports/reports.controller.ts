@@ -7,6 +7,7 @@ import { TenantInvoicesReportDto } from './dto/tenant-invoices-report.dto';
 import { AllPropertiesIncomeReportDto } from './dto/all-properties-income-report.dto';
 import { TotalRentOwedReportDto } from './dto/total-rent-owed-report.dto';
 import { InvoiceTableReportDto } from './dto/invoice-table-report.dto';
+import { InvoiceSummaryReportDto } from './dto/invoice-summary-report.dto';
 import { ProjectedRentReportDto } from './dto/projected-rent-report.dto';
 import { JwtAuthGuard } from '@/common/guards/jwt-auth.guard';
 import { CurrentUser } from '@/common/decorators/current-user.decorator';
@@ -72,6 +73,18 @@ export class ReportsController {
     @Query() dto: TotalRentOwedReportDto,
   ) {
     return this.reportsService.getTotalRentOwedReport(managerId, dto);
+  }
+
+  @Get('invoice-summary')
+  @ApiOperation({
+    summary:
+      'Get aggregated invoice KPIs (invoiced, collected, unpaid) for a period',
+  })
+  getInvoiceSummaryReport(
+    @CurrentUser('id') managerId: string,
+    @Query() dto: InvoiceSummaryReportDto,
+  ) {
+    return this.reportsService.getInvoiceSummaryReport(managerId, dto);
   }
 
   @Get('invoices')

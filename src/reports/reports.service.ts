@@ -7,6 +7,8 @@ import { TenantInvoicesReportDto } from './dto/tenant-invoices-report.dto';
 import { AllPropertiesIncomeReportDto } from './dto/all-properties-income-report.dto';
 import { TotalRentOwedReportDto } from './dto/total-rent-owed-report.dto';
 import { InvoiceTableReportDto } from './dto/invoice-table-report.dto';
+import { InvoiceSummaryReportDto } from './dto/invoice-summary-report.dto';
+import { InvoiceStatus } from '@/invoices/dto/list-invoices.dto';
 import { ProjectedRentReportDto } from './dto/projected-rent-report.dto';
 import { SortOrder } from './dto/pagination.dto';
 import Decimal from 'decimal.js';
@@ -489,6 +491,95 @@ export class ReportsService {
       monthlyTotals,
       properties: paginatedData.data,
       pagination: paginatedData.pagination,
+    };
+  }
+
+  async getInvoiceSummaryReport(
+    managerId: string,
+    dto: InvoiceSummaryReportDto,
+  ) {
+    const invoices = await this.prisma.db.orm.public.Invoice.where((i) =>
+      and(
+        i.managerId.eq(managerId),
+        i.status.neq(InvoiceStatus.DRAFT),
+        i.status.neq(InvoiceStatus.CANCELLED),
+        ...(dto.fromDate
+          ? [
+              i.issueDate.gte(
+                Temporal.PlainDate.from(dto.fromDate.slice(0, 10)),
+              ),
+            ]
+          : []),
+        ...(dto.toDate
+          ? [i.issueDate.lte(Temporal.PlainDate.from(dto.toDate.slice(0, 10)))]
+          : []),
+      ),
+    ).all();
+
+    const billableStatuses = [
+      InvoiceStatus.ISSUED,
+      InvoiceStatus.PARTIALLY_PAID,
+      InvoiceStatus.PAID,
+      InvoiceStatus.OVERDUE,
+    ];
+    const outstandingStatuses = [
+      InvoiceStatus.ISSUED,
+      InvoiceStatus.PARTIALLY_PAID,
+      InvoiceStatus.OVERDUE,
+    ];
+
+    const totalInvoiced = invoices
+      .filter((invoice) =>
+        billableStatuses.includes(invoice.status as InvoiceStatus),
+      )
+      .reduce(
+        (sum, invoice) => sum.plus(new Decimal(String(invoice.totalAmount))),
+        new Decimal(0),
+      );
+
+    const totalCollected = invoices
+      .filter((invoice) =>
+        billableStatuses.includes(invoice.status as InvoiceStatus),
+      )
+      .reduce(
+        (sum, invoice) => sum.plus(new Decimal(String(invoice.amountPaid))),
+        new Decimal(0),
+      );
+
+    const totalUnpaid = invoices
+      .filter((invoice) =>
+        outstandingStatuses.includes(invoice.status as InvoiceStatus),
+      )
+      .reduce(
+        (sum, invoice) => sum.plus(new Decimal(String(invoice.balanceDue))),
+        new Decimal(0),
+      );
+
+    const paidUnits = invoices.filter(
+      (invoice) => invoice.status === InvoiceStatus.PAID,
+    ).length;
+    const unpaidTenancies = invoices.filter((invoice) =>
+      outstandingStatuses.includes(invoice.status as InvoiceStatus),
+    ).length;
+
+    const settledPercentage = totalInvoiced.isZero()
+      ? 0
+      : totalCollected.div(totalInvoiced).mul(100).toDecimalPlaces(1).toNumber();
+
+    this.logger.log(
+      `Invoice summary report generated: invoices=${invoices.length} totalInvoiced=${totalInvoiced.toFixed(2)} managerId=${managerId}`,
+    );
+
+    return {
+      summary: {
+        totalInvoiced: totalInvoiced.toFixed(2),
+        totalCollected: totalCollected.toFixed(2),
+        totalUnpaid: totalUnpaid.toFixed(2),
+        settledPercentage,
+        paidUnits,
+        unpaidTenancies,
+        currency: await this.getManagerCurrency(managerId),
+      },
     };
   }
 
