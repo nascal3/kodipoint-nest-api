@@ -611,6 +611,9 @@ export class InvoicesService {
         and(
           invoice.managerId.eq(managerId),
           ...(query.status ? [invoice.status.eq(query.status)] : []),
+          ...(query.invoiceNumber
+            ? [invoice.invoiceNumber.ilike(`%${query.invoiceNumber}%`)]
+            : []),
           ...(query.propertyId
             ? [invoice.propertyId.eq(query.propertyId)]
             : []),
@@ -638,6 +641,9 @@ export class InvoicesService {
         and(
           invoice.managerId.eq(managerId),
           ...(query.status ? [invoice.status.eq(query.status)] : []),
+          ...(query.invoiceNumber
+            ? [invoice.invoiceNumber.ilike(`%${query.invoiceNumber}%`)]
+            : []),
           ...(query.propertyId
             ? [invoice.propertyId.eq(query.propertyId)]
             : []),

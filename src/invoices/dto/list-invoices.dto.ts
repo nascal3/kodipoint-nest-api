@@ -29,6 +29,15 @@ export class ListInvoicesDto {
   status?: InvoiceStatus;
 
   @ApiProperty({
+    example: 'INV-2026-0891',
+    description: 'Invoice number (partial match)',
+    required: false,
+  })
+  @IsOptional()
+  @IsString()
+  invoiceNumber?: string;
+
+  @ApiProperty({
     example: '123e4567-e89b-12d3-a456-426614174000',
     description: 'Property ID',
     required: false,
