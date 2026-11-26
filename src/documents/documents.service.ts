@@ -17,6 +17,7 @@ import { SendDocumentDto } from './dto/send-document.dto';
 import { SendTenantMessageDto } from './dto/send-tenant-message.dto';
 import { buildInvoicePdf } from './pdf/builders/invoice-pdf.builder';
 import { buildReceiptPdf } from './pdf/builders/receipt-pdf.builder';
+import { Temporal } from '@js-temporal/polyfill';
 
 export interface GeneratedDocument {
   buffer: Buffer;
@@ -180,6 +181,13 @@ export class DocumentsService {
       `Invoice email queued: invoiceId=${invoiceId} to=${recipient} managerId=${managerId}`,
     );
 
+    await this.prisma.db.orm.public.Invoice.where({
+      id: invoiceId,
+      managerId,
+    }).update({
+      emailSend: Temporal.Now.plainDateISO(),
+    });
+
     return {
       message: 'Invoice email send to queue successfully',
       to: recipient,
@@ -217,6 +225,13 @@ export class DocumentsService {
     this.logger.log(
       `Invoice SMS queued: invoiceId=${invoiceId} to=${recipient} managerId=${managerId}`,
     );
+
+    await this.prisma.db.orm.public.Invoice.where({
+      id: invoiceId,
+      managerId,
+    }).update({
+      smsSent: Temporal.Now.plainDateISO(),
+    });
 
     return {
       message: 'Invoice SMS notification sent to queue successfully',

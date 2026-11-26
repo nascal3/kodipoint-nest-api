@@ -299,6 +299,8 @@ model Invoice {
   balanceDue    Decimal @map("balance_due")
   status        InvoiceStatus
   notes         String?
+  smsSent       Date?  @map("sms_sent")
+  emailSend     Date?  @map("email_send")
 
   createdAt temporal.createdAt() @map("created_at")
   updatedAt temporal.updatedAt() @map("updated_at")

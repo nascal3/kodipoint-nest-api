@@ -20,6 +20,12 @@ interface EmailPayload {
   };
 }
 
+interface InvoiceDeliveryPayload {
+  managerId: string;
+  invoiceId: string;
+  channels: string[];
+}
+
 @Injectable()
 export class QueuesService {
   private readonly logger = new Logger(QueuesService.name);
@@ -35,6 +41,15 @@ export class QueuesService {
     await this.client.emit('email_queue', payload).toPromise();
     this.logger.log(
       `Email queued: to=${payload.to} subject="${payload.subject}"`,
+    );
+  }
+
+  async publishInvoiceDelivery(
+    payload: InvoiceDeliveryPayload,
+  ): Promise<void> {
+    await this.client.emit('invoice_delivery_queue', payload).toPromise();
+    this.logger.log(
+      `Invoice delivery queued: invoiceId=${payload.invoiceId} channels=${payload.channels.join(',')}`,
     );
   }
 }

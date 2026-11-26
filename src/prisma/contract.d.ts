@@ -34,7 +34,7 @@ import type {
 } from '@prisma/orm-postgres/contract/types';
 
 export type StorageHash =
-  StorageHashBase<'7828e9a47a1db58b14c7602b13d0274900729fba36b5165de861bf1d5495788f'>;
+  StorageHashBase<'1b4ff5b2520f650e6e03ac4bb9b61c69964e4c460a5e0802a98e2d9f7fd9050a'>;
 export type ExecutionHash =
   ExecutionHashBase<'8e9c983ff78a07252f8d86c07b2c152fd109aba234b96c8b51748afacf5a1756'>;
 export type ProfileHash =
@@ -278,6 +278,8 @@ export type FieldOutputTypes = {
       readonly balanceDue: CodecTypes['pg/numeric@1']['output'];
       readonly status: 'DRAFT' | 'ISSUED' | 'PARTIALLY_PAID' | 'PAID' | 'OVERDUE' | 'CANCELLED';
       readonly notes: CodecTypes['pg/text@1']['output'] | null;
+      readonly smsSent: CodecTypes['pg/date-temporal@1']['output'] | null;
+      readonly emailSend: CodecTypes['pg/date-temporal@1']['output'] | null;
       readonly createdAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
       readonly updatedAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
     };
@@ -489,6 +491,8 @@ export type FieldInputTypes = {
       readonly balanceDue: CodecTypes['pg/numeric@1']['input'];
       readonly status: 'DRAFT' | 'ISSUED' | 'PARTIALLY_PAID' | 'PAID' | 'OVERDUE' | 'CANCELLED';
       readonly notes: CodecTypes['pg/text@1']['input'] | null;
+      readonly smsSent: CodecTypes['pg/date-temporal@1']['input'] | null;
+      readonly emailSend: CodecTypes['pg/date-temporal@1']['input'] | null;
       readonly createdAt: CodecTypes['pg/timestamptz-temporal@1']['input'];
       readonly updatedAt: CodecTypes['pg/timestamptz-temporal@1']['input'];
     };
@@ -713,12 +717,14 @@ export type StorageColumnTypes = {
       readonly balance_due: CodecTypes['pg/numeric@1']['output'];
       readonly created_at: CodecTypes['pg/timestamptz-temporal@1']['output'];
       readonly due_date: CodecTypes['pg/date-temporal@1']['output'];
+      readonly email_send: CodecTypes['pg/date-temporal@1']['output'] | null;
       readonly id: CodecTypes['pg/uuid@1']['output'];
       readonly invoice_number: CodecTypes['pg/text@1']['output'];
       readonly issue_date: CodecTypes['pg/date-temporal@1']['output'];
       readonly manager_id: CodecTypes['pg/uuid@1']['output'];
       readonly notes: CodecTypes['pg/text@1']['output'] | null;
       readonly property_id: CodecTypes['pg/uuid@1']['output'];
+      readonly sms_sent: CodecTypes['pg/date-temporal@1']['output'] | null;
       readonly status: 'DRAFT' | 'ISSUED' | 'PARTIALLY_PAID' | 'PAID' | 'OVERDUE' | 'CANCELLED';
       readonly subtotal: CodecTypes['pg/numeric@1']['output'];
       readonly tenancy_id: CodecTypes['pg/uuid@1']['output'];
@@ -924,12 +930,14 @@ export type StorageColumnInputTypes = {
       readonly balance_due: CodecTypes['pg/numeric@1']['input'];
       readonly created_at: CodecTypes['pg/timestamptz-temporal@1']['input'];
       readonly due_date: CodecTypes['pg/date-temporal@1']['input'];
+      readonly email_send: CodecTypes['pg/date-temporal@1']['input'] | null;
       readonly id: CodecTypes['pg/uuid@1']['input'];
       readonly invoice_number: CodecTypes['pg/text@1']['input'];
       readonly issue_date: CodecTypes['pg/date-temporal@1']['input'];
       readonly manager_id: CodecTypes['pg/uuid@1']['input'];
       readonly notes: CodecTypes['pg/text@1']['input'] | null;
       readonly property_id: CodecTypes['pg/uuid@1']['input'];
+      readonly sms_sent: CodecTypes['pg/date-temporal@1']['input'] | null;
       readonly status: 'DRAFT' | 'ISSUED' | 'PARTIALLY_PAID' | 'PAID' | 'OVERDUE' | 'CANCELLED';
       readonly subtotal: CodecTypes['pg/numeric@1']['input'];
       readonly tenancy_id: CodecTypes['pg/uuid@1']['input'];
@@ -1291,6 +1299,8 @@ export namespace Models {
     balanceDue: CodecTypes['pg/numeric@1']['output'];
     status: 'DRAFT' | 'ISSUED' | 'PARTIALLY_PAID' | 'PAID' | 'OVERDUE' | 'CANCELLED';
     notes: CodecTypes['pg/text@1']['output'] | null;
+    smsSent: CodecTypes['pg/date-temporal@1']['output'] | null;
+    emailSend: CodecTypes['pg/date-temporal@1']['output'] | null;
     createdAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
     updatedAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
     incomingBalanceTransfers: public_InvoiceBalanceTransfer[];
@@ -1875,6 +1885,16 @@ type ContractBase = Omit<
                 readonly notes: {
                   readonly nativeType: 'text';
                   readonly codecId: 'pg/text@1';
+                  readonly nullable: true;
+                };
+                readonly sms_sent: {
+                  readonly nativeType: 'date';
+                  readonly codecId: 'pg/date-temporal@1';
+                  readonly nullable: true;
+                };
+                readonly email_send: {
+                  readonly nativeType: 'date';
+                  readonly codecId: 'pg/date-temporal@1';
                   readonly nullable: true;
                 };
                 readonly created_at: {
@@ -3550,6 +3570,14 @@ type ContractBase = Omit<
                 readonly nullable: true;
                 readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
               };
+              readonly smsSent: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/date-temporal@1' };
+              };
+              readonly emailSend: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/date-temporal@1' };
+              };
               readonly createdAt: {
                 readonly nullable: false;
                 readonly type: {
@@ -3685,6 +3713,8 @@ type ContractBase = Omit<
                 readonly balanceDue: { readonly column: 'balance_due' };
                 readonly status: { readonly column: 'status' };
                 readonly notes: { readonly column: 'notes' };
+                readonly smsSent: { readonly column: 'sms_sent' };
+                readonly emailSend: { readonly column: 'email_send' };
                 readonly createdAt: { readonly column: 'created_at' };
                 readonly updatedAt: { readonly column: 'updated_at' };
               };

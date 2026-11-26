@@ -525,6 +525,13 @@
                   "kind": "scalar"
                 }
               },
+              "emailSend": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/date-temporal@1",
+                  "kind": "scalar"
+                }
+              },
               "id": {
                 "nullable": false,
                 "type": {
@@ -564,6 +571,13 @@
                 "nullable": false,
                 "type": {
                   "codecId": "pg/uuid@1",
+                  "kind": "scalar"
+                }
+              },
+              "smsSent": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/date-temporal@1",
                   "kind": "scalar"
                 }
               },
@@ -771,6 +785,9 @@
                 "dueDate": {
                   "column": "due_date"
                 },
+                "emailSend": {
+                  "column": "email_send"
+                },
                 "id": {
                   "column": "id"
                 },
@@ -788,6 +805,9 @@
                 },
                 "propertyId": {
                   "column": "property_id"
+                },
+                "smsSent": {
+                  "column": "sms_sent"
                 },
                 "status": {
                   "column": "status"
@@ -3794,6 +3814,11 @@
                   "nativeType": "date",
                   "nullable": false
                 },
+                "email_send": {
+                  "codecId": "pg/date-temporal@1",
+                  "nativeType": "date",
+                  "nullable": true
+                },
                 "id": {
                   "codecId": "pg/uuid@1",
                   "nativeType": "uuid",
@@ -3823,6 +3848,11 @@
                   "codecId": "pg/uuid@1",
                   "nativeType": "uuid",
                   "nullable": false
+                },
+                "sms_sent": {
+                  "codecId": "pg/date-temporal@1",
+                  "nativeType": "date",
+                  "nullable": true
                 },
                 "status": {
                   "codecId": "pg/text@1",
@@ -5704,7 +5734,7 @@
         "kind": "postgres-schema"
       }
     },
-    "storageHash": "7828e9a47a1db58b14c7602b13d0274900729fba36b5165de861bf1d5495788f"
+    "storageHash": "1b4ff5b2520f650e6e03ac4bb9b61c69964e4c460a5e0802a98e2d9f7fd9050a"
   },
   "execution": {
     "executionHash": "8e9c983ff78a07252f8d86c07b2c152fd109aba234b96c8b51748afacf5a1756",

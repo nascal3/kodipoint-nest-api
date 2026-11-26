@@ -7,6 +7,7 @@ import {
 } from '@nestjs/common';
 
 import { DatabaseService } from '@/database/database.service';
+import { QueuesService } from '@/queues/queues.service';
 import { CreateInvoiceDto } from './dto/create-invoice.dto';
 import { ListInvoicesDto, InvoiceStatus } from './dto/list-invoices.dto';
 import { TenancyStatus } from '@/tenancies/dto/assign-tenant.dto';
@@ -22,7 +23,10 @@ import { and, or } from '@prisma/orm-postgres/orm-client';
 export class InvoicesService {
   private readonly logger = new Logger(InvoicesService.name);
 
-  constructor(private readonly prisma: DatabaseService) {}
+  constructor(
+    private readonly prisma: DatabaseService,
+    private readonly queuesService: QueuesService,
+  ) {}
 
   async create(managerId: string, dto: CreateInvoiceDto) {
     const issueDate = new Date(dto.issueDate);
@@ -862,7 +866,12 @@ export class InvoicesService {
       `Invoice delivery queued: invoiceId=${invoiceId} managerId=${managerId} channels=${dto.channels.join(',')}`,
     );
 
-    // Replace this return with a BullMQ enqueue call.
+    await this.queuesService.publishInvoiceDelivery({
+      managerId,
+      invoiceId,
+      channels: dto.channels,
+    });
+
     return {
       message: 'Invoice delivery queued',
       invoiceId,
