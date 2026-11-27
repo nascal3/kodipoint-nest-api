@@ -9,6 +9,7 @@ import { DatabaseService } from '@/database/database.service';
 import { PaymentStatus } from '@/payments/dto/create-payment.dto';
 import { generateReceiptNumber } from '@/common/utils/receipt-number.util';
 import { money } from '@/common/utils/money.util';
+import { Temporal } from '@js-temporal/polyfill';
 import Decimal from 'decimal.js';
 
 @Injectable()
@@ -78,7 +79,7 @@ export class ReceiptsService {
           paymentId,
           amount: payment.amount,
           receiptNumber: generateReceiptNumber(),
-          issuedAt: new Date(),
+          issuedAt: Temporal.Now.instant(),
         });
 
         return [await this.getReceiptById(managerId, receipt.id)];
@@ -105,7 +106,7 @@ export class ReceiptsService {
           paymentAllocationId: allocation.id,
           amount: allocation.amount,
           receiptNumber: generateReceiptNumber(),
-          issuedAt: new Date(),
+          issuedAt: Temporal.Now.instant(),
         });
 
         results.push(await this.getReceiptById(managerId, receipt.id));
@@ -132,7 +133,7 @@ export class ReceiptsService {
           paymentId,
           amount: remainder.toFixed(2),
           receiptNumber: generateReceiptNumber(),
-          issuedAt: new Date(),
+          issuedAt: Temporal.Now.instant(),
           notes: 'Unallocated payment balance carried forward',
         });
 

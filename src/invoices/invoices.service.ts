@@ -133,7 +133,7 @@ export class InvoicesService {
           sourceInvoiceId: balance.sourceInvoiceId,
           targetInvoiceId: invoice.id,
           amount: balance.amount.toFixed(2),
-          transferredAt: issueDate,
+          transferredAt: issueDate.toZonedDateTime('UTC').toInstant(),
           notes: `Balance carried forward from invoice ${balance.sourceInvoiceNumber}`,
         });
       }
@@ -230,18 +230,22 @@ export class InvoicesService {
   }
 
   private validateInvoiceDates(dto: CreateInvoiceDto) {
-    const issueDate = new Date(dto.issueDate);
-    const dueDate = new Date(dto.dueDate);
+    let issueDate: Temporal.PlainDate;
+    let dueDate: Temporal.PlainDate;
 
-    if (Number.isNaN(issueDate.getTime())) {
+    try {
+      issueDate = Temporal.PlainDate.from(dto.issueDate.slice(0, 10));
+    } catch {
       throw new BadRequestException('Invalid issue date');
     }
 
-    if (Number.isNaN(dueDate.getTime())) {
+    try {
+      dueDate = Temporal.PlainDate.from(dto.dueDate.slice(0, 10));
+    } catch {
       throw new BadRequestException('Invalid due date');
     }
 
-    if (dueDate < issueDate) {
+    if (Temporal.PlainDate.compare(dueDate, issueDate) < 0) {
       this.logger.warn(
         `Invoice create rejected: dueDate ${dto.dueDate} is earlier than issueDate ${dto.issueDate}`,
       );
@@ -261,8 +265,10 @@ export class InvoicesService {
     client: any,
     managerId: string,
     tenancyId: string,
-    issueDate: Date,
+    issueDate: Temporal.PlainDate,
   ) {
+    const issueInstant = issueDate.toZonedDateTime('UTC').toInstant();
+
     /*
      * 1. Find the active tenancy.
      */
@@ -335,8 +341,8 @@ export class InvoicesService {
       ? await client.orm.public.PropertyUnitCharge.where((charge: any) =>
           and(
             charge.propertyUnitId.eq(propertyUnitId),
-            charge.validFrom.lte(issueDate),
-            or(charge.validTo.isNull(), charge.validTo.gt(issueDate)),
+            charge.validFrom.lte(issueInstant),
+            or(charge.validTo.isNull(), charge.validTo.gt(issueInstant)),
           ),
         ).all()
       : [];
@@ -741,7 +747,7 @@ export class InvoicesService {
         invoiceId: invoice.id,
         amount: amount.toFixed(2),
         kind: 'PREPAYMENT',
-        allocatedAt: new Date(),
+        allocatedAt: Temporal.Now.instant(),
         notes: 'Unallocated payment balance applied to invoice',
       });
 
@@ -751,7 +757,7 @@ export class InvoicesService {
         paymentAllocationId: allocation.id,
         amount: amount.toFixed(2),
         receiptNumber: generateReceiptNumber(),
-        issuedAt: new Date(),
+        issuedAt: Temporal.Now.instant(),
         notes: 'Prepayment applied to invoice',
       });
 
@@ -1050,20 +1056,30 @@ export class InvoicesService {
       throw new ConflictException('Only draft invoices can be edited');
     }
 
-    if (dto.dueDate && new Date(dto.dueDate) < invoice.issueDate) {
-      this.logger.warn(
-        `Invoice update rejected: id=${invoiceId} dueDate ${dto.dueDate} is earlier than issueDate`,
-      );
-      throw new BadRequestException(
-        'Due date cannot be earlier than issue date',
-      );
+    let dueDate: Temporal.PlainDate | undefined;
+
+    if (dto.dueDate) {
+      try {
+        dueDate = Temporal.PlainDate.from(dto.dueDate.slice(0, 10));
+      } catch {
+        throw new BadRequestException('Invalid due date');
+      }
+
+      if (Temporal.PlainDate.compare(dueDate, invoice.issueDate) < 0) {
+        this.logger.warn(
+          `Invoice update rejected: id=${invoiceId} dueDate ${dto.dueDate} is earlier than issueDate`,
+        );
+        throw new BadRequestException(
+          'Due date cannot be earlier than issue date',
+        );
+      }
     }
 
     const updated = await this.prisma.db.orm.public.Invoice.where({
       id: invoiceId,
       managerId,
     }).update({
-      ...(dto.dueDate ? { dueDate: new Date(dto.dueDate) } : {}),
+      ...(dueDate ? { dueDate } : {}),
       ...(dto.notes !== undefined ? { notes: dto.notes } : {}),
     });
 
@@ -1111,7 +1127,7 @@ export class InvoicesService {
     const where: Record<string, unknown> = {
       status: InvoiceStatus.ISSUED,
       dueDate: {
-        lt: new Date(),
+        lt: Temporal.Now.plainDateISO(),
       },
     };
 

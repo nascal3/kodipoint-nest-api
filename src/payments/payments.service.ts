@@ -5,6 +5,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import Decimal from 'decimal.js';
+import { Temporal } from '@js-temporal/polyfill';
 import { and } from '@prisma/orm-postgres/orm-client';
 
 import { DatabaseService } from '@/database/database.service';
@@ -53,6 +54,10 @@ export class PaymentsService {
       throw new BadRequestException('Invalid payment date');
     }
 
+    const paymentPlainDate = Temporal.PlainDate.from(
+      dto.paymentDate.slice(0, 10),
+    );
+
     const existing = await this.prisma.db.orm.public.IdempotencyKey.where({
       key: idempotencyKey,
       managerId,
@@ -98,7 +103,7 @@ export class PaymentsService {
         propertyId: invoice.propertyId,
         invoiceId: invoice.id,
         tenantId: invoice.tenantId,
-        paymentDate,
+        paymentDate: paymentPlainDate,
         amount: paymentAmount.toFixed(2),
         paymentMethod: dto.paymentMethod,
         referenceNumber: dto.referenceNumber,
@@ -115,7 +120,7 @@ export class PaymentsService {
           paymentId: payment.id,
           invoiceId: item.invoiceId,
           amount: item.amount.toFixed(2),
-          allocatedAt: new Date(),
+          allocatedAt: Temporal.Now.instant(),
           notes: 'Payment allocation',
         });
 
@@ -150,7 +155,7 @@ export class PaymentsService {
             paymentId: payment.id,
             amount: unallocatedAmount.toFixed(2),
             receiptNumber: generateReceiptNumber(),
-            issuedAt: new Date(),
+            issuedAt: Temporal.Now.instant(),
             notes: 'Unallocated payment balance carried forward',
           }),
         );
@@ -487,7 +492,7 @@ export class PaymentsService {
       paymentAllocationId,
       amount: amount.toFixed(2),
       receiptNumber: generateReceiptNumber(),
-      issuedAt: new Date(),
+      issuedAt: Temporal.Now.instant(),
     });
   }
 
@@ -606,7 +611,7 @@ export class PaymentsService {
         paymentId,
         invoiceId,
         amount: requestedAmount.toFixed(2),
-        allocatedAt: new Date(),
+        allocatedAt: Temporal.Now.instant(),
         notes,
       });
 

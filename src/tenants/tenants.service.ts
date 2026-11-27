@@ -1,4 +1,5 @@
 import { Injectable, Logger, NotFoundException } from '@nestjs/common';
+import { Temporal } from '@js-temporal/polyfill';
 import { and, or } from '@prisma/orm-postgres/orm-client';
 
 import { DatabaseService } from '@/database/database.service';
@@ -257,7 +258,7 @@ export class TenantsService {
         managerId,
       }).update({
         status: TenancyStatus.ENDED,
-        unassignedAt: new Date(),
+        unassignedAt: Temporal.Now.instant(),
       });
 
       if (tenancy.propertyUnitId) {
