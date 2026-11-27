@@ -179,7 +179,15 @@ export class TenantsService {
     const tenant = await this.prisma.db.orm.public.Tenant.where({
       id: tenantId,
       managerId,
-    }).first();
+    })
+      .include('tenancies', (tenancies) =>
+        tenancies
+          .include('property', (property) => property.select('name', 'currency'))
+          .include('unit', (unit) =>
+            unit.select('unitNumber', 'propertyUseType', 'marketRent', 'billingFrequency', 'bedroomCount'),
+          ),
+      )
+      .first();
 
     if (!tenant) {
       this.logger.warn(
