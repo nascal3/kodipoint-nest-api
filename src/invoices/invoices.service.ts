@@ -29,294 +29,26 @@ export class InvoicesService {
   ) {}
 
   async create(managerId: string, dto: CreateInvoiceDto) {
-    const issueDate = new Date(dto.issueDate);
-    const dueDate = new Date(dto.dueDate);
-
-    if (Number.isNaN(issueDate.getTime())) {
-      throw new BadRequestException('Invalid issue date');
-    }
-
-    if (Number.isNaN(dueDate.getTime())) {
-      throw new BadRequestException('Invalid due date');
-    }
-
-    if (dueDate < issueDate) {
-      this.logger.warn(
-        `Invoice create rejected: dueDate ${dto.dueDate} is earlier than issueDate ${dto.issueDate}`,
-      );
-      throw new BadRequestException(
-        'Due date cannot be earlier than issue date',
-      );
-    }
+    const { issueDate, dueDate } = this.validateInvoiceDates(dto);
 
     const result = await this.prisma.db.transaction(async (tx) => {
-      /*
-       * 1. Find the active tenancy.
-       */
-      const tenancy = await tx.orm.public.Tenancy.where({
-        id: dto.tenancyId,
+      const draft = await this.computeInvoiceDraft(
+        tx,
         managerId,
-        status: TenancyStatus.ACTIVE,
-      }).first();
-
-      if (!tenancy) {
-        this.logger.warn(
-          `Invoice create failed: tenancyId=${dto.tenancyId} managerId=${managerId} no active tenancy found`,
-        );
-        throw new NotFoundException('Active tenancy not found');
-      }
-
-      /*
-       * 2. Verify the property belongs to the manager.
-       */
-      const property = await tx.orm.public.Property.where({
-        id: tenancy.propertyId,
-        managerId,
-      }).first();
-
-      if (!property) {
-        this.logger.warn(
-          `Invoice create failed: propertyId=${tenancy.propertyId} managerId=${managerId} not found`,
-        );
-        throw new NotFoundException('Property not found');
-      }
-
-      /*
-       * 3. Verify the tenant belongs to the manager.
-       */
-      const tenant = await tx.orm.public.Tenant.where({
-        id: tenancy.tenantId,
-        managerId,
-      }).first();
-
-      if (!tenant) {
-        this.logger.warn(
-          `Invoice create failed: tenantId=${tenancy.tenantId} managerId=${managerId} not found`,
-        );
-        throw new NotFoundException('Tenant not found');
-      }
-
-      /*
-       * 4. Load the property unit to get the market rent.
-       */
-      const propertyUnitId = tenancy.propertyUnitId;
-      const propertyUnit = propertyUnitId
-        ? await tx.orm.public.PropertyUnit.where({
-            id: propertyUnitId,
-            managerId,
-            status: 'OCCUPIED',
-          }).first()
-        : null;
-
-      if (!propertyUnit) {
-        this.logger.warn(
-          `Invoice create failed: propertyUnitId=${propertyUnitId} not found or not occupied`,
-        );
-        throw new NotFoundException('Property unit not found or not occupied');
-      }
-
-      /*
-       * 5. Load service charges assigned to the tenancy's unit that were effective at the invoice date.
-       */
-      const unitCharges = propertyUnitId
-        ? await tx.orm.public.PropertyUnitCharge.where((charge) =>
-            and(
-              charge.propertyUnitId.eq(propertyUnitId),
-              charge.validFrom.lte(issueDate),
-              or(charge.validTo.isNull(), charge.validTo.gt(issueDate)),
-            ),
-          ).all()
-        : [];
-      const propertyCharges =
-        unitCharges.length > 0
-          ? await tx.orm.public.PropertyCharge.where((charge) =>
-              and(
-                charge.managerId.eq(managerId),
-                charge.propertyId.eq(property.id),
-                charge.isActive.eq(true),
-                charge.id.in(
-                  unitCharges.map((unitCharge) => unitCharge.propertyChargeId),
-                ),
-              ),
-            ).all()
-          : [];
-      const propertyChargeById = new Map(
-        propertyCharges.map((charge) => [charge.id, charge]),
-      );
-      const charges = unitCharges.flatMap((unitCharge) => {
-        const charge = propertyChargeById.get(unitCharge.propertyChargeId);
-
-        if (!charge) {
-          return [];
-        }
-
-        return [
-          {
-            unitCharge,
-            description: charge.description ?? charge.name,
-            amount: unitCharge.customAmount ?? charge.amount,
-          },
-        ];
-      });
-
-      /*
-       * 6. Build the normal invoice lines.
-       */
-      const invoiceItems: Array<{
-        unitCharge?: (typeof unitCharges)[number];
-        description: string;
-        quantity: string;
-        unitAmount: string;
-        totalAmount: string;
-      }> = [];
-
-      const rentAmount = new Decimal(String(propertyUnit.marketRent));
-
-      invoiceItems.push({
-        description: 'Monthly rent',
-        quantity: '1',
-        unitAmount: rentAmount.toFixed(2),
-        totalAmount: rentAmount.toFixed(2),
-      });
-
-      for (const charge of charges) {
-        const chargeAmount = new Decimal(String(charge.amount));
-
-        if (chargeAmount.lessThanOrEqualTo(0)) {
-          continue;
-        }
-
-        invoiceItems.push({
-          description: charge.description,
-          quantity: '1',
-          unitAmount: chargeAmount.toFixed(2),
-          totalAmount: chargeAmount.toFixed(2),
-        });
-      }
-
-      /*
-       * 6. Find previous invoices that may still have
-       * outstanding balances.
-       *
-       * Do not rely only on status = PARTIALLY_PAID.
-       * Recalculate the balance from:
-       *
-       * invoice total
-       * - completed payment allocations
-       * - amounts already transferred to later invoices
-       */
-      const previousInvoices = await tx.orm.public.Invoice.where({
-        managerId,
-        tenantId: tenant.id,
-        tenancyId: tenancy.id,
-        status: InvoiceStatus.PARTIALLY_PAID,
-      }).all();
-
-      const balancesToCarryForward: Array<{
-        sourceInvoiceId: string;
-        sourceInvoiceNumber: string;
-        amount: Decimal;
-      }> = [];
-
-      for (const previousInvoice of previousInvoices) {
-        /*
-         * Get completed payment allocations applied
-         * directly to this source invoice.
-         */
-        const paymentAllocations = await tx.orm.public.PaymentAllocation.where({
-          managerId,
-          invoiceId: previousInvoice.id,
-        }).all();
-
-        const allocationPaymentIds = [
-          ...new Set(
-            paymentAllocations.map(
-              (allocation: any) => allocation.paymentId,
-            ),
-          ),
-        ];
-
-        const allocationPayments = allocationPaymentIds.length
-          ? await tx.orm.public.Payment.where((payment) =>
-              and(
-                payment.managerId.eq(managerId),
-                payment.id.in(allocationPaymentIds),
-              ),
-            ).all()
-          : [];
-
-        const successfulPaymentIds = new Set(
-          allocationPayments
-            .filter(
-              (payment: any) => payment.status === PaymentStatus.SUCCESSFUL,
-            )
-            .map((payment: any) => payment.id),
-        );
-
-        const amountPaid = paymentAllocations
-          .filter((allocation: any) =>
-            successfulPaymentIds.has(allocation.paymentId),
-          )
-          .reduce((total, allocation) => {
-            return total.plus(new Decimal(String(allocation.amount)));
-          }, new Decimal(0));
-
-        /*
-         * Get balances already transferred from the
-         * source invoice to previous target invoices.
-         */
-        const balanceTransfers =
-          await tx.orm.public.InvoiceBalanceTransfer.where({
-            managerId,
-            sourceInvoiceId: previousInvoice.id,
-          }).all();
-
-        const amountTransferred = balanceTransfers.reduce((total, transfer) => {
-          return total.plus(new Decimal(String(transfer.amount)));
-        }, new Decimal(0));
-
-        /*
-         * The source invoice's remaining balance is:
-         *
-         * invoice total
-         * - payments allocated to source invoice
-         * - balance already carried forward
-         */
-        const sourceInvoiceTotal = new Decimal(
-          String(previousInvoice.totalAmount),
-        );
-
-        const remainingBalance = Decimal.max(
-          sourceInvoiceTotal.minus(amountPaid).minus(amountTransferred),
-          new Decimal(0),
-        );
-
-        if (remainingBalance.greaterThan(0)) {
-          balancesToCarryForward.push({
-            sourceInvoiceId: previousInvoice.id,
-            sourceInvoiceNumber: previousInvoice.invoiceNumber,
-            amount: remainingBalance,
-          });
-        }
-      }
-
-      /*
-       * 7. Add one balance-brought-forward line
-       * to the new invoice.
-       */
-      const balanceBroughtForward = balancesToCarryForward.reduce(
-        (total, balance) => total.plus(balance.amount),
-        new Decimal(0),
+        dto.tenancyId,
+        issueDate,
       );
 
-      if (balanceBroughtForward.greaterThan(0)) {
-        invoiceItems.push({
-          description: 'Balance brought forward',
-          quantity: '1',
-          unitAmount: balanceBroughtForward.toFixed(2),
-          totalAmount: balanceBroughtForward.toFixed(2),
-        });
-      }
+      const {
+        tenancy,
+        property,
+        tenant,
+        charges,
+        invoiceItems,
+        balancesToCarryForward,
+        balanceBroughtForward,
+        rentAmount,
+      } = draft;
 
       /*
        * 9. Generate a unique invoice number.
@@ -452,7 +184,7 @@ export class InvoicesService {
        * 14. Return the invoice and a useful calculation
        * summary for the API response.
        */
-      const serviceChargesTotal = charges.reduce((total, charge) => {
+      const serviceChargesTotal = charges.reduce((total: Decimal, charge: any) => {
         const chargeAmount = new Decimal(String(charge.amount));
 
         if (chargeAmount.lessThanOrEqualTo(0)) {
@@ -497,24 +229,338 @@ export class InvoicesService {
     return result;
   }
 
+  private validateInvoiceDates(dto: CreateInvoiceDto) {
+    const issueDate = new Date(dto.issueDate);
+    const dueDate = new Date(dto.dueDate);
+
+    if (Number.isNaN(issueDate.getTime())) {
+      throw new BadRequestException('Invalid issue date');
+    }
+
+    if (Number.isNaN(dueDate.getTime())) {
+      throw new BadRequestException('Invalid due date');
+    }
+
+    if (dueDate < issueDate) {
+      this.logger.warn(
+        `Invoice create rejected: dueDate ${dto.dueDate} is earlier than issueDate ${dto.issueDate}`,
+      );
+      throw new BadRequestException(
+        'Due date cannot be earlier than issue date',
+      );
+    }
+
+    return { issueDate, dueDate };
+  }
+
   /**
-   * Apply unallocated balances from the tenant's previous
-   * successful payments to a newly created invoice.
-   *
-   * Payments are consumed oldest-first. Each application creates
-   * a PaymentAllocation against the new invoice plus a Receipt,
-   * so the prepayment shows up as amountPaid on the invoice and
-   * as a receipt on the payment.
+   * Compute everything an invoice would contain without
+   * persisting anything. Shared by create() and preview().
    */
-  private async applyPaymentCredits(
-    tx: any,
+  private async computeInvoiceDraft(
+    client: any,
     managerId: string,
-    invoice: any,
+    tenancyId: string,
+    issueDate: Date,
   ) {
-    const payments = await tx.orm.public.Payment.where({
+    /*
+     * 1. Find the active tenancy.
+     */
+    const tenancy = await client.orm.public.Tenancy.where({
+      id: tenancyId,
       managerId,
-      tenantId: invoice.tenantId,
-      propertyId: invoice.propertyId,
+      status: TenancyStatus.ACTIVE,
+    }).first();
+
+    if (!tenancy) {
+      this.logger.warn(
+        `Invoice create failed: tenancyId=${tenancyId} managerId=${managerId} no active tenancy found`,
+      );
+      throw new NotFoundException('Active tenancy not found');
+    }
+
+    /*
+     * 2. Verify the property belongs to the manager.
+     */
+    const property = await client.orm.public.Property.where({
+      id: tenancy.propertyId,
+      managerId,
+    }).first();
+
+    if (!property) {
+      this.logger.warn(
+        `Invoice create failed: propertyId=${tenancy.propertyId} managerId=${managerId} not found`,
+      );
+      throw new NotFoundException('Property not found');
+    }
+
+    /*
+     * 3. Verify the tenant belongs to the manager.
+     */
+    const tenant = await client.orm.public.Tenant.where({
+      id: tenancy.tenantId,
+      managerId,
+    }).first();
+
+    if (!tenant) {
+      this.logger.warn(
+        `Invoice create failed: tenantId=${tenancy.tenantId} managerId=${managerId} not found`,
+      );
+      throw new NotFoundException('Tenant not found');
+    }
+
+    /*
+     * 4. Load the property unit to get the market rent.
+     */
+    const propertyUnitId = tenancy.propertyUnitId;
+    const propertyUnit = propertyUnitId
+      ? await client.orm.public.PropertyUnit.where({
+          id: propertyUnitId,
+          managerId,
+          status: 'OCCUPIED',
+        }).first()
+      : null;
+
+    if (!propertyUnit) {
+      this.logger.warn(
+        `Invoice create failed: propertyUnitId=${propertyUnitId} not found or not occupied`,
+      );
+      throw new NotFoundException('Property unit not found or not occupied');
+    }
+
+    /*
+     * 5. Load service charges assigned to the tenancy's unit that were effective at the invoice date.
+     */
+    const unitCharges = propertyUnitId
+      ? await client.orm.public.PropertyUnitCharge.where((charge: any) =>
+          and(
+            charge.propertyUnitId.eq(propertyUnitId),
+            charge.validFrom.lte(issueDate),
+            or(charge.validTo.isNull(), charge.validTo.gt(issueDate)),
+          ),
+        ).all()
+      : [];
+    const propertyCharges =
+      unitCharges.length > 0
+        ? await client.orm.public.PropertyCharge.where((charge: any) =>
+            and(
+              charge.managerId.eq(managerId),
+              charge.propertyId.eq(property.id),
+              charge.isActive.eq(true),
+              charge.id.in(
+                unitCharges.map((unitCharge: any) => unitCharge.propertyChargeId),
+              ),
+            ),
+          ).all()
+        : [];
+    const propertyChargeById = new Map(
+      propertyCharges.map((charge: any) => [charge.id, charge]),
+    );
+    const charges = unitCharges.flatMap((unitCharge: any) => {
+      const charge: any = propertyChargeById.get(unitCharge.propertyChargeId);
+
+      if (!charge) {
+        return [];
+      }
+
+      return [
+        {
+          unitCharge,
+          description: charge.description ?? charge.name,
+          amount: unitCharge.customAmount ?? charge.amount,
+        },
+      ];
+    });
+
+    /*
+     * 6. Build the normal invoice lines.
+     */
+    const invoiceItems: Array<{
+      unitCharge?: (typeof unitCharges)[number];
+      description: string;
+      quantity: string;
+      unitAmount: string;
+      totalAmount: string;
+    }> = [];
+
+    const rentAmount = new Decimal(String(propertyUnit.marketRent));
+
+    invoiceItems.push({
+      description: 'Monthly rent',
+      quantity: '1',
+      unitAmount: rentAmount.toFixed(2),
+      totalAmount: rentAmount.toFixed(2),
+    });
+
+    for (const charge of charges) {
+      const chargeAmount = new Decimal(String(charge.amount));
+
+      if (chargeAmount.lessThanOrEqualTo(0)) {
+        continue;
+      }
+
+      invoiceItems.push({
+        description: charge.description,
+        quantity: '1',
+        unitAmount: chargeAmount.toFixed(2),
+        totalAmount: chargeAmount.toFixed(2),
+      });
+    }
+
+    /*
+     * 7. Find previous invoices that may still have
+     * outstanding balances.
+     *
+     * Do not rely only on status = PARTIALLY_PAID.
+     * Recalculate the balance from:
+     *
+     * invoice total
+     * - completed payment allocations
+     * - amounts already transferred to later invoices
+     */
+    const previousInvoices = await client.orm.public.Invoice.where({
+      managerId,
+      tenantId: tenant.id,
+      tenancyId: tenancy.id,
+      status: InvoiceStatus.PARTIALLY_PAID,
+    }).all();
+
+    const balancesToCarryForward: Array<{
+      sourceInvoiceId: string;
+      sourceInvoiceNumber: string;
+      amount: Decimal;
+    }> = [];
+
+    for (const previousInvoice of previousInvoices) {
+      /*
+       * Get completed payment allocations applied
+       * directly to this source invoice.
+       */
+      const paymentAllocations =
+        await client.orm.public.PaymentAllocation.where({
+          managerId,
+          invoiceId: previousInvoice.id,
+        }).all();
+
+      const allocationPaymentIds = [
+        ...new Set(
+          paymentAllocations.map((allocation: any) => allocation.paymentId),
+        ),
+      ];
+
+      const allocationPayments = allocationPaymentIds.length
+        ? await client.orm.public.Payment.where((payment: any) =>
+            and(
+              payment.managerId.eq(managerId),
+              payment.id.in(allocationPaymentIds),
+            ),
+          ).all()
+        : [];
+
+      const successfulPaymentIds = new Set(
+        allocationPayments
+          .filter(
+            (payment: any) => payment.status === PaymentStatus.SUCCESSFUL,
+          )
+          .map((payment: any) => payment.id),
+      );
+
+      const amountPaid = paymentAllocations
+        .filter((allocation: any) =>
+          successfulPaymentIds.has(allocation.paymentId),
+        )
+        .reduce((total: Decimal, allocation: any) => {
+          return total.plus(new Decimal(String(allocation.amount)));
+        }, new Decimal(0));
+
+      /*
+       * Get balances already transferred from the
+       * source invoice to previous target invoices.
+       */
+      const balanceTransfers =
+        await client.orm.public.InvoiceBalanceTransfer.where({
+          managerId,
+          sourceInvoiceId: previousInvoice.id,
+        }).all();
+
+      const amountTransferred = balanceTransfers.reduce(
+        (total: Decimal, transfer: any) => {
+          return total.plus(new Decimal(String(transfer.amount)));
+        },
+        new Decimal(0),
+      );
+
+      /*
+       * The source invoice's remaining balance is:
+       *
+       * invoice total
+       * - payments allocated to source invoice
+       * - balance already carried forward
+       */
+      const sourceInvoiceTotal = new Decimal(
+        String(previousInvoice.totalAmount),
+      );
+
+      const remainingBalance = Decimal.max(
+        sourceInvoiceTotal.minus(amountPaid).minus(amountTransferred),
+        new Decimal(0),
+      );
+
+      if (remainingBalance.greaterThan(0)) {
+        balancesToCarryForward.push({
+          sourceInvoiceId: previousInvoice.id,
+          sourceInvoiceNumber: previousInvoice.invoiceNumber,
+          amount: remainingBalance,
+        });
+      }
+    }
+
+    /*
+     * 8. Add one balance-brought-forward line
+     * to the new invoice.
+     */
+    const balanceBroughtForward = balancesToCarryForward.reduce(
+      (total, balance) => total.plus(balance.amount),
+      new Decimal(0),
+    );
+
+    if (balanceBroughtForward.greaterThan(0)) {
+      invoiceItems.push({
+        description: 'Balance brought forward',
+        quantity: '1',
+        unitAmount: balanceBroughtForward.toFixed(2),
+        totalAmount: balanceBroughtForward.toFixed(2),
+      });
+    }
+
+    return {
+      tenancy,
+      property,
+      tenant,
+      propertyUnit,
+      charges,
+      invoiceItems,
+      balancesToCarryForward,
+      balanceBroughtForward,
+      rentAmount,
+    };
+  }
+
+  /**
+   * List unallocated balances on the tenant's successful
+   * payments, oldest payment first. Shared by the credit
+   * sweep in applyPaymentCredits() and the preview().
+   */
+  private async getPaymentCredits(
+    client: any,
+    managerId: string,
+    tenantId: string,
+    propertyId: string,
+  ) {
+    const payments = await client.orm.public.Payment.where({
+      managerId,
+      tenantId,
+      propertyId,
       status: PaymentStatus.SUCCESSFUL,
     }).all();
 
@@ -523,20 +569,10 @@ export class InvoicesService {
         new Date(a.paymentDate).getTime() - new Date(b.paymentDate).getTime(),
     );
 
-    let creditRemaining = new Decimal(String(invoice.totalAmount));
-    const applied: Array<{
-      paymentId: string;
-      allocationId: string;
-      receiptId: string;
-      amount: string;
-    }> = [];
+    const credits = [];
 
     for (const payment of ordered) {
-      if (!creditRemaining.greaterThan(0)) {
-        break;
-      }
-
-      const allocations = await tx.orm.public.PaymentAllocation.where({
+      const allocations = await client.orm.public.PaymentAllocation.where({
         managerId,
         paymentId: payment.id,
       }).all();
@@ -551,8 +587,150 @@ export class InvoicesService {
         allocatedAmount,
       );
 
-      if (!remainder.greaterThan(0)) {
+      if (remainder.greaterThan(0)) {
+        credits.push({ payment, remainder });
+      }
+    }
+
+    return credits;
+  }
+
+  /**
+   * Preview the invoice calculation without creating
+   * any records. Runs the same computation as create()
+   * plus a simulation of the prepayment credit that
+   * would be applied.
+   */
+  async preview(managerId: string, dto: CreateInvoiceDto) {
+    const { issueDate } = this.validateInvoiceDates(dto);
+
+    const draft = await this.computeInvoiceDraft(
+      this.prisma.db,
+      managerId,
+      dto.tenancyId,
+      issueDate,
+    );
+
+    const subtotal = draft.invoiceItems.reduce(
+      (total, item) => total.plus(new Decimal(String(item.totalAmount))),
+      new Decimal(0),
+    );
+
+    const credits = await this.getPaymentCredits(
+      this.prisma.db,
+      managerId,
+      draft.tenant.id,
+      draft.property.id,
+    );
+
+    let creditRemaining = subtotal;
+    let availableCredit = new Decimal(0);
+    const prepaymentsToApply: Array<{
+      paymentId: string;
+      paymentDate: unknown;
+      amount: string;
+    }> = [];
+
+    for (const credit of credits) {
+      availableCredit = availableCredit.plus(credit.remainder);
+
+      if (!creditRemaining.greaterThan(0)) {
         continue;
+      }
+
+      const amount = Decimal.min(credit.remainder, creditRemaining);
+
+      prepaymentsToApply.push({
+        paymentId: credit.payment.id,
+        paymentDate: credit.payment.paymentDate,
+        amount: amount.toFixed(2),
+      });
+
+      creditRemaining = creditRemaining.minus(amount);
+    }
+
+    const amountPaid = subtotal.minus(creditRemaining);
+    const balanceDue = Decimal.max(creditRemaining, new Decimal(0));
+
+    const projectedStatus = balanceDue.equals(0)
+      ? InvoiceStatus.PAID
+      : amountPaid.greaterThan(0)
+        ? InvoiceStatus.PARTIALLY_PAID
+        : InvoiceStatus.ISSUED;
+
+    const serviceChargesTotal = draft.charges.reduce((total: Decimal, charge: any) => {
+      const chargeAmount = new Decimal(String(charge.amount));
+
+      if (chargeAmount.lessThanOrEqualTo(0)) {
+        return total;
+      }
+
+      return total.plus(chargeAmount);
+    }, new Decimal(0));
+
+    return {
+      tenancyId: draft.tenancy.id,
+      propertyId: draft.property.id,
+      tenantId: draft.tenant.id,
+      invoiceItems: draft.invoiceItems.map((item) => ({
+        description: item.description,
+        quantity: item.quantity,
+        unitAmount: item.unitAmount,
+        totalAmount: item.totalAmount,
+      })),
+      calculation: {
+        rent: draft.rentAmount.toFixed(2),
+        serviceCharges: serviceChargesTotal.toFixed(2),
+        balanceBroughtForward: draft.balanceBroughtForward.toFixed(2),
+        subtotal: subtotal.toFixed(2),
+        totalAmount: subtotal.toFixed(2),
+        availablePrepaymentCredit: availableCredit.toFixed(2),
+        prepaymentCreditApplied: amountPaid.toFixed(2),
+        amountPaid: amountPaid.toFixed(2),
+        balanceDue: balanceDue.toFixed(2),
+        projectedStatus,
+      },
+      balanceCarryForward: draft.balancesToCarryForward.map((balance) => ({
+        sourceInvoiceId: balance.sourceInvoiceId,
+        sourceInvoiceNumber: balance.sourceInvoiceNumber,
+        amount: balance.amount.toFixed(2),
+      })),
+      prepaymentsToApply,
+    };
+  }
+
+  /**
+   * Apply unallocated balances from the tenant's previous
+   * successful payments to a newly created invoice.
+   *
+   * Payments are consumed oldest-first. Each application creates
+   * a PaymentAllocation against the new invoice plus a Receipt,
+   * so the prepayment shows up as amountPaid on the invoice and
+   * as a receipt on the payment.
+   */
+  private async applyPaymentCredits(
+    tx: any,
+    managerId: string,
+    invoice: any,
+  ) {
+    const credits = await this.getPaymentCredits(
+      tx,
+      managerId,
+      invoice.tenantId,
+      invoice.propertyId,
+    );
+
+    let creditRemaining = new Decimal(String(invoice.totalAmount));
+    const applied: Array<{
+      paymentId: string;
+      allocationId: string;
+      receiptId: string;
+      amount: string;
+    }> = [];
+
+    for (const { payment, remainder } of credits) {
+      if (!creditRemaining.greaterThan(0)) {
+        break;
       }
 
       const amount = Decimal.min(remainder, creditRemaining);
@@ -672,7 +850,7 @@ export class InvoicesService {
     const propertyIds = invoices.map((i: any) => i.propertyId);
     const tenantIds = invoices.map((i: any) => i.tenantId);
 
-    const [tenants, properties, tenancies, payments, invoiceItems] =
+    const [tenants, properties, tenancies, payments, invoiceItems, balanceTransfers, paymentAllocations] =
       await Promise.all([
         tenantIds.length
           ? this.prisma.db.orm.public.Tenant.where((tenant) =>
@@ -701,6 +879,22 @@ export class InvoicesService {
         invoiceIds.length
           ? this.prisma.db.orm.public.InvoiceItem.where((item) =>
               item.invoiceId.in(invoiceIds),
+            ).all()
+          : [],
+        invoiceIds.length
+          ? this.prisma.db.orm.public.InvoiceBalanceTransfer.where((transfer) =>
+              and(
+                transfer.managerId.eq(managerId),
+                transfer.targetInvoiceId.in(invoiceIds),
+              ),
+            ).all()
+          : [],
+        invoiceIds.length
+          ? this.prisma.db.orm.public.PaymentAllocation.where((allocation) =>
+              and(
+                allocation.managerId.eq(managerId),
+                allocation.invoiceId.in(invoiceIds),
+              ),
             ).all()
           : [],
       ]);
@@ -735,6 +929,24 @@ export class InvoicesService {
       }
     }
 
+    const balanceBroughtForwardByInvoiceId = new Map<string, Decimal>();
+    for (const transfer of balanceTransfers) {
+      const existing = balanceBroughtForwardByInvoiceId.get(
+        transfer.targetInvoiceId,
+      ) || new Decimal(0);
+      balanceBroughtForwardByInvoiceId.set(
+        transfer.targetInvoiceId,
+        existing.plus(new Decimal(String(transfer.amount))),
+      );
+    }
+
+    const prepaymentAllocationsByInvoiceId = new Map<string, any[]>();
+    for (const allocation of paymentAllocations) {
+      const existing = prepaymentAllocationsByInvoiceId.get(allocation.invoiceId) || [];
+      existing.push(allocation);
+      prepaymentAllocationsByInvoiceId.set(allocation.invoiceId, existing);
+    }
+
     const enrichedData = invoices.map((invoice: any) => {
       const tenant = tenantById.get(invoice.tenantId);
       const property = propertyById.get(invoice.propertyId);
@@ -742,6 +954,15 @@ export class InvoicesService {
       const propertyUnit = tenancy ? propertyUnitById.get(tenancy.propertyUnitId) : null;
       const paidDate = paymentDatesByInvoiceId.get(invoice.id);
       const items = invoiceItemsByInvoiceId.get(invoice.id) || [];
+      const balanceBroughtForward = balanceBroughtForwardByInvoiceId.get(invoice.id);
+      const prepaymentAllocations = prepaymentAllocationsByInvoiceId.get(invoice.id) || [];
+
+      const prepaymentBroughtForward = prepaymentAllocations.reduce(
+        (total: Decimal, allocation: any) => {
+          return total.plus(new Decimal(String(allocation.amount)));
+        },
+        new Decimal(0),
+      );
 
       return {
         ...invoice,
@@ -750,6 +971,10 @@ export class InvoicesService {
         propertyUnit,
         paidDate,
         invoiceItems: items,
+        balanceBroughtForward: balanceBroughtForward
+          ? balanceBroughtForward.toFixed(2)
+          : '0.00',
+        prepaymentBroughtForward: prepaymentBroughtForward.toFixed(2),
       };
     });
 

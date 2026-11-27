@@ -29,6 +29,17 @@ import { JwtAuthGuard } from '@/common/guards/jwt-auth.guard';
 export class InvoicesController {
   constructor(private readonly invoicesService: InvoicesService) {}
 
+  @Post('preview')
+  @ApiOperation({
+    summary: 'Preview the invoice calculation without creating it',
+  })
+  preview(
+    @CurrentUser() user: authenticatedUserType.AuthenticatedUser,
+    @Body() dto: CreateInvoiceDto,
+  ) {
+    return this.invoicesService.preview(user.id, dto);
+  }
+
   @Post()
   @ApiOperation({ summary: 'Create an invoice for an active tenancy' })
   create(
