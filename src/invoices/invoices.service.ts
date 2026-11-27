@@ -562,6 +562,7 @@ export class InvoicesService {
         paymentId: payment.id,
         invoiceId: invoice.id,
         amount: amount.toFixed(2),
+        kind: 'PREPAYMENT',
         allocatedAt: new Date(),
         notes: 'Unallocated payment balance applied to invoice',
       });
@@ -797,11 +798,20 @@ export class InvoicesService {
         managerId,
       }).all();
 
+    const creditApplied = paymentAllocations
+      .filter((allocation: any) => allocation.kind === 'PREPAYMENT')
+      .reduce(
+        (total: Decimal, allocation: any) =>
+          total.plus(new Decimal(String(allocation.amount))),
+        new Decimal(0),
+      );
+
     return {
       ...invoice,
       items,
       payments,
       paymentAllocations,
+      creditApplied: creditApplied.toFixed(2),
     };
   }
 

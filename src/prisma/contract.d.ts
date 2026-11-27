@@ -34,7 +34,7 @@ import type {
 } from '@prisma/orm-postgres/contract/types';
 
 export type StorageHash =
-  StorageHashBase<'1b4ff5b2520f650e6e03ac4bb9b61c69964e4c460a5e0802a98e2d9f7fd9050a'>;
+  StorageHashBase<'9053d2dbd9c69f975b565bb5156bda0711a3dc4a91f427b6165d3fef7c95f95e'>;
 export type ExecutionHash =
   ExecutionHashBase<'8e9c983ff78a07252f8d86c07b2c152fd109aba234b96c8b51748afacf5a1756'>;
 export type ProfileHash =
@@ -334,6 +334,7 @@ export type FieldOutputTypes = {
       readonly paymentId: CodecTypes['pg/uuid@1']['output'];
       readonly invoiceId: CodecTypes['pg/uuid@1']['output'];
       readonly amount: CodecTypes['pg/numeric@1']['output'];
+      readonly kind: CodecTypes['pg/text@1']['output'];
       readonly allocatedAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
       readonly notes: CodecTypes['pg/text@1']['output'] | null;
       readonly createdAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
@@ -547,6 +548,7 @@ export type FieldInputTypes = {
       readonly paymentId: CodecTypes['pg/uuid@1']['input'];
       readonly invoiceId: CodecTypes['pg/uuid@1']['input'];
       readonly amount: CodecTypes['pg/numeric@1']['input'];
+      readonly kind: CodecTypes['pg/text@1']['input'];
       readonly allocatedAt: CodecTypes['pg/timestamptz-temporal@1']['input'];
       readonly notes: CodecTypes['pg/text@1']['input'] | null;
       readonly createdAt: CodecTypes['pg/timestamptz-temporal@1']['input'];
@@ -745,6 +747,7 @@ export type StorageColumnTypes = {
       readonly created_at: CodecTypes['pg/timestamptz-temporal@1']['output'];
       readonly id: CodecTypes['pg/uuid@1']['output'];
       readonly invoice_id: CodecTypes['pg/uuid@1']['output'];
+      readonly kind: CodecTypes['pg/text@1']['output'];
       readonly manager_id: CodecTypes['pg/uuid@1']['output'];
       readonly notes: CodecTypes['pg/text@1']['output'] | null;
       readonly payment_id: CodecTypes['pg/uuid@1']['output'];
@@ -958,6 +961,7 @@ export type StorageColumnInputTypes = {
       readonly created_at: CodecTypes['pg/timestamptz-temporal@1']['input'];
       readonly id: CodecTypes['pg/uuid@1']['input'];
       readonly invoice_id: CodecTypes['pg/uuid@1']['input'];
+      readonly kind: CodecTypes['pg/text@1']['input'];
       readonly manager_id: CodecTypes['pg/uuid@1']['input'];
       readonly notes: CodecTypes['pg/text@1']['input'] | null;
       readonly payment_id: CodecTypes['pg/uuid@1']['input'];
@@ -1397,6 +1401,7 @@ export namespace Models {
     paymentId: CodecTypes['pg/uuid@1']['output'];
     invoiceId: CodecTypes['pg/uuid@1']['output'];
     amount: CodecTypes['pg/numeric@1']['output'];
+    kind: CodecTypes['pg/text@1']['output'];
     allocatedAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
     notes: CodecTypes['pg/text@1']['output'] | null;
     createdAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
@@ -2080,6 +2085,15 @@ type ContractBase = Omit<
                   readonly nativeType: 'numeric';
                   readonly codecId: 'pg/numeric@1';
                   readonly nullable: false;
+                };
+                readonly kind: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                  readonly default: {
+                    readonly kind: 'literal';
+                    readonly value: DefaultLiteralValue<'pg/text@1', 'STANDARD'>;
+                  };
                 };
                 readonly allocated_at: {
                   readonly nativeType: 'timestamptz';
@@ -4144,6 +4158,10 @@ type ContractBase = Omit<
                 readonly nullable: false;
                 readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/numeric@1' };
               };
+              readonly kind: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
               readonly allocatedAt: {
                 readonly nullable: false;
                 readonly type: {
@@ -4219,6 +4237,7 @@ type ContractBase = Omit<
                 readonly paymentId: { readonly column: 'payment_id' };
                 readonly invoiceId: { readonly column: 'invoice_id' };
                 readonly amount: { readonly column: 'amount' };
+                readonly kind: { readonly column: 'kind' };
                 readonly allocatedAt: { readonly column: 'allocated_at' };
                 readonly notes: { readonly column: 'notes' };
                 readonly createdAt: { readonly column: 'created_at' };

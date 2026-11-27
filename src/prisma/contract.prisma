@@ -441,6 +441,7 @@ model PaymentAllocation {
   paymentId   Uuid     @map("payment_id")
   invoiceId   Uuid     @map("invoice_id")
   amount      Decimal
+  kind        String   @default("STANDARD")
   allocatedAt DateTime @map("allocated_at")
   notes       String?
 

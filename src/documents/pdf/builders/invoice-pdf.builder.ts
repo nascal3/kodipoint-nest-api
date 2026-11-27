@@ -35,6 +35,7 @@ export interface InvoicePdfData {
     totalAmount: string;
     amountPaid: string;
     balanceDue: string;
+    prepaymentCredit?: string;
     notes?: string | null;
   };
   items: Array<{
@@ -48,6 +49,7 @@ export interface InvoicePdfData {
     amount: string;
     paymentMethod: string;
     referenceNumber?: string | null;
+    kind?: string;
   }>;
   tenant: {
     firstName: string;
@@ -360,6 +362,10 @@ export function buildInvoicePdf(
       label: 'Amount Paid',
       value: formatCurrency(data.invoice.amountPaid, currency),
     },
+    {
+      label: 'Prepayment Brought Forward',
+      value: formatCurrency(data.invoice.prepaymentCredit ?? '0.00', currency),
+    },
     { divider: true, label: '', value: '' },
     {
       label: 'Balance Due',
@@ -421,7 +427,7 @@ export function buildInvoicePdf(
     for (const p of data.payments) {
       const line = [
         formatDate(p.paymentDate),
-        p.paymentMethod,
+        p.kind === 'PREPAYMENT' ? 'Prepayment' : p.paymentMethod,
         formatCurrency(p.amount, currency),
         p.referenceNumber ?? '',
       ]

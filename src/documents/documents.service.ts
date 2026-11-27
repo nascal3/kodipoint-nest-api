@@ -86,6 +86,7 @@ export class DocumentsService {
               paymentMethod: allocPayment?.paymentMethod ?? '—',
               referenceNumber:
                 allocPayment?.referenceNumber ?? alloc.notes ?? null,
+              kind: alloc.kind ?? 'STANDARD',
             };
           }),
         )
@@ -95,6 +96,17 @@ export class DocumentsService {
           paymentMethod: p.paymentMethod,
           referenceNumber: p.referenceNumber,
         }));
+
+    /*
+     * Prepayment credit rolled over from earlier overpayments.
+     */
+    const creditApplied = invoiceAllocations
+      .filter((alloc: any) => alloc.kind === 'PREPAYMENT')
+      .reduce(
+        (total: number, alloc: any) => total + Number(alloc.amount || 0),
+        0,
+      )
+      .toFixed(2);
 
     const buffer = await this.pdfService.render((doc) =>
       buildInvoicePdf(doc, {
@@ -115,6 +127,7 @@ export class DocumentsService {
           totalAmount: invoice.totalAmount,
           amountPaid: invoice.amountPaid,
           balanceDue: invoice.balanceDue,
+          prepaymentCredit: creditApplied,
           notes: invoice.notes,
         },
         items: (invoice.items ?? []).map((i: any) => ({
